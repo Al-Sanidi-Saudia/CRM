@@ -61,6 +61,11 @@ macOS / Linux / Git Bash:
 SNAP_CLIENT_ID=<client id> ./deploy.sh https://<org>.crm4.dynamics.com <SolutionUniqueName>
 ```
 
+`deploy.ps1` reads the solution's publisher prefix first and stops if the solution isn't found.
+The connector is created inside that solution, so its internal name takes the publisher prefix
+(e.g. `<prefix>_snap`) while the display name stays **Snap**. The script prints the internal name afterwards
+and warns if the prefix is missing.
+
 Then in make.powerapps.com → Solutions → AlSanidi | Marketing → the connector:
 1. **Security** tab: enter the Snap **client secret** → *Update connector*. The secret is never stored in this repo.
 2. Copy the **Redirect URL** shown there (`https://global.consent.azure-apim.net/redirect/...`) into the Snap OAuth app's redirect URI.
