@@ -119,6 +119,10 @@ def view_id_for(logical, view_name):
     return "{%s}" % uuid.uuid5(uuid.NAMESPACE_URL, f"alsanidi/{logical}/view/{view_name}")
 
 
+def has_money(spec):
+    return any(f[2] == "money" for f in spec.fields)
+
+
 def set_tag(block, tag, value):
     return re.sub(rf"<{tag}>[^<]*</{tag}>", f"<{tag}>{value}</{tag}>", block, count=1)
 
@@ -356,7 +360,8 @@ def optionset_xml(name, display, values):
 
 
 def entity_xml(spec, t):
-    system = [b for n, b in t.attrs.items() if not n.startswith("sanidi_")]
+    currency = {"TransactionCurrencyId", "ExchangeRate"}      # only tables with money columns carry these
+    system = [b for n, b in t.attrs.items() if not n.startswith("sanidi_") and (has_money(spec) or n not in currency)]
     pk = rename(t.attrs[f"{TEMPLATE_SCHEMA}Id"], f"{TEMPLATE_SCHEMA}Id", f"{spec.logical}id") \
         .replace(f'PhysicalName="{spec.logical}id"', f'PhysicalName="{spec.schema}Id"')
     pk = re.sub(r"<displaynames>.*?</displaynames>",
@@ -429,6 +434,8 @@ def build_package(spec, template_zip, out):
     system_rels = [f"business_unit_{TEMPLATE_LOGICAL}", f"lk_{TEMPLATE_LOGICAL}_createdby",
                    f"lk_{TEMPLATE_LOGICAL}_modifiedby", f"owner_{TEMPLATE_LOGICAL}", f"team_{TEMPLATE_LOGICAL}",
                    f"TransactionCurrency_{TEMPLATE_SCHEMA}", f"user_{TEMPLATE_LOGICAL}"]
+    if not has_money(spec):
+        system_rels.remove(f"TransactionCurrency_{TEMPLATE_SCHEMA}")
     rels = [re.search(rf'<EntityRelationship Name="{n}">.*?</EntityRelationship>', t.c, re.S).group(0)
             .replace(TEMPLATE_SCHEMA, spec.schema).replace(TEMPLATE_LOGICAL, spec.logical) for n in system_rels]
     rels += [relationship_xml(spec, t, f[0]) for f in spec.fields if f[2] == "lookup"]

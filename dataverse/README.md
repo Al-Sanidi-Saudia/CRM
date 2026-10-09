@@ -8,8 +8,10 @@ it doesn't touch anything else in the solution, and IDs are deterministic so re-
 |---|---|---|
 | `snap-campaign/` | Snap Campaign (`sanidi_SnapCampaign`) | Get Snap Campaigns (manual) |
 | `snap-adsquad/` | Snap Ad Squad (`sanidi_SnapAdSquad`, lookup to Snap Campaign) | Get Snap Ad Squads (when a Snap Campaign is added or modified) |
+| `snap-advertisement/` | Snap Advertisement (`sanidi_SnapAdvertisement`, lookup to Snap Ad Squad) | Get Snap Advertisements (when a Snap Ad Squad is added or modified) |
 
-`table_builder.py` holds the shared table logic (columns, choices, lookups, keys, form, views).
+`table_builder.py` holds the shared table logic (columns, choices, lookups, keys, form, views) and
+`flow_builder.py` the shared "sync a parent's children from Snap" flow logic.
 
 ## Template export
 
@@ -28,16 +30,24 @@ pac solution delete --solution-name <TempSolution>
 
 ## Build and import (order matters)
 
-```bash
-python3 snap-adsquad/build_table_solution.py  --template Template.zip --out SnapAdSquadTable.zip
-python3 snap-campaign/build_table_solution.py --template Template.zip --out SnapCampaignTable.zip  # Related tab needs Snap Ad Squad
-python3 snap-campaign/build_flow_solution.py  --template Template.zip --out GetSnapCampaignsFlow.zip
-python3 snap-adsquad/build_flow_solution.py   --template Template.zip --out GetSnapAdSquadsFlow.zip
+Tables are imported child-first, because each parent's Related tab points at its child table:
 
-pac solution import --path SnapAdSquadTable.zip  --publish-changes
-pac solution import --path SnapCampaignTable.zip --publish-changes
+```bash
+python3 snap-advertisement/build_table_solution.py --template Template.zip --out SnapAdvertisementTable.zip
+python3 snap-adsquad/build_table_solution.py       --template Template.zip --out SnapAdSquadTable.zip
+python3 snap-campaign/build_table_solution.py      --template Template.zip --out SnapCampaignTable.zip
+python3 snap-campaign/build_flow_solution.py       --template Template.zip --out GetSnapCampaignsFlow.zip
+python3 snap-adsquad/build_flow_solution.py        --template Template.zip --out GetSnapAdSquadsFlow.zip
+python3 snap-advertisement/build_flow_solution.py  --template Template.zip --out GetSnapAdvertisementsFlow.zip
+
+pac solution import --path SnapAdvertisementTable.zip --publish-changes
+pac solution import --path SnapAdSquadTable.zip       --publish-changes
+pac solution import --path SnapCampaignTable.zip      --publish-changes
 pac solution import --path GetSnapCampaignsFlow.zip
 pac solution import --path GetSnapAdSquadsFlow.zip
+pac solution import --path GetSnapAdvertisementsFlow.zip
 ```
+
+Only one import can run in an environment at a time; if `pac` reports another import running, wait and retry.
 
 Imported flows arrive turned off; turn them on in the portal.

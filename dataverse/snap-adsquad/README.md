@@ -5,7 +5,8 @@ Stores Snapchat ad squads from the [Snapchat Marketing API](https://developers.s
 - Entity set `sanidi_snapadsquads`; primary name `sanidi_adsquadname`.
 - Alternate key `sanidi_snapadsquad_adsquadidkey` on `sanidi_adsquadid`.
 - Lookup **Snap Campaign** (`sanidi_snapcampaign`), relationship `sanidi_snapadsquad_snapcampaign_sanidi_snapcampaign`;
-  the Snap Campaign form lists a campaign's ad squads on its Related tab.
+  the Snap Campaign form lists a campaign's ad squads on its Related tab, and this table's form lists the ad
+  squad's Snap Advertisements on its own Related tab.
 - Choices use Snap's values as labels, numbered from 1. Multi-select columns use the shared choices
   `sanidi_snapadsquaddeliverystatus`, `sanidi_snapplatform`, `sanidi_snapplacementposition`,
   `sanidi_snapcontenttype` (included and excluded content types) and `sanidi_snapmeasurementprovider`.

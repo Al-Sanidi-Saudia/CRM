@@ -1,6 +1,7 @@
 """Builds an unmanaged solution package that creates or updates the "Snap Ad Squad" table
 (sanidi_SnapAdSquad) in the "AlSanidi | Marketing" solution: columns, choices, the lookup
-to Snap Campaign, alternate key, main form and views.
+to Snap Campaign, alternate key, main form (with a Related tab listing the ad squad's Snap
+Advertisements) and views. Import the Snap Advertisement table first.
 
 Field definitions come from https://developers.snap.com/marketing-api/Ads-API/ad-squads.
 The package format is described in ../table_builder.py.
@@ -14,7 +15,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from table_builder import TableSpec, build_package  # noqa: E402
+from table_builder import RelatedGrid, TableSpec, build_package, view_id_for  # noqa: E402
 
 DELIVERY_OPTIONSET = "sanidi_snapadsquaddeliverystatus"
 PLATFORM_OPTIONSET = "sanidi_snapplatform"
@@ -172,6 +173,9 @@ SPEC = TableSpec(
         CONTENT_OPTIONSET: ("Snap Content Type", CONTENT_TYPES),
         PROVIDER_OPTIONSET: ("Snap Measurement Provider", PROVIDERS),
     },
+    related=[RelatedGrid("snapadvertisements", "Snap Advertisements", "sanidi_snapadvertisement",
+                         "sanidi_snapadvertisement_snapadsquad_sanidi_snapadsquad",
+                         view_id_for("sanidi_snapadvertisement", "Active Snap Advertisements"))],
 )
 
 if __name__ == "__main__":
