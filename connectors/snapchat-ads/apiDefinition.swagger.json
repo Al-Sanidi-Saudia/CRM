@@ -1,0 +1,2670 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Snapchat Ads AlSanidi",
+    "description": "Read-only access to Snapchat Marketing API campaigns, their structure (organizations, ad accounts, ad squads, ads, creatives) and performance stats.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Al Sanidi Marketing",
+      "email": "sa2@alsanidi.com.sa"
+    }
+  },
+  "host": "adsapi.snapchat.com",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/me": {
+      "get": {
+        "operationId": "GetMe",
+        "summary": "Get authenticated user",
+        "description": "Returns the Snapchat user the connection is signed in as.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/MeResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/me/organizations": {
+      "get": {
+        "operationId": "ListOrganizations",
+        "summary": "List organizations",
+        "description": "Lists the organizations the user belongs to, optionally with their ad accounts.",
+        "parameters": [
+          {
+            "name": "with_ad_accounts",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Include ad accounts",
+            "description": "Embed each organization's ad accounts.",
+            "default": true,
+            "x-ms-visibility": "important"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/OrganizationsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/organizations/{organization_id}/adaccounts": {
+      "get": {
+        "operationId": "ListAdAccounts",
+        "summary": "List ad accounts",
+        "description": "Lists all ad accounts in an organization.",
+        "parameters": [
+          {
+            "name": "organization_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Organization ID",
+            "description": "The Snapchat organization ID.",
+            "x-ms-url-encoding": "single"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdAccountsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/adaccounts/{ad_account_id}": {
+      "get": {
+        "operationId": "GetAdAccount",
+        "summary": "Get ad account",
+        "description": "Returns one ad account (currency, time zone, status).",
+        "parameters": [
+          {
+            "name": "ad_account_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Ad account ID",
+            "description": "The Snapchat ad account ID.",
+            "x-ms-url-encoding": "single"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdAccountsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/adaccounts/{ad_account_id}/campaigns": {
+      "get": {
+        "operationId": "ListCampaigns",
+        "summary": "List campaigns",
+        "description": "Lists all campaigns in an ad account.",
+        "parameters": [
+          {
+            "name": "ad_account_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Ad account ID",
+            "description": "The Snapchat ad account ID.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Page size",
+            "description": "Records per page (50-1000). Omit to return everything in one response.",
+            "x-ms-visibility": "advanced",
+            "minimum": 50,
+            "maximum": 1000
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Cursor",
+            "description": "Paging cursor taken from paging.next_link of the previous response.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CampaignsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/campaigns/{campaign_id}": {
+      "get": {
+        "operationId": "GetCampaign",
+        "summary": "Get campaign",
+        "description": "Returns one campaign.",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Campaign ID",
+            "description": "The Snapchat campaign ID.",
+            "x-ms-url-encoding": "single"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CampaignsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/adaccounts/{ad_account_id}/adsquads": {
+      "get": {
+        "operationId": "ListAdSquadsByAdAccount",
+        "summary": "List ad squads in ad account",
+        "description": "Lists all ad squads in an ad account.",
+        "parameters": [
+          {
+            "name": "ad_account_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Ad account ID",
+            "description": "The Snapchat ad account ID.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Page size",
+            "description": "Records per page (50-1000). Omit to return everything in one response.",
+            "x-ms-visibility": "advanced",
+            "minimum": 50,
+            "maximum": 1000
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Cursor",
+            "description": "Paging cursor taken from paging.next_link of the previous response.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdSquadsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/campaigns/{campaign_id}/adsquads": {
+      "get": {
+        "operationId": "ListAdSquadsByCampaign",
+        "summary": "List ad squads in campaign",
+        "description": "Lists the ad squads of a campaign.",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Campaign ID",
+            "description": "The Snapchat campaign ID.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Page size",
+            "description": "Records per page (50-1000). Omit to return everything in one response.",
+            "x-ms-visibility": "advanced",
+            "minimum": 50,
+            "maximum": 1000
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Cursor",
+            "description": "Paging cursor taken from paging.next_link of the previous response.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdSquadsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/adsquads/{ad_squad_id}": {
+      "get": {
+        "operationId": "GetAdSquad",
+        "summary": "Get ad squad",
+        "description": "Returns one ad squad, including targeting and budget.",
+        "parameters": [
+          {
+            "name": "ad_squad_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Ad squad ID",
+            "description": "The Snapchat ad squad (ad set) ID.",
+            "x-ms-url-encoding": "single"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdSquadsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/adaccounts/{ad_account_id}/ads": {
+      "get": {
+        "operationId": "ListAdsByAdAccount",
+        "summary": "List ads in ad account",
+        "description": "Lists all ads in an ad account.",
+        "parameters": [
+          {
+            "name": "ad_account_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Ad account ID",
+            "description": "The Snapchat ad account ID.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Page size",
+            "description": "Records per page (50-1000). Omit to return everything in one response.",
+            "x-ms-visibility": "advanced",
+            "minimum": 50,
+            "maximum": 1000
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Cursor",
+            "description": "Paging cursor taken from paging.next_link of the previous response.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/adsquads/{ad_squad_id}/ads": {
+      "get": {
+        "operationId": "ListAdsByAdSquad",
+        "summary": "List ads in ad squad",
+        "description": "Lists the ads of an ad squad.",
+        "parameters": [
+          {
+            "name": "ad_squad_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Ad squad ID",
+            "description": "The Snapchat ad squad (ad set) ID.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Page size",
+            "description": "Records per page (50-1000). Omit to return everything in one response.",
+            "x-ms-visibility": "advanced",
+            "minimum": 50,
+            "maximum": 1000
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Cursor",
+            "description": "Paging cursor taken from paging.next_link of the previous response.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/ads/{ad_id}": {
+      "get": {
+        "operationId": "GetAd",
+        "summary": "Get ad",
+        "description": "Returns one ad.",
+        "parameters": [
+          {
+            "name": "ad_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Ad ID",
+            "description": "The Snapchat ad ID.",
+            "x-ms-url-encoding": "single"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/adaccounts/{ad_account_id}/creatives": {
+      "get": {
+        "operationId": "ListCreatives",
+        "summary": "List creatives",
+        "description": "Lists all creatives in an ad account.",
+        "parameters": [
+          {
+            "name": "ad_account_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Ad account ID",
+            "description": "The Snapchat ad account ID.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Page size",
+            "description": "Records per page (50-1000). Omit to return everything in one response.",
+            "x-ms-visibility": "advanced",
+            "minimum": 50,
+            "maximum": 1000
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Cursor",
+            "description": "Paging cursor taken from paging.next_link of the previous response.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CreativesResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/creatives/{creative_id}": {
+      "get": {
+        "operationId": "GetCreative",
+        "summary": "Get creative",
+        "description": "Returns one creative (headline, call to action, landing URL).",
+        "parameters": [
+          {
+            "name": "creative_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Creative ID",
+            "description": "The Snapchat creative ID.",
+            "x-ms-url-encoding": "single"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CreativesResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/adaccounts/{ad_account_id}/stats": {
+      "get": {
+        "operationId": "GetAdAccountStats",
+        "summary": "Get ad account stats",
+        "description": "Performance metrics for an ad account; use breakdown=campaign for per-campaign rows.",
+        "parameters": [
+          {
+            "name": "ad_account_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Ad account ID",
+            "description": "The Snapchat ad account ID.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "granularity",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Granularity",
+            "description": "TOTAL and LIFETIME return one total; DAY and HOUR return a time series (start/end time required).",
+            "enum": [
+              "TOTAL",
+              "DAY",
+              "HOUR",
+              "LIFETIME"
+            ],
+            "default": "DAY",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Start time",
+            "description": "ISO 8601 start, aligned to the hour in the ad account time zone, e.g. 2026-10-01T00:00:00+03:00.",
+            "x-ms-visibility": "important",
+            "format": "date-time"
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "End time",
+            "description": "ISO 8601 end (exclusive), aligned to the hour.",
+            "x-ms-visibility": "important",
+            "format": "date-time"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Metrics",
+            "description": "Comma-separated metric names. Spend values are in micro-currency (divide by 1,000,000).",
+            "default": "impressions,swipes,spend,video_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,conversion_purchases,conversion_purchases_value,conversion_sign_ups,conversion_add_cart,conversion_page_views",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "breakdown",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Breakdown",
+            "description": "Return stats per child entity as well.",
+            "enum": [
+              "campaign"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "report_dimension",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Report dimension",
+            "description": "Split stats by audience attribute, e.g. age, gender, age,gender, country, os.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "swipe_up_attribution_window",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Swipe attribution window",
+            "description": "Click-through attribution window.",
+            "enum": [
+              "1_DAY",
+              "7_DAY",
+              "28_DAY"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "view_attribution_window",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "View attribution window",
+            "description": "View-through attribution window.",
+            "enum": [
+              "none",
+              "1_HOUR",
+              "3_HOUR",
+              "6_HOUR",
+              "1_DAY",
+              "7_DAY"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "action_report_time",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Action report time",
+            "description": "Attribute conversions to conversion or impression time.",
+            "enum": [
+              "conversion",
+              "impression"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "conversion_source_types",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Conversion sources",
+            "description": "Comma-separated: web, app, offline, total, total_off_platform, total_on_platform.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "omit_empty",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Omit empty",
+            "description": "Drop rows with no activity.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "async",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Async report",
+            "description": "Set to true for large pulls; returns a report_run_id to poll with 'Get async stats report'.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "async_format",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Async format",
+            "description": "File format of an async report.",
+            "enum": [
+              "csv",
+              "excel"
+            ],
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StatsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/campaigns/{campaign_id}/stats": {
+      "get": {
+        "operationId": "GetCampaignStats",
+        "summary": "Get campaign stats",
+        "description": "Performance metrics for a campaign; use breakdown=adsquad or ad for child rows.",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Campaign ID",
+            "description": "The Snapchat campaign ID.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "granularity",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Granularity",
+            "description": "TOTAL and LIFETIME return one total; DAY and HOUR return a time series (start/end time required).",
+            "enum": [
+              "TOTAL",
+              "DAY",
+              "HOUR",
+              "LIFETIME"
+            ],
+            "default": "DAY",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Start time",
+            "description": "ISO 8601 start, aligned to the hour in the ad account time zone, e.g. 2026-10-01T00:00:00+03:00.",
+            "x-ms-visibility": "important",
+            "format": "date-time"
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "End time",
+            "description": "ISO 8601 end (exclusive), aligned to the hour.",
+            "x-ms-visibility": "important",
+            "format": "date-time"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Metrics",
+            "description": "Comma-separated metric names. Spend values are in micro-currency (divide by 1,000,000).",
+            "default": "impressions,swipes,spend,video_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,conversion_purchases,conversion_purchases_value,conversion_sign_ups,conversion_add_cart,conversion_page_views",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "breakdown",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Breakdown",
+            "description": "Return stats per child entity as well.",
+            "enum": [
+              "adsquad",
+              "ad"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "report_dimension",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Report dimension",
+            "description": "Split stats by audience attribute, e.g. age, gender, age,gender, country, os.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "swipe_up_attribution_window",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Swipe attribution window",
+            "description": "Click-through attribution window.",
+            "enum": [
+              "1_DAY",
+              "7_DAY",
+              "28_DAY"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "view_attribution_window",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "View attribution window",
+            "description": "View-through attribution window.",
+            "enum": [
+              "none",
+              "1_HOUR",
+              "3_HOUR",
+              "6_HOUR",
+              "1_DAY",
+              "7_DAY"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "action_report_time",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Action report time",
+            "description": "Attribute conversions to conversion or impression time.",
+            "enum": [
+              "conversion",
+              "impression"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "conversion_source_types",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Conversion sources",
+            "description": "Comma-separated: web, app, offline, total, total_off_platform, total_on_platform.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "omit_empty",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Omit empty",
+            "description": "Drop rows with no activity.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "async",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Async report",
+            "description": "Set to true for large pulls; returns a report_run_id to poll with 'Get async stats report'.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "async_format",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Async format",
+            "description": "File format of an async report.",
+            "enum": [
+              "csv",
+              "excel"
+            ],
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StatsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/adsquads/{ad_squad_id}/stats": {
+      "get": {
+        "operationId": "GetAdSquadStats",
+        "summary": "Get ad squad stats",
+        "description": "Performance metrics for an ad squad; use breakdown=ad for per-ad rows.",
+        "parameters": [
+          {
+            "name": "ad_squad_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Ad squad ID",
+            "description": "The Snapchat ad squad (ad set) ID.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "granularity",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Granularity",
+            "description": "TOTAL and LIFETIME return one total; DAY and HOUR return a time series (start/end time required).",
+            "enum": [
+              "TOTAL",
+              "DAY",
+              "HOUR",
+              "LIFETIME"
+            ],
+            "default": "DAY",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Start time",
+            "description": "ISO 8601 start, aligned to the hour in the ad account time zone, e.g. 2026-10-01T00:00:00+03:00.",
+            "x-ms-visibility": "important",
+            "format": "date-time"
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "End time",
+            "description": "ISO 8601 end (exclusive), aligned to the hour.",
+            "x-ms-visibility": "important",
+            "format": "date-time"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Metrics",
+            "description": "Comma-separated metric names. Spend values are in micro-currency (divide by 1,000,000).",
+            "default": "impressions,swipes,spend,video_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,conversion_purchases,conversion_purchases_value,conversion_sign_ups,conversion_add_cart,conversion_page_views",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "breakdown",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Breakdown",
+            "description": "Return stats per child entity as well.",
+            "enum": [
+              "ad"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "report_dimension",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Report dimension",
+            "description": "Split stats by audience attribute, e.g. age, gender, age,gender, country, os.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "swipe_up_attribution_window",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Swipe attribution window",
+            "description": "Click-through attribution window.",
+            "enum": [
+              "1_DAY",
+              "7_DAY",
+              "28_DAY"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "view_attribution_window",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "View attribution window",
+            "description": "View-through attribution window.",
+            "enum": [
+              "none",
+              "1_HOUR",
+              "3_HOUR",
+              "6_HOUR",
+              "1_DAY",
+              "7_DAY"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "action_report_time",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Action report time",
+            "description": "Attribute conversions to conversion or impression time.",
+            "enum": [
+              "conversion",
+              "impression"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "conversion_source_types",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Conversion sources",
+            "description": "Comma-separated: web, app, offline, total, total_off_platform, total_on_platform.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "omit_empty",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Omit empty",
+            "description": "Drop rows with no activity.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "async",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Async report",
+            "description": "Set to true for large pulls; returns a report_run_id to poll with 'Get async stats report'.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "async_format",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Async format",
+            "description": "File format of an async report.",
+            "enum": [
+              "csv",
+              "excel"
+            ],
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StatsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/ads/{ad_id}/stats": {
+      "get": {
+        "operationId": "GetAdStats",
+        "summary": "Get ad stats",
+        "description": "Performance metrics for a single ad.",
+        "parameters": [
+          {
+            "name": "ad_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Ad ID",
+            "description": "The Snapchat ad ID.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "granularity",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Granularity",
+            "description": "TOTAL and LIFETIME return one total; DAY and HOUR return a time series (start/end time required).",
+            "enum": [
+              "TOTAL",
+              "DAY",
+              "HOUR",
+              "LIFETIME"
+            ],
+            "default": "DAY",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "start_time",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Start time",
+            "description": "ISO 8601 start, aligned to the hour in the ad account time zone, e.g. 2026-10-01T00:00:00+03:00.",
+            "x-ms-visibility": "important",
+            "format": "date-time"
+          },
+          {
+            "name": "end_time",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "End time",
+            "description": "ISO 8601 end (exclusive), aligned to the hour.",
+            "x-ms-visibility": "important",
+            "format": "date-time"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Metrics",
+            "description": "Comma-separated metric names. Spend values are in micro-currency (divide by 1,000,000).",
+            "default": "impressions,swipes,spend,video_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,conversion_purchases,conversion_purchases_value,conversion_sign_ups,conversion_add_cart,conversion_page_views",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "report_dimension",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Report dimension",
+            "description": "Split stats by audience attribute, e.g. age, gender, age,gender, country, os.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "swipe_up_attribution_window",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Swipe attribution window",
+            "description": "Click-through attribution window.",
+            "enum": [
+              "1_DAY",
+              "7_DAY",
+              "28_DAY"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "view_attribution_window",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "View attribution window",
+            "description": "View-through attribution window.",
+            "enum": [
+              "none",
+              "1_HOUR",
+              "3_HOUR",
+              "6_HOUR",
+              "1_DAY",
+              "7_DAY"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "action_report_time",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Action report time",
+            "description": "Attribute conversions to conversion or impression time.",
+            "enum": [
+              "conversion",
+              "impression"
+            ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "conversion_source_types",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Conversion sources",
+            "description": "Comma-separated: web, app, offline, total, total_off_platform, total_on_platform.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "omit_empty",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Omit empty",
+            "description": "Drop rows with no activity.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "async",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Async report",
+            "description": "Set to true for large pulls; returns a report_run_id to poll with 'Get async stats report'.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "async_format",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Async format",
+            "description": "File format of an async report.",
+            "enum": [
+              "csv",
+              "excel"
+            ],
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StatsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/{entity_type}/{entity_id}/stats_report": {
+      "get": {
+        "operationId": "GetStatsReport",
+        "summary": "Get async stats report",
+        "description": "Polls an async stats report; when status is COMPLETED, result holds a download URL valid for 7 days.",
+        "parameters": [
+          {
+            "name": "entity_type",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Level",
+            "description": "The level the report was requested on.",
+            "x-ms-url-encoding": "single",
+            "enum": [
+              "adaccounts",
+              "campaigns",
+              "adsquads",
+              "ads"
+            ],
+            "default": "adaccounts"
+          },
+          {
+            "name": "entity_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Entity ID",
+            "description": "ID of the ad account, campaign, ad squad or ad.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "report_run_id",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Report run ID",
+            "description": "report_run_id returned by the async stats request.",
+            "x-ms-visibility": "important"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/StatsReportResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "request_status": {
+          "type": "string",
+          "x-ms-summary": "Request status"
+        },
+        "request_id": {
+          "type": "string",
+          "x-ms-summary": "Request ID"
+        },
+        "debug_message": {
+          "type": "string",
+          "x-ms-summary": "Debug message"
+        },
+        "display_message": {
+          "type": "string",
+          "x-ms-summary": "Display message"
+        },
+        "error_code": {
+          "type": "string",
+          "x-ms-summary": "Error code"
+        }
+      }
+    },
+    "MeResponse": {
+      "type": "object",
+      "properties": {
+        "request_status": {
+          "type": "string",
+          "x-ms-summary": "Request status"
+        },
+        "request_id": {
+          "type": "string",
+          "x-ms-summary": "Request ID"
+        },
+        "me": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "x-ms-summary": "User ID"
+            },
+            "email": {
+              "type": "string",
+              "x-ms-summary": "Email"
+            },
+            "display_name": {
+              "type": "string",
+              "x-ms-summary": "Display name"
+            },
+            "organization_id": {
+              "type": "string",
+              "x-ms-summary": "Organization ID"
+            }
+          }
+        }
+      }
+    },
+    "Organization": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-ms-summary": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-ms-summary": "Name"
+        },
+        "status": {
+          "type": "string",
+          "x-ms-summary": "Status",
+          "description": "ACTIVE or PAUSED."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Created at"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Updated at"
+        },
+        "type": {
+          "type": "string",
+          "x-ms-summary": "Type"
+        },
+        "country": {
+          "type": "string",
+          "x-ms-summary": "Country"
+        },
+        "ad_accounts": {
+          "type": "array",
+          "x-ms-summary": "Ad accounts",
+          "items": {
+            "$ref": "#/definitions/AdAccount"
+          }
+        }
+      }
+    },
+    "AdAccount": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-ms-summary": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-ms-summary": "Name"
+        },
+        "status": {
+          "type": "string",
+          "x-ms-summary": "Status",
+          "description": "ACTIVE or PAUSED."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Created at"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Updated at"
+        },
+        "type": {
+          "type": "string",
+          "x-ms-summary": "Type"
+        },
+        "organization_id": {
+          "type": "string",
+          "x-ms-summary": "Organization ID"
+        },
+        "currency": {
+          "type": "string",
+          "x-ms-summary": "Currency"
+        },
+        "timezone": {
+          "type": "string",
+          "x-ms-summary": "Time zone"
+        },
+        "advertiser": {
+          "type": "string",
+          "x-ms-summary": "Advertiser"
+        },
+        "billing_type": {
+          "type": "string",
+          "x-ms-summary": "Billing type"
+        },
+        "funding_source_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Funding source IDs"
+        }
+      }
+    },
+    "Campaign": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-ms-summary": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-ms-summary": "Name"
+        },
+        "status": {
+          "type": "string",
+          "x-ms-summary": "Status",
+          "description": "ACTIVE or PAUSED."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Created at"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Updated at"
+        },
+        "ad_account_id": {
+          "type": "string",
+          "x-ms-summary": "Ad account ID"
+        },
+        "objective": {
+          "type": "string",
+          "x-ms-summary": "Objective"
+        },
+        "buy_model": {
+          "type": "string",
+          "x-ms-summary": "Buy model"
+        },
+        "start_time": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Start time"
+        },
+        "end_time": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "End time"
+        },
+        "daily_budget_micro": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Daily budget (micro)"
+        },
+        "lifetime_spend_cap_micro": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Lifetime spend cap (micro)"
+        },
+        "delivery_status": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Delivery status"
+        },
+        "objective_v2_properties": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true,
+          "x-ms-summary": "Objective properties"
+        }
+      }
+    },
+    "AdSquad": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-ms-summary": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-ms-summary": "Name"
+        },
+        "status": {
+          "type": "string",
+          "x-ms-summary": "Status",
+          "description": "ACTIVE or PAUSED."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Created at"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Updated at"
+        },
+        "campaign_id": {
+          "type": "string",
+          "x-ms-summary": "Campaign ID"
+        },
+        "type": {
+          "type": "string",
+          "x-ms-summary": "Type"
+        },
+        "placement_v2": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true,
+          "x-ms-summary": "Placement"
+        },
+        "targeting": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true,
+          "x-ms-summary": "Targeting"
+        },
+        "billing_event": {
+          "type": "string",
+          "x-ms-summary": "Billing event"
+        },
+        "optimization_goal": {
+          "type": "string",
+          "x-ms-summary": "Optimization goal"
+        },
+        "bid_strategy": {
+          "type": "string",
+          "x-ms-summary": "Bid strategy"
+        },
+        "bid_micro": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Bid (micro)"
+        },
+        "daily_budget_micro": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Daily budget (micro)"
+        },
+        "lifetime_budget_micro": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Lifetime budget (micro)"
+        },
+        "start_time": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Start time"
+        },
+        "end_time": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "End time"
+        },
+        "pacing_type": {
+          "type": "string",
+          "x-ms-summary": "Pacing type"
+        },
+        "pixel_id": {
+          "type": "string",
+          "x-ms-summary": "Pixel ID"
+        },
+        "delivery_status": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Delivery status"
+        }
+      }
+    },
+    "Ad": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-ms-summary": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-ms-summary": "Name"
+        },
+        "status": {
+          "type": "string",
+          "x-ms-summary": "Status",
+          "description": "ACTIVE or PAUSED."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Created at"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Updated at"
+        },
+        "ad_squad_id": {
+          "type": "string",
+          "x-ms-summary": "Ad squad ID"
+        },
+        "creative_id": {
+          "type": "string",
+          "x-ms-summary": "Creative ID"
+        },
+        "type": {
+          "type": "string",
+          "x-ms-summary": "Type"
+        },
+        "render_type": {
+          "type": "string",
+          "x-ms-summary": "Render type"
+        },
+        "review_status": {
+          "type": "string",
+          "x-ms-summary": "Review status"
+        },
+        "review_status_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Review status reasons"
+        },
+        "delivery_status": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Delivery status"
+        }
+      }
+    },
+    "Creative": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-ms-summary": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-ms-summary": "Name"
+        },
+        "status": {
+          "type": "string",
+          "x-ms-summary": "Status",
+          "description": "ACTIVE or PAUSED."
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Created at"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Updated at"
+        },
+        "ad_account_id": {
+          "type": "string",
+          "x-ms-summary": "Ad account ID"
+        },
+        "type": {
+          "type": "string",
+          "x-ms-summary": "Type"
+        },
+        "headline": {
+          "type": "string",
+          "x-ms-summary": "Headline"
+        },
+        "brand_name": {
+          "type": "string",
+          "x-ms-summary": "Brand name"
+        },
+        "call_to_action": {
+          "type": "string",
+          "x-ms-summary": "Call to action"
+        },
+        "shareable": {
+          "type": "boolean",
+          "x-ms-summary": "Shareable"
+        },
+        "render_type": {
+          "type": "string",
+          "x-ms-summary": "Render type"
+        },
+        "review_status": {
+          "type": "string",
+          "x-ms-summary": "Review status"
+        },
+        "top_snap_media_id": {
+          "type": "string",
+          "x-ms-summary": "Top snap media ID"
+        },
+        "web_view_properties": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "x-ms-summary": "Landing URL"
+            }
+          },
+          "additionalProperties": true,
+          "x-ms-summary": "Web view properties"
+        },
+        "deep_link_properties": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true,
+          "x-ms-summary": "Deep link properties"
+        },
+        "app_install_properties": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true,
+          "x-ms-summary": "App install properties"
+        }
+      }
+    },
+    "OrganizationsResponse": {
+      "type": "object",
+      "properties": {
+        "request_status": {
+          "type": "string",
+          "x-ms-summary": "Request status"
+        },
+        "request_id": {
+          "type": "string",
+          "x-ms-summary": "Request ID"
+        },
+        "organizations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sub_request_status": {
+                "type": "string",
+                "x-ms-summary": "Sub request status"
+              },
+              "organization": {
+                "$ref": "#/definitions/Organization"
+              }
+            }
+          }
+        },
+        "paging": {
+          "type": "object",
+          "properties": {
+            "next_link": {
+              "type": "string",
+              "x-ms-summary": "Next page link"
+            }
+          },
+          "x-ms-summary": "Paging"
+        }
+      }
+    },
+    "AdAccountsResponse": {
+      "type": "object",
+      "properties": {
+        "request_status": {
+          "type": "string",
+          "x-ms-summary": "Request status"
+        },
+        "request_id": {
+          "type": "string",
+          "x-ms-summary": "Request ID"
+        },
+        "adaccounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sub_request_status": {
+                "type": "string",
+                "x-ms-summary": "Sub request status"
+              },
+              "adaccount": {
+                "$ref": "#/definitions/AdAccount"
+              }
+            }
+          }
+        },
+        "paging": {
+          "type": "object",
+          "properties": {
+            "next_link": {
+              "type": "string",
+              "x-ms-summary": "Next page link"
+            }
+          },
+          "x-ms-summary": "Paging"
+        }
+      }
+    },
+    "CampaignsResponse": {
+      "type": "object",
+      "properties": {
+        "request_status": {
+          "type": "string",
+          "x-ms-summary": "Request status"
+        },
+        "request_id": {
+          "type": "string",
+          "x-ms-summary": "Request ID"
+        },
+        "campaigns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sub_request_status": {
+                "type": "string",
+                "x-ms-summary": "Sub request status"
+              },
+              "campaign": {
+                "$ref": "#/definitions/Campaign"
+              }
+            }
+          }
+        },
+        "paging": {
+          "type": "object",
+          "properties": {
+            "next_link": {
+              "type": "string",
+              "x-ms-summary": "Next page link"
+            }
+          },
+          "x-ms-summary": "Paging"
+        }
+      }
+    },
+    "AdSquadsResponse": {
+      "type": "object",
+      "properties": {
+        "request_status": {
+          "type": "string",
+          "x-ms-summary": "Request status"
+        },
+        "request_id": {
+          "type": "string",
+          "x-ms-summary": "Request ID"
+        },
+        "adsquads": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sub_request_status": {
+                "type": "string",
+                "x-ms-summary": "Sub request status"
+              },
+              "adsquad": {
+                "$ref": "#/definitions/AdSquad"
+              }
+            }
+          }
+        },
+        "paging": {
+          "type": "object",
+          "properties": {
+            "next_link": {
+              "type": "string",
+              "x-ms-summary": "Next page link"
+            }
+          },
+          "x-ms-summary": "Paging"
+        }
+      }
+    },
+    "AdsResponse": {
+      "type": "object",
+      "properties": {
+        "request_status": {
+          "type": "string",
+          "x-ms-summary": "Request status"
+        },
+        "request_id": {
+          "type": "string",
+          "x-ms-summary": "Request ID"
+        },
+        "ads": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sub_request_status": {
+                "type": "string",
+                "x-ms-summary": "Sub request status"
+              },
+              "ad": {
+                "$ref": "#/definitions/Ad"
+              }
+            }
+          }
+        },
+        "paging": {
+          "type": "object",
+          "properties": {
+            "next_link": {
+              "type": "string",
+              "x-ms-summary": "Next page link"
+            }
+          },
+          "x-ms-summary": "Paging"
+        }
+      }
+    },
+    "CreativesResponse": {
+      "type": "object",
+      "properties": {
+        "request_status": {
+          "type": "string",
+          "x-ms-summary": "Request status"
+        },
+        "request_id": {
+          "type": "string",
+          "x-ms-summary": "Request ID"
+        },
+        "creatives": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sub_request_status": {
+                "type": "string",
+                "x-ms-summary": "Sub request status"
+              },
+              "creative": {
+                "$ref": "#/definitions/Creative"
+              }
+            }
+          }
+        },
+        "paging": {
+          "type": "object",
+          "properties": {
+            "next_link": {
+              "type": "string",
+              "x-ms-summary": "Next page link"
+            }
+          },
+          "x-ms-summary": "Paging"
+        }
+      }
+    },
+    "StatsResponse": {
+      "type": "object",
+      "properties": {
+        "request_status": {
+          "type": "string",
+          "x-ms-summary": "Request status"
+        },
+        "request_id": {
+          "type": "string",
+          "x-ms-summary": "Request ID"
+        },
+        "report_run_id": {
+          "type": "string",
+          "x-ms-summary": "Report run ID",
+          "description": "Returned instead of stats when async=true."
+        },
+        "timeseries_stats": {
+          "type": "array",
+          "x-ms-summary": "Time series stats",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sub_request_status": {
+                "type": "string",
+                "x-ms-summary": "Sub request status"
+              },
+              "timeseries_stat": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Entity ID"
+                  },
+                  "type": {
+                    "type": "string",
+                    "x-ms-summary": "Entity type"
+                  },
+                  "granularity": {
+                    "type": "string",
+                    "x-ms-summary": "Granularity"
+                  },
+                  "start_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-ms-summary": "Start time"
+                  },
+                  "end_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-ms-summary": "End time"
+                  },
+                  "finalized_data_end_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-ms-summary": "Finalized data end time"
+                  },
+                  "stats": {
+                    "type": "object",
+                    "properties": {
+                      "impressions": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Impressions"
+                      },
+                      "swipes": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Swipes"
+                      },
+                      "spend": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Spend (micro)",
+                        "description": "Spend in micro-currency; divide by 1,000,000."
+                      },
+                      "video_views": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Video views"
+                      },
+                      "screen_time_millis": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Screen time (ms)"
+                      },
+                      "quartile_1": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "25% views"
+                      },
+                      "quartile_2": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "50% views"
+                      },
+                      "quartile_3": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "75% views"
+                      },
+                      "view_completion": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Completed views"
+                      },
+                      "uniques": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Reach"
+                      },
+                      "frequency": {
+                        "type": "number",
+                        "x-ms-summary": "Frequency"
+                      },
+                      "conversion_purchases": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Purchases"
+                      },
+                      "conversion_purchases_value": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Purchase value (micro)"
+                      },
+                      "conversion_sign_ups": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Sign ups"
+                      },
+                      "conversion_add_cart": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Add to cart"
+                      },
+                      "conversion_page_views": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Page views"
+                      }
+                    },
+                    "additionalProperties": true,
+                    "x-ms-summary": "Stats"
+                  },
+                  "timeseries": {
+                    "type": "array",
+                    "x-ms-summary": "Time series",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "start_time": {
+                          "type": "string",
+                          "format": "date-time",
+                          "x-ms-summary": "Period start"
+                        },
+                        "end_time": {
+                          "type": "string",
+                          "format": "date-time",
+                          "x-ms-summary": "Period end"
+                        },
+                        "stats": {
+                          "type": "object",
+                          "properties": {
+                            "impressions": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Impressions"
+                            },
+                            "swipes": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Swipes"
+                            },
+                            "spend": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Spend (micro)",
+                              "description": "Spend in micro-currency; divide by 1,000,000."
+                            },
+                            "video_views": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Video views"
+                            },
+                            "screen_time_millis": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Screen time (ms)"
+                            },
+                            "quartile_1": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "25% views"
+                            },
+                            "quartile_2": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "50% views"
+                            },
+                            "quartile_3": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "75% views"
+                            },
+                            "view_completion": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Completed views"
+                            },
+                            "uniques": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Reach"
+                            },
+                            "frequency": {
+                              "type": "number",
+                              "x-ms-summary": "Frequency"
+                            },
+                            "conversion_purchases": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Purchases"
+                            },
+                            "conversion_purchases_value": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Purchase value (micro)"
+                            },
+                            "conversion_sign_ups": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Sign ups"
+                            },
+                            "conversion_add_cart": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Add to cart"
+                            },
+                            "conversion_page_views": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Page views"
+                            }
+                          },
+                          "additionalProperties": true,
+                          "x-ms-summary": "Stats"
+                        }
+                      }
+                    }
+                  },
+                  "breakdown_stats": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": true,
+                    "x-ms-summary": "Breakdown stats",
+                    "description": "Child entity rows keyed by level (campaign, adsquad, ad)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "total_stats": {
+          "type": "array",
+          "x-ms-summary": "Total stats",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sub_request_status": {
+                "type": "string",
+                "x-ms-summary": "Sub request status"
+              },
+              "total_stat": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "x-ms-summary": "Entity ID"
+                  },
+                  "type": {
+                    "type": "string",
+                    "x-ms-summary": "Entity type"
+                  },
+                  "granularity": {
+                    "type": "string",
+                    "x-ms-summary": "Granularity"
+                  },
+                  "start_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-ms-summary": "Start time"
+                  },
+                  "end_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-ms-summary": "End time"
+                  },
+                  "finalized_data_end_time": {
+                    "type": "string",
+                    "format": "date-time",
+                    "x-ms-summary": "Finalized data end time"
+                  },
+                  "stats": {
+                    "type": "object",
+                    "properties": {
+                      "impressions": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Impressions"
+                      },
+                      "swipes": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Swipes"
+                      },
+                      "spend": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Spend (micro)",
+                        "description": "Spend in micro-currency; divide by 1,000,000."
+                      },
+                      "video_views": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Video views"
+                      },
+                      "screen_time_millis": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Screen time (ms)"
+                      },
+                      "quartile_1": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "25% views"
+                      },
+                      "quartile_2": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "50% views"
+                      },
+                      "quartile_3": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "75% views"
+                      },
+                      "view_completion": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Completed views"
+                      },
+                      "uniques": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Reach"
+                      },
+                      "frequency": {
+                        "type": "number",
+                        "x-ms-summary": "Frequency"
+                      },
+                      "conversion_purchases": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Purchases"
+                      },
+                      "conversion_purchases_value": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Purchase value (micro)"
+                      },
+                      "conversion_sign_ups": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Sign ups"
+                      },
+                      "conversion_add_cart": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Add to cart"
+                      },
+                      "conversion_page_views": {
+                        "type": "integer",
+                        "format": "int64",
+                        "x-ms-summary": "Page views"
+                      }
+                    },
+                    "additionalProperties": true,
+                    "x-ms-summary": "Stats"
+                  },
+                  "timeseries": {
+                    "type": "array",
+                    "x-ms-summary": "Time series",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "start_time": {
+                          "type": "string",
+                          "format": "date-time",
+                          "x-ms-summary": "Period start"
+                        },
+                        "end_time": {
+                          "type": "string",
+                          "format": "date-time",
+                          "x-ms-summary": "Period end"
+                        },
+                        "stats": {
+                          "type": "object",
+                          "properties": {
+                            "impressions": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Impressions"
+                            },
+                            "swipes": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Swipes"
+                            },
+                            "spend": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Spend (micro)",
+                              "description": "Spend in micro-currency; divide by 1,000,000."
+                            },
+                            "video_views": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Video views"
+                            },
+                            "screen_time_millis": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Screen time (ms)"
+                            },
+                            "quartile_1": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "25% views"
+                            },
+                            "quartile_2": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "50% views"
+                            },
+                            "quartile_3": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "75% views"
+                            },
+                            "view_completion": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Completed views"
+                            },
+                            "uniques": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Reach"
+                            },
+                            "frequency": {
+                              "type": "number",
+                              "x-ms-summary": "Frequency"
+                            },
+                            "conversion_purchases": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Purchases"
+                            },
+                            "conversion_purchases_value": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Purchase value (micro)"
+                            },
+                            "conversion_sign_ups": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Sign ups"
+                            },
+                            "conversion_add_cart": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Add to cart"
+                            },
+                            "conversion_page_views": {
+                              "type": "integer",
+                              "format": "int64",
+                              "x-ms-summary": "Page views"
+                            }
+                          },
+                          "additionalProperties": true,
+                          "x-ms-summary": "Stats"
+                        }
+                      }
+                    }
+                  },
+                  "breakdown_stats": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": true,
+                    "x-ms-summary": "Breakdown stats",
+                    "description": "Child entity rows keyed by level (campaign, adsquad, ad)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "paging": {
+          "type": "object",
+          "properties": {
+            "next_link": {
+              "type": "string",
+              "x-ms-summary": "Next page link"
+            }
+          },
+          "x-ms-summary": "Paging"
+        }
+      }
+    },
+    "StatsReportResponse": {
+      "type": "object",
+      "properties": {
+        "request_status": {
+          "type": "string",
+          "x-ms-summary": "Request status"
+        },
+        "request_id": {
+          "type": "string",
+          "x-ms-summary": "Request ID"
+        },
+        "async_stats_reports": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sub_request_status": {
+                "type": "string",
+                "x-ms-summary": "Sub request status"
+              },
+              "async_stats_report": {
+                "type": "object",
+                "properties": {
+                  "report_run_id": {
+                    "type": "string",
+                    "x-ms-summary": "Report run ID"
+                  },
+                  "async_status": {
+                    "type": "string",
+                    "x-ms-summary": "Report status",
+                    "description": "STARTED, RUNNING or COMPLETED."
+                  },
+                  "result": {
+                    "type": "string",
+                    "x-ms-summary": "Download URL"
+                  }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "oauth2_auth": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "https://accounts.snapchat.com/login/oauth2/authorize",
+      "tokenUrl": "https://accounts.snapchat.com/login/oauth2/access_token",
+      "scopes": {
+        "snapchat-marketing-api": "snapchat-marketing-api"
+      }
+    }
+  },
+  "security": [
+    {
+      "oauth2_auth": [
+        "snapchat-marketing-api"
+      ]
+    }
+  ],
+  "tags": [],
+  "x-ms-connector-metadata": [
+    {
+      "propertyName": "Website",
+      "propertyValue": "https://forbusiness.snapchat.com"
+    },
+    {
+      "propertyName": "Privacy policy",
+      "propertyValue": "https://values.snap.com/privacy/privacy-policy"
+    },
+    {
+      "propertyName": "Categories",
+      "propertyValue": "Marketing"
+    }
+  ]
+}
