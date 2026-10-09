@@ -9,7 +9,7 @@ It is **read-only** and limited to campaigns, their structure, and their insight
 | `build_definition.py` | Source of truth; generates `apiDefinition.swagger.json` |
 | `apiDefinition.swagger.json` | OpenAPI 2.0 definition (generated, committed) |
 | `apiProperties.json` | OAuth 2.0 settings; client ID placeholder filled in at deploy time |
-| `deploy.sh` | Creates/updates the connector in the solution via `pac` |
+| `deploy.ps1` / `deploy.sh` | Creates/updates the connector in the solution via `pac` (Windows / bash) |
 
 ## Operations
 
@@ -45,7 +45,17 @@ and a Snap OAuth app (Snap Business Manager → Business Details → OAuth Apps)
 # 1. Find the unique name of the "AlSanidi | Marketing" solution
 pac solution list
 
-# 2. Create the connector in that solution
+```
+
+Step 2: create the connector in that solution.
+
+Windows (PowerShell):
+```powershell
+.\deploy.ps1 -EnvironmentUrl https://<org>.crm4.dynamics.com -SnapClientId <client id> -SolutionUniqueName <SolutionUniqueName>
+```
+
+macOS / Linux / Git Bash:
+```bash
 SNAP_CLIENT_ID=<client id> ./deploy.sh https://<org>.crm4.dynamics.com <SolutionUniqueName>
 ```
 
@@ -55,4 +65,4 @@ Then in make.powerapps.com → Solutions → AlSanidi | Marketing → the connec
 3. **Test** tab: create a connection (sign in with a Snapchat Business account that has access to the ad accounts) and run `ListOrganizations`.
 
 To ship changes, edit `build_definition.py`, then run
-`./deploy.sh <env> <solution> <connector-id>`. That updates the connector, and the solution then carries it to other environments.
+`python3 build_definition.py`, then redeploy with `-ConnectorId` (PowerShell) or a third argument (bash). That updates the connector, and the solution then carries it to other environments.

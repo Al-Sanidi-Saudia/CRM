@@ -20,10 +20,10 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
-python3 "$DIR/build_definition.py" >/dev/null
 sed "s/REPLACE_WITH_SNAP_CLIENT_ID/${SNAP_CLIENT_ID}/" "$DIR/apiProperties.json" > "$WORK/apiProperties.json"
 
-pac auth create --environment "$ENV_URL" >/dev/null 2>&1 || pac auth select --environment "$ENV_URL"
+# Sign in only if there is no auth profile yet (opens a browser).
+pac org who >/dev/null 2>&1 || pac auth create --environment "$ENV_URL"
 
 if [[ -n "$CONNECTOR_ID" ]]; then
   pac connector update \

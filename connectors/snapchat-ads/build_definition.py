@@ -381,7 +381,7 @@ definitions = {
 swagger = {
     "swagger": "2.0",
     "info": {
-        "title": "Snapchat Ads - AlSanidi",
+        "title": "Snapchat Ads AlSanidi",
         "description": "Read-only access to Snapchat Marketing API campaigns, their structure "
                        "(organizations, ad accounts, ad squads, ads, creatives) and performance stats.",
         "version": "1.0.0",
