@@ -9,6 +9,7 @@ It is **read-only** and limited to campaigns, their structure, and their insight
 | `build_definition.py` | Source of truth; generates `apiDefinition.swagger.json` |
 | `apiDefinition.swagger.json` | OpenAPI 2.0 definition (generated, committed) |
 | `apiProperties.json` | OAuth 2.0 settings; client ID placeholder filled in at deploy time |
+| `build_solution.py` | Builds a connector-only solution package (internal name `sanidi_snap`) for `pac solution import` |
 | `deploy.ps1` / `deploy.sh` | Creates/updates the connector in the solution via `pac` (Windows / bash) |
 
 ## Operations
@@ -37,6 +38,26 @@ Notes:
 - List calls return everything by default. Set `limit` (50–1000) and follow `paging.next_link` → `cursor` to page.
 
 ## Deploy
+
+Current deployment: environment **alsenidiuat**, solution **AlSanidi | Marketing** (`AlSanidiMarketing`),
+publisher **AlSanidi Development** (prefix `sanidi`). The connector's internal name is **`sanidi_snap`**
+and its display name is **Snap**.
+
+### Recommended: solution package (keeps the publisher prefix)
+
+`pac connector create` always uses the Default Publisher's prefix (`new_snap`), even with
+`--solution-unique-name`. Import a solution package instead:
+
+```bash
+python3 build_solution.py [--client-id <snap client id>]
+pac solution import --path SnapConnector.zip --environment https://operations-alsenidiuat.crm4.dynamics.com/
+```
+
+The package contains only the connector, so importing it doesn't change anything else in the solution.
+The connector ID is fixed, so re-importing updates the same connector. Ship changes by editing
+`build_definition.py`, running it, then rebuilding and re-importing the package.
+
+### Alternative: pac connector create (gets the `new_` prefix)
 
 Prerequisites: [Power Platform CLI](https://learn.microsoft.com/power-platform/developer/cli/introduction)
 and a Snap OAuth app (Snap Business Manager → Business Details → OAuth Apps) with the Marketing API scope.
