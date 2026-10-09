@@ -22,3 +22,24 @@ pac solution import --path SnapCampaignTable.zip --environment <env> --publish-c
 ```
 
 IDs are deterministic, so re-importing after a change updates the same table, form and views.
+
+## Get Snap Campaigns flow
+
+`build_flow_solution.py` builds the **Get Snap Campaigns** cloud flow (manual trigger) into the same solution,
+modeled on Meta's "Get Campaigns":
+
+1. **Choice maps**: a lookup of Snap value → option value for every choice column, generated from the table's
+   column list so the two can't drift apart.
+2. **Snap → List organizations** (with ad accounts), then for each ad account **List campaigns**.
+3. For each campaign: map Delivery Status to its option values, **List rows** on Campaign ID, then
+   **Update a row** if it exists or **Add a new row** if not. Money values are divided by 1,000,000.
+
+It uses a new connection reference `sanidi_snapconnection` (Snap connector) and the existing Dataverse reference
+`sanidi_sharedcommondataserviceforapps_79822`. Build it the same way as the table:
+
+```bash
+python3 build_flow_solution.py --template AlSanidiMarketing.zip --out GetSnapCampaignsFlow.zip
+pac solution import --path GetSnapCampaignsFlow.zip --environment <env>
+```
+
+The flow imports turned off until `sanidi_snapconnection` is linked to a Snap connection.
