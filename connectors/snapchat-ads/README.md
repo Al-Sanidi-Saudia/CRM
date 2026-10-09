@@ -49,8 +49,10 @@ pac solution list
 
 Step 2: create the connector in that solution.
 
-Windows (PowerShell):
+Windows (PowerShell). Files downloaded from GitHub are marked as coming from the internet, so
+unblock the script once first, or Windows refuses to run it ("not digitally signed"):
 ```powershell
+Get-ChildItem . | Unblock-File
 .\deploy.ps1 -EnvironmentUrl https://<org>.crm4.dynamics.com -SnapClientId <client id> -SolutionUniqueName <SolutionUniqueName>
 ```
 
