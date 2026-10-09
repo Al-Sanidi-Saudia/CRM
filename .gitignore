@@ -1,1 +1,3 @@
 connectors/snapchat-ads/SnapConnector.zip
+__pycache__/
+*.pyc
