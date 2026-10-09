@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "dataverse": {
+      "type": "stdio",
+      "command": "bash",
+      "args": ["scripts/dataverse-mcp.sh"]
+    }
+  }
+}
