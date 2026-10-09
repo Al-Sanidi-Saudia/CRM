@@ -22,7 +22,8 @@ from dataclasses import dataclass, field
 from table_builder import solution_xml
 
 SNAP_API = "shared_sanidi-5fsnap-5f43b530b23a0dc933"
-SNAP_CONNREF = "sanidi_snapconnection"
+# The Snap flows' connection reference (created by the portal when the connection was set up).
+SNAP_CONNREF = "sanidi_sharedsanidi5fsnap5f43b530b23a0dc933_a4073"
 DATAVERSE_API = "shared_commondataserviceforapps"
 DATAVERSE_CONNREF = "sanidi_sharedcommondataserviceforapps_79822"
 

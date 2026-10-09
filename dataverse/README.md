@@ -17,8 +17,14 @@ it doesn't touch anything else in the solution, and IDs are deterministic so re-
 
 The generators copy Dataverse's XML formats from the Meta tables, so they need a solution export containing
 **Meta Campaign**, **Meta Ad Set** and **Meta Ad** (`sanidi_metacampaign`, `sanidi_metaadset`, `sanidi_meta_ad`).
-An export of AlSanidi | Marketing works when it exports cleanly; otherwise put those three tables in a temporary
-solution under the same publisher, export it, and delete the temporary solution:
+An export of AlSanidi | Marketing works:
+
+```bash
+pac solution export --name AlSanidiMarketing --path Template.zip
+```
+
+If that export ever fails, put those three tables in a temporary solution under the same publisher, export it,
+and delete the temporary solution:
 
 ```bash
 pac solution add-solution-component --solutionUniqueName <TempSolution> --component sanidi_metacampaign --componentType 1
@@ -51,3 +57,11 @@ pac solution import --path GetSnapAdvertisementsFlow.zip
 Only one import can run in an environment at a time; if `pac` reports another import running, wait and retry.
 
 Imported flows arrive turned off; turn them on in the portal.
+
+## Connection references
+
+The Snap flows use `sanidi_sharedsanidi5fsnap5f43b530b23a0dc933_a4073` (Snap connector) and
+`sanidi_sharedcommondataserviceforapps_79822` (Dataverse); both are set in `flow_builder.py`. The flow packages
+reuse them and never create connection references. A Snap connection reference with no connection blocks the
+solution export ("requires the custom connector to be added to a dataverse solution"), so delete any such
+unused reference.

@@ -11,8 +11,7 @@ Run:
   python3 build_flow_solution.py --template <template export zip> [--out GetSnapAdSquadsFlow.zip]
   pac solution import --path GetSnapAdSquadsFlow.zip --environment <env>
 
-The flow reuses the existing connection references sanidi_snapconnection (Snap) and
-sanidi_sharedcommondataserviceforapps_79822 (Dataverse).
+The flow reuses the existing Snap and Dataverse connection references (see ../flow_builder.py).
 """
 import argparse
 import sys

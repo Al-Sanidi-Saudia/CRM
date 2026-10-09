@@ -26,5 +26,5 @@ modeled on Meta's "Get Campaigns":
 3. For each campaign: map Delivery Status to its option values, **List rows** on Campaign ID, then
    **Update a row** if it exists or **Add a new row** if not. Money values are divided by 1,000,000.
 
-It uses a new connection reference `sanidi_snapconnection` (Snap connector) and the existing Dataverse reference
+It uses the Snap connection reference `sanidi_sharedsanidi5fsnap5f43b530b23a0dc933_a4073` and the Dataverse reference
 `sanidi_sharedcommondataserviceforapps_79822`. See `../README.md` for building and importing.

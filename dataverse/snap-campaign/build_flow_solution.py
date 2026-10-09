@@ -12,8 +12,8 @@ Run:
   python3 build_flow_solution.py --template AlSanidiMarketing.zip [--out GetSnapCampaignsFlow.zip]
   pac solution import --path GetSnapCampaignsFlow.zip --environment <env>
 
-The package holds only the flow and a new connection reference for the Snap connector;
-the existing Dataverse connection reference is reused. IDs are deterministic, so
+The package holds only the flow; it reuses the existing Snap and Dataverse connection
+references. IDs are deterministic, so
 re-importing updates the same flow.
 """
 import argparse
@@ -29,7 +29,7 @@ FLOW_NAME = "Get Snap Campaigns"
 FLOW_ID = str(uuid.uuid5(uuid.NAMESPACE_URL, "alsanidi/flows/get-snap-campaigns"))
 TABLE_SET = "sanidi_snapcampaigns"
 SNAP_API = "shared_sanidi-5fsnap-5f43b530b23a0dc933"
-SNAP_CONNREF = "sanidi_snapconnection"
+from flow_builder import SNAP_CONNREF  # noqa: E402  (shared with the other Snap flows)
 DATAVERSE_API = "shared_commondataserviceforapps"
 DATAVERSE_CONNREF = "sanidi_sharedcommondataserviceforapps_79822"
 
@@ -236,16 +236,6 @@ def build(template_zip, out):
   <optionsets />
   <CustomControls />
   <EntityDataProviders />
-  <connectionreferences>
-    <connectionreference connectionreferencelogicalname="{SNAP_CONNREF}">
-      <connectionreferencedisplayname>Snap AlSanidiMarketing</connectionreferencedisplayname>
-      <connectorid>/providers/Microsoft.PowerApps/apis/{SNAP_API}</connectorid>
-      <iscustomizable>1</iscustomizable>
-      <promptingbehavior>0</promptingbehavior>
-      <statecode>0</statecode>
-      <statuscode>1</statuscode>
-    </connectionreference>
-  </connectionreferences>
   <Languages>
     <Language>1033</Language>
   </Languages>
