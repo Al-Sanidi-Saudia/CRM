@@ -23,6 +23,7 @@ import uuid
 import zipfile
 
 from build_table_solution import DELIVERY_STATUS, FIELDS
+from table_builder import solution_xml
 
 FLOW_NAME = "Get Snap Campaigns"
 FLOW_ID = str(uuid.uuid5(uuid.NAMESPACE_URL, "alsanidi/flows/get-snap-campaigns"))
@@ -81,7 +82,8 @@ def choice_maps():
     maps = {}
     for name, _, kind, extra, _ in FIELDS:
         if kind in ("choice", "multichoice"):
-            maps[name] = {label: i for i, label in enumerate(extra, start=1)}
+            labels = extra[1] if kind == "multichoice" else extra
+            maps[name] = {label: i for i, label in enumerate(labels, start=1)}
             maps[name].update(EXTRA_LABELS.get(name, {}))
     return maps
 
@@ -187,6 +189,9 @@ def flow_json():
         "schemaVersion": "1.0.0.0"}
 
 
+CONTENT_TYPES = """<?xml version="1.0" encoding="utf-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="xml" ContentType="application/octet-stream" /><Default Extension="json" ContentType="application/octet-stream" /></Types>"""
+
+
 def build(template_zip, out):
     src_zip = zipfile.ZipFile(template_zip)
     c = src_zip.read("customizations.xml").decode("utf-8-sig")
@@ -246,14 +251,10 @@ def build(template_zip, out):
   </Languages>
 </ImportExportXml>
 """
-    solution = src_zip.read("solution.xml").decode("utf-8-sig")
-    solution = re.sub(r"<RootComponents>.*?</RootComponents>",
-                      f'<RootComponents>\n      <RootComponent type="29" id="{{{FLOW_ID}}}" behavior="0" />\n'
-                      f"    </RootComponents>", solution, count=1, flags=re.S)
-    solution = re.sub(r"<MissingDependencies>.*?</MissingDependencies>", "<MissingDependencies />",
-                      solution, count=1, flags=re.S)
+    solution = solution_xml(src_zip.read("solution.xml").decode("utf-8-sig"),
+                            [f'<RootComponent type="29" id="{{{FLOW_ID}}}" behavior="0" />'])
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
-        z.writestr("[Content_Types].xml", src_zip.read("[Content_Types].xml"))
+        z.writestr("[Content_Types].xml", CONTENT_TYPES)
         z.writestr("solution.xml", solution)
         z.writestr("customizations.xml", customizations)
         z.writestr(json_file.lstrip("/"), json.dumps(flow_json(), indent=2))

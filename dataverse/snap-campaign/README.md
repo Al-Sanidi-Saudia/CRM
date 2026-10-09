@@ -12,16 +12,8 @@ prefix `sanidi`) in **alsenidiuat**.
   choice `sanidi_snapcampaigndeliverystatus`.
 - Money columns hold Snap's micro values divided by 1,000,000.
 
-`build_table_solution.py` holds the column list, form layout and views. It builds a solution package that
-contains only this table, using the exported Meta Campaign table as the XML format template:
-
-```bash
-pac solution export --name AlSanidiMarketing --path AlSanidiMarketing.zip --environment <env>
-python3 build_table_solution.py --template AlSanidiMarketing.zip --out SnapCampaignTable.zip
-pac solution import --path SnapCampaignTable.zip --environment <env> --publish-changes
-```
-
-IDs are deterministic, so re-importing after a change updates the same table, form and views.
+`build_table_solution.py` holds the column list, form layout (including a Related tab listing the campaign's
+Snap Ad Squads) and views. See `../README.md` for building and importing.
 
 ## Get Snap Campaigns flow
 
@@ -35,11 +27,4 @@ modeled on Meta's "Get Campaigns":
    **Update a row** if it exists or **Add a new row** if not. Money values are divided by 1,000,000.
 
 It uses a new connection reference `sanidi_snapconnection` (Snap connector) and the existing Dataverse reference
-`sanidi_sharedcommondataserviceforapps_79822`. Build it the same way as the table:
-
-```bash
-python3 build_flow_solution.py --template AlSanidiMarketing.zip --out GetSnapCampaignsFlow.zip
-pac solution import --path GetSnapCampaignsFlow.zip --environment <env>
-```
-
-The flow imports turned off until `sanidi_snapconnection` is linked to a Snap connection.
+`sanidi_sharedcommondataserviceforapps_79822`. See `../README.md` for building and importing.
