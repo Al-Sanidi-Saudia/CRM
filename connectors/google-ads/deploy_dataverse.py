@@ -12,7 +12,6 @@ Environment variables (String). Their values are kept out of the solution so sec
   sanidi_GoogleAdsLoginCustomerId     manager (MCC) ID; empty when not needed
 Existing and reused: sanidi_GoogleAdsCustomerId, sanidi_GoogleAdsLastSyncStatus.
 """
-import base64
 import json
 import sys
 import uuid
@@ -96,7 +95,7 @@ def connector(dv, apply):
         "connectionparameters": json.dumps(props["connectionParameters"]),
         "policytemplateinstances": json.dumps(props.get("policyTemplateInstances", [])),
         "iconbrandcolor": props["iconBrandColor"],
-        "customcodeblobcontent": base64.b64encode(script.encode()).decode(),
+        "customcodeblobcontent": script,
         "scriptoperations": json.dumps(operations),
     }
     existing = dv.first(f"connectors?$select=connectorid,connectorinternalid&$filter=name eq '{CONNECTOR_NAME}'")

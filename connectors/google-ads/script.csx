@@ -329,7 +329,7 @@ public class Script : ScriptBase
             if (!Digits.IsMatch(login)) throw new ArgumentException("login-customer-id must be a numeric customer ID.");
             request.Headers.TryAddWithoutValidation("login-customer-id", login);
         }
-        if (body != null) request.Content = CreateJsonContent(body.ToString(Formatting.None));
+        if (body != null) request.Content = CreateJsonContent(body.ToString(Newtonsoft.Json.Formatting.None));
         var response = await Context.SendAsync(request, CancellationToken).ConfigureAwait(false);
         var text = response.Content != null ? await response.Content.ReadAsStringAsync().ConfigureAwait(false) : "";
         if (!response.IsSuccessStatusCode) throw new GoogleAdsException(response.StatusCode, text);
@@ -370,7 +370,7 @@ public class Script : ScriptBase
             {
                 var copy = (JObject)row.DeepClone();
                 copy.Remove("metrics");
-                flat[name] = Truncate(copy.ToString(Formatting.None), RawPayloadMaxLength);
+                flat[name] = Truncate(copy.ToString(Newtonsoft.Json.Formatting.None), RawPayloadMaxLength);
                 continue;
             }
             JToken value = null;
@@ -406,7 +406,7 @@ public class Script : ScriptBase
             case "enum": return v.ToString();
             case "enums": return v is JArray ? v : new JArray(v);
             case "strs": return Truncate(string.Join("\n", (v is JArray l ? l : new JArray(v)).Select(x => x.ToString())), maxLength);
-            case "json": return Truncate(v.ToString(Formatting.None), maxLength);
+            case "json": return Truncate(v.ToString(Newtonsoft.Json.Formatting.None), maxLength);
             case "texts": return Truncate(string.Join("\n", Items(v).Select(x => x is JObject o ? (string)o["text"] : x.ToString()).Where(x => !string.IsNullOrEmpty(x))), maxLength);
             case "assets": return Truncate(string.Join("\n", Items(v).Select(x => x is JObject o ? (string)o["asset"] : x.ToString()).Where(x => !string.IsNullOrEmpty(x))), maxLength);
             default: return v;
@@ -505,7 +505,7 @@ public class Script : ScriptBase
     private HttpResponseMessage Ok(JObject body)
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);
-        response.Content = CreateJsonContent(body.ToString(Formatting.None));
+        response.Content = CreateJsonContent(body.ToString(Newtonsoft.Json.Formatting.None));
         return response;
     }
 
@@ -515,7 +515,7 @@ public class Script : ScriptBase
         response.Content = CreateJsonContent(new JObject
         {
             ["error"] = new JObject { ["code"] = (int)status, ["message"] = message, ["status"] = status.ToString() }
-        }.ToString(Formatting.None));
+        }.ToString(Newtonsoft.Json.Formatting.None));
         return response;
     }
 
