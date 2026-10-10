@@ -1,34 +1,6 @@
 {
   "properties": {
-    "connectionParameters": {
-      "token": {
-        "type": "oauthSetting",
-        "oAuthSettings": {
-          "identityProvider": "oauth2",
-          "clientId": "REPLACE_WITH_GOOGLE_CLIENT_ID",
-          "scopes": [
-            "https://www.googleapis.com/auth/adwords"
-          ],
-          "redirectMode": "GlobalPerConnector",
-          "redirectUrl": "https://global.consent.azure-apim.net/redirect",
-          "properties": {
-            "IsFirstParty": "False",
-            "IsOnbehalfofLoginSupported": false
-          },
-          "customParameters": {
-            "authorizationUrlTemplate": {
-              "value": "https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&prompt=consent"
-            },
-            "tokenUrlTemplate": {
-              "value": "https://oauth2.googleapis.com/token"
-            },
-            "refreshUrlTemplate": {
-              "value": "https://oauth2.googleapis.com/token"
-            }
-          }
-        }
-      }
-    },
+    "connectionParameters": {},
     "iconBrandColor": "#4285F4",
     "scriptOperations": [],
     "capabilities": [],

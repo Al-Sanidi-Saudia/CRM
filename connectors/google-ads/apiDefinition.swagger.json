@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "Google Ads",
-    "description": "Read-only access to Google Ads API campaigns, ad groups, ads and their performance.",
+    "description": "Read-only access to Google Ads API campaigns, ad groups, ads and their performance. Get an access token first, then pass it to the other actions.",
     "version": "1.0.0",
     "contact": {
       "name": "Al Sanidi Marketing",
@@ -21,12 +21,85 @@
     "application/json"
   ],
   "paths": {
+    "/oauth/token": {
+      "post": {
+        "operationId": "GetAccessToken",
+        "summary": "Get access token",
+        "description": "Exchanges the Google OAuth client ID, client secret and refresh token for an access token (valid for one hour). Pass it as 'Access token' to the other actions.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "client_id",
+                "client_secret",
+                "refresh_token"
+              ],
+              "properties": {
+                "client_id": {
+                  "type": "string",
+                  "x-ms-summary": "Client ID",
+                  "description": "Google Cloud OAuth client ID (...apps.googleusercontent.com)."
+                },
+                "client_secret": {
+                  "type": "string",
+                  "x-ms-summary": "Client secret",
+                  "format": "password"
+                },
+                "refresh_token": {
+                  "type": "string",
+                  "x-ms-summary": "Refresh token",
+                  "format": "password",
+                  "description": "Refresh token issued for the adwords scope."
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AccessTokenResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/customers": {
       "get": {
         "operationId": "ListAccessibleCustomers",
         "summary": "List accessible customers",
-        "description": "Lists the customer IDs the signed-in Google user can access directly.",
-        "parameters": [],
+        "description": "Lists the customer IDs the Google user behind the access token can open directly.",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "Google OAuth access token from the 'Get access token' action (valid for one hour).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "developer-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Developer token",
+            "description": "Google Ads API developer token (Google Ads > Tools > API Center).",
+            "x-ms-visibility": "important"
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -57,6 +130,24 @@
             "x-ms-summary": "Customer ID",
             "description": "Google Ads customer (account) ID, 10 digits. Dashes are allowed.",
             "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "Google OAuth access token from the 'Get access token' action (valid for one hour).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "developer-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Developer token",
+            "description": "Google Ads API developer token (Google Ads > Tools > API Center).",
+            "x-ms-visibility": "important"
           },
           {
             "name": "login-customer-id",
@@ -128,6 +219,24 @@
             "x-ms-summary": "Customer ID",
             "description": "Google Ads customer (account) ID, 10 digits. Dashes are allowed.",
             "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "Google OAuth access token from the 'Get access token' action (valid for one hour).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "developer-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Developer token",
+            "description": "Google Ads API developer token (Google Ads > Tools > API Center).",
+            "x-ms-visibility": "important"
           },
           {
             "name": "login-customer-id",
@@ -214,6 +323,24 @@
             "x-ms-summary": "Customer ID",
             "description": "Google Ads customer (account) ID, 10 digits. Dashes are allowed.",
             "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "Google OAuth access token from the 'Get access token' action (valid for one hour).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "developer-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Developer token",
+            "description": "Google Ads API developer token (Google Ads > Tools > API Center).",
+            "x-ms-visibility": "important"
           },
           {
             "name": "login-customer-id",
@@ -311,6 +438,24 @@
             "x-ms-url-encoding": "single"
           },
           {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "Google OAuth access token from the 'Get access token' action (valid for one hour).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "developer-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Developer token",
+            "description": "Google Ads API developer token (Google Ads > Tools > API Center).",
+            "x-ms-visibility": "important"
+          },
+          {
             "name": "login-customer-id",
             "in": "header",
             "required": false,
@@ -404,6 +549,24 @@
             "x-ms-summary": "Customer ID",
             "description": "Google Ads customer (account) ID, 10 digits. Dashes are allowed.",
             "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "Google OAuth access token from the 'Get access token' action (valid for one hour).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "developer-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Developer token",
+            "description": "Google Ads API developer token (Google Ads > Tools > API Center).",
+            "x-ms-visibility": "important"
           },
           {
             "name": "login-customer-id",
@@ -565,6 +728,24 @@
             "x-ms-url-encoding": "single"
           },
           {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "Google OAuth access token from the 'Get access token' action (valid for one hour).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "developer-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Developer token",
+            "description": "Google Ads API developer token (Google Ads > Tools > API Center).",
+            "x-ms-visibility": "important"
+          },
+          {
             "name": "login-customer-id",
             "in": "header",
             "required": false,
@@ -647,6 +828,27 @@
               "x-ms-summary": "Details"
             }
           }
+        }
+      }
+    },
+    "AccessTokenResponse": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "x-ms-summary": "Access token"
+        },
+        "expires_in": {
+          "type": "integer",
+          "x-ms-summary": "Expires in (seconds)"
+        },
+        "token_type": {
+          "type": "string",
+          "x-ms-summary": "Token type"
+        },
+        "scope": {
+          "type": "string",
+          "x-ms-summary": "Scope"
         }
       }
     },
@@ -2483,24 +2685,8 @@
       }
     }
   },
-  "securityDefinitions": {
-    "oauth2_auth": {
-      "type": "oauth2",
-      "flow": "accessCode",
-      "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
-      "tokenUrl": "https://oauth2.googleapis.com/token",
-      "scopes": {
-        "https://www.googleapis.com/auth/adwords": "https://www.googleapis.com/auth/adwords"
-      }
-    }
-  },
-  "security": [
-    {
-      "oauth2_auth": [
-        "https://www.googleapis.com/auth/adwords"
-      ]
-    }
-  ],
+  "securityDefinitions": {},
+  "security": [],
   "tags": [],
   "x-ms-connector-metadata": [
     {

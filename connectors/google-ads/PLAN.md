@@ -5,8 +5,12 @@ Status: **approved** (2026-10-10). Step 1 (connector in repo) done; every step t
 Decisions:
 - **Legacy items are left untouched**: the `sanidi_google_*` tables and the daily "Google Ads Sync" flow.
 - **Metrics are all-time totals**, refreshed on every sync.
-- **Credentials:** reuse the Google OAuth client of the old sync flow. The old flow has no developer
-  token (it never synced: `campaigns=0`, errors on every run), so a **developer token is still needed**.
+- **Credentials:** the connector has no sign-in. A **Get access token** action uses the client ID, client
+  secret and refresh token of the old sync flow, now kept in environment variables. The flows call it
+  first and pass the token on. The old flow has no developer token (it never synced: `campaigns=0`,
+  errors on every run), so a **developer token is still needed** (env var `sanidi_GoogleAdsDeveloperToken`).
+- **Deployment:** the connector is created directly in the solution through the Dataverse Web API, like
+  Snap (`deploy_dataverse.py`).
 - **Choices:** every Google Ads enum becomes a Dataverse choice with **all** v25 enum values (including
   `UNSPECIFIED` / `UNKNOWN`), numbered **from 1**. Repeated enums become multi-select choices.
 
@@ -51,11 +55,10 @@ Read-only actions:
 | `RunQuery`: any GAQL query | ad-hoc |
 
 - Money values arrive in micros and are converted to currency units in the connector.
-- Auth: Google OAuth 2.0 (scope `https://www.googleapis.com/auth/adwords`, offline access).
-- The **developer token** and optional **manager (login) customer ID** are injected at deploy time.
-  They are never committed.
-- Deployed into `AlSanidiMarketing` with `pac connector create`, like Snap. The client secret is
-  entered on the connector's Security tab.
+- Auth: no sign-in on the connector. `GetAccessToken` exchanges client ID + client secret + refresh
+  token (environment variables) for an access token; the other actions take the access token and the
+  developer token as inputs. No secret is stored in the repo.
+- Created directly in `AlSanidiMarketing` through the Dataverse Web API (`deploy_dataverse.py`), like Snap.
 
 ## 2. Tables
 
@@ -311,33 +314,34 @@ Each table also gets an **Inactive** view (Name, Status, Last Synced On, Created
 ## 5. Flows (in the solution, connection references reused or added)
 
 1. **Get Google Ads Campaigns**: *instant (manual)*.
-   1. Read `sanidi_GoogleAdsCustomerId` (env var, already `9274270701`).
-   2. List client accounts (handles both a single account and an MCC).
-   3. For each non-manager account → `ListCampaigns`.
-   4. For each campaign: find it by Campaign ID, then update it or create it.
-   5. Map choices with a `Choice_maps` compose, as Snap does.
-   6. Write a summary to `sanidi_GoogleAdsLastSyncStatus`.
+   1. **Get access token** with `sanidi_GoogleAdsClientId` / `ClientSecret` / `RefreshToken`.
+   2. Read `sanidi_GoogleAdsCustomerId` (already `9274270701`), `DeveloperToken`, `LoginCustomerId`.
+   3. List client accounts (handles both a single account and an MCC).
+   4. For each non-manager account → `ListCampaigns`.
+   5. For each campaign: find it by Campaign ID, then update it or create it.
+   6. Map choices with a `Choice_maps` compose, as Snap does.
+   7. Write a summary to `sanidi_GoogleAdsLastSyncStatus`.
 2. **Get Google Ads Ad Groups**: *trigger: Google Ads Campaign added or modified* (organization scope).
-   1. `ListAdGroups(customer_id, campaign_id)`.
+   1. **Get access token**, then `ListAdGroups(customer_id, campaign_id)`.
    2. Update or create each ad group, binding the Campaign lookup.
 3. **Get Google Ads Advertisements**: *trigger: Google Ads Ad Group added or modified*.
-   1. `ListAds(customer_id, ad_group_id)`.
+   1. **Get access token**, then `ListAds(customer_id, ad_group_id)`.
    2. Update or create each ad, binding the Ad Group lookup.
 
 Connection references:
 - Dataverse: reuse `sanidi_sharedcommondataserviceforapps_79822`.
-- Google Ads: a new reference to the Google Ads connector.
+- Google Ads: a new reference to the Google Ads connector (no sign-in needed).
 
 ## 6. Execution order (each step needs your approval before I run it)
 
 | # | Step | Where | Who |
 |---|---|---|---|
 | 1 | Build the connector files, commit, push | repo | me |
-| 2 | Deploy the connector to `AlSanidiMarketing`, add the secret, register the redirect URL, test | UAT | you run `deploy.ps1` (no `pac` in my sandbox); I guide |
+| 2 | Create the environment variables (+ values copied from the legacy flow) and the connector in `AlSanidiMarketing` | UAT (Web API) | me, after approval; you set the developer token |
 | 3 | Create the 3 tables + columns in the solution | UAT (Web API with solution header) | me, after approval |
 | 4 | Create the lookups / relationships | UAT | me, after approval |
 | 5 | Build the main forms (tabs/sections) + views, publish | UAT | me, after approval |
-| 6 | Create the 3 flows in the solution (off), then you create the Google Ads connection | UAT | me, after approval; connection by you |
+| 6 | Create the 3 flows in the solution (off), then you create the Google Ads + Dataverse connections | UAT | me, after approval; connections by you |
 | 7 | Turn on and test-run Flow 1 → check Flows 2 and 3 cascade | UAT | together |
 
 Table/form/view/flow definitions are also saved in the repo (`dataverse/google-ads/`) so they can

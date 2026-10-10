@@ -4,17 +4,14 @@
   "AlSanidi | Marketing" solution using the Power Platform CLI (pac).
 
 .EXAMPLE
-  .\deploy.ps1 -EnvironmentUrl https://operations-alsenidiuat.crm4.dynamics.com -GoogleClientId 123.apps.googleusercontent.com -DeveloperToken abc
+  .\deploy.ps1 -EnvironmentUrl https://operations-alsenidiuat.crm4.dynamics.com
 
 .EXAMPLE
   # Update an existing connector (ID from: pac connector list)
-  .\deploy.ps1 -EnvironmentUrl https://operations-alsenidiuat.crm4.dynamics.com -GoogleClientId 123.apps.googleusercontent.com -DeveloperToken abc -ConnectorId 00000000-0000-0000-0000-000000000000
+  .\deploy.ps1 -EnvironmentUrl https://operations-alsenidiuat.crm4.dynamics.com -ConnectorId 00000000-0000-0000-0000-000000000000
 #>
 param(
     [Parameter(Mandatory = $true)] [string] $EnvironmentUrl,
-    [Parameter(Mandatory = $true)] [string] $GoogleClientId,
-    # Google Ads developer token (Google Ads > Tools > API Center). Never commit it.
-    [Parameter(Mandatory = $true)] [string] $DeveloperToken,
     # Unique (not display) name of "AlSanidi | Marketing"; find it with: pac solution list
     [string] $SolutionUniqueName = "AlSanidiMarketing",
     [string] $ConnectorId
@@ -26,13 +23,6 @@ if (-not (Get-Command pac -ErrorAction SilentlyContinue)) {
 }
 
 $dir = $PSScriptRoot
-$tmp = [IO.Path]::GetTempPath()
-$props = Join-Path $tmp "googleads-apiProperties.json"
-$script = Join-Path $tmp "googleads-script.csx"
-(Get-Content (Join-Path $dir "apiProperties.json") -Raw).Replace("REPLACE_WITH_GOOGLE_CLIENT_ID", $GoogleClientId) |
-    Set-Content -Path $props -Encoding utf8
-(Get-Content (Join-Path $dir "script.csx") -Raw).Replace("REPLACE_WITH_DEVELOPER_TOKEN", $DeveloperToken) |
-    Set-Content -Path $script -Encoding utf8
 
 # Sign in only if there is no auth profile yet (opens a browser).
 pac org who *> $null
@@ -58,22 +48,17 @@ Write-Host "Solution '$SolutionUniqueName' uses publisher prefix '$prefix'."
 
 $common = @(
     "--api-definition-file", (Join-Path $dir "apiDefinition.swagger.json"),
-    "--api-properties-file", $props,
-    "--script-file", $script,
+    "--api-properties-file", (Join-Path $dir "apiProperties.json"),
+    "--script-file", (Join-Path $dir "script.csx"),
     "--solution-unique-name", $SolutionUniqueName,
     "--environment", $EnvironmentUrl
 )
-try {
-    if ($ConnectorId) {
-        pac connector update --connector-id $ConnectorId @common
-    } else {
-        pac connector create @common
-    }
-    if ($LASTEXITCODE -ne 0) { throw "pac connector command failed (see output above)" }
-} finally {
-    # The script copy holds the developer token.
-    Remove-Item $props, $script -ErrorAction SilentlyContinue
+if ($ConnectorId) {
+    pac connector update --connector-id $ConnectorId @common
+} else {
+    pac connector create @common
 }
+if ($LASTEXITCODE -ne 0) { throw "pac connector command failed (see output above)" }
 
 # Confirm the internal name carries the publisher prefix.
 $connectors = pac connector list --environment $EnvironmentUrl --json 2>$null | Out-String | ConvertFrom-Json -ErrorAction SilentlyContinue
@@ -90,5 +75,4 @@ if ($gads) {
     Write-Warning "Could not find the 'Google Ads' connector in 'pac connector list' to verify its internal name."
 }
 
-Write-Host "Done. Next: open the connector in make.powerapps.com, enter the Google client secret on the"
-Write-Host "Security tab, Update connector, then add the shown Redirect URL to the Google OAuth client."
+Write-Host "Done. The connector needs no sign-in: create a connection and run 'Get access token'."

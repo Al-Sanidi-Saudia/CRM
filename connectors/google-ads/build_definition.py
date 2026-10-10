@@ -34,6 +34,18 @@ def query(name, summary, description, type_="string", enum=None, default=None,
 
 CUSTOMER_ID = path_param("customer_id", "Customer ID",
                          "Google Ads customer (account) ID, 10 digits. Dashes are allowed.")
+ACCESS_TOKEN = {
+    "name": "access-token", "in": "header", "required": True, "type": "string",
+    "x-ms-summary": "Access token",
+    "description": "Google OAuth access token from the 'Get access token' action (valid for one hour).",
+    "x-ms-visibility": "important",
+}
+DEVELOPER_TOKEN = {
+    "name": "developer-token", "in": "header", "required": True, "type": "string",
+    "x-ms-summary": "Developer token",
+    "description": "Google Ads API developer token (Google Ads > Tools > API Center).",
+    "x-ms-visibility": "important",
+}
 LOGIN_CUSTOMER_ID = {
     "name": "login-customer-id", "in": "header", "required": False, "type": "string",
     "x-ms-summary": "Manager customer ID",
@@ -160,14 +172,28 @@ ops["$performance"] = {
 # ---- swagger -------------------------------------------------------------------------------------
 
 paths = {
+    "/oauth/token": op(
+        "post", "GetAccessToken", "Get access token",
+        "Exchanges the Google OAuth client ID, client secret and refresh token for an access token "
+        "(valid for one hour). Pass it as 'Access token' to the other actions.",
+        [], "AccessTokenResponse",
+        body={"name": "body", "in": "body", "required": True, "schema": {
+            "type": "object", "required": ["client_id", "client_secret", "refresh_token"], "properties": {
+                "client_id": {"type": "string", "x-ms-summary": "Client ID",
+                              "description": "Google Cloud OAuth client ID (...apps.googleusercontent.com)."},
+                "client_secret": {"type": "string", "x-ms-summary": "Client secret", "format": "password"},
+                "refresh_token": {"type": "string", "x-ms-summary": "Refresh token", "format": "password",
+                                  "description": "Refresh token issued for the adwords scope."},
+            }}}),
     "/customers": op("get", "ListAccessibleCustomers", "List accessible customers",
-                     "Lists the customer IDs the signed-in Google user can access directly.", [],
+                     "Lists the customer IDs the Google user behind the access token can open directly.",
+                     [ACCESS_TOKEN, DEVELOPER_TOKEN],
                      "AccessibleCustomersResponse"),
     "/customers/{customer_id}/clients": op(
         "get", "ListClientAccounts", "List client accounts",
         "Lists the accounts under a customer. For a manager (MCC) this is its client accounts; "
         "for a regular account it is the account itself.",
-        [CUSTOMER_ID, LOGIN_CUSTOMER_ID,
+        [CUSTOMER_ID, ACCESS_TOKEN, DEVELOPER_TOKEN, LOGIN_CUSTOMER_ID,
          query("include_managers", "Include managers", "Also return manager accounts.", type_="boolean", default=False),
          query("include_hidden", "Include hidden", "Also return hidden accounts.", type_="boolean", default=False),
          query("include_all_levels", "All levels", "Return the whole tree, not just direct children.",
@@ -176,21 +202,21 @@ paths = {
     "/customers/{customer_id}/campaigns": op(
         "get", "ListCampaigns", "List campaigns",
         "Lists campaigns with their budget, bidding, network, tracking and channel settings, plus all-time metrics.",
-        [CUSTOMER_ID, LOGIN_CUSTOMER_ID, STATUS, CAMPAIGN_FILTER, INCLUDE_METRICS, MAX_ROWS], "CampaignsResponse"),
+        [CUSTOMER_ID, ACCESS_TOKEN, DEVELOPER_TOKEN, LOGIN_CUSTOMER_ID, STATUS, CAMPAIGN_FILTER, INCLUDE_METRICS, MAX_ROWS], "CampaignsResponse"),
     "/customers/{customer_id}/adgroups": op(
         "get", "ListAdGroups", "List ad groups",
         "Lists ad groups with their bids and targeting settings, plus all-time metrics.",
-        [CUSTOMER_ID, LOGIN_CUSTOMER_ID, CAMPAIGN_FILTER, AD_GROUP_FILTER, STATUS, INCLUDE_METRICS, MAX_ROWS],
+        [CUSTOMER_ID, ACCESS_TOKEN, DEVELOPER_TOKEN, LOGIN_CUSTOMER_ID, CAMPAIGN_FILTER, AD_GROUP_FILTER, STATUS, INCLUDE_METRICS, MAX_ROWS],
         "AdGroupsResponse"),
     "/customers/{customer_id}/ads": op(
         "get", "ListAds", "List ads",
         "Lists ads (ad group ads) with their creative, policy review and URLs, plus all-time metrics.",
-        [CUSTOMER_ID, LOGIN_CUSTOMER_ID, AD_GROUP_FILTER, CAMPAIGN_FILTER, STATUS, INCLUDE_METRICS, MAX_ROWS],
+        [CUSTOMER_ID, ACCESS_TOKEN, DEVELOPER_TOKEN, LOGIN_CUSTOMER_ID, AD_GROUP_FILTER, CAMPAIGN_FILTER, STATUS, INCLUDE_METRICS, MAX_ROWS],
         "AdsResponse"),
     "/customers/{customer_id}/performance": op(
         "get", "GetPerformance", "Get performance",
         "Performance metrics per campaign, ad group or ad for a date range, optionally per day/week/month.",
-        [CUSTOMER_ID, LOGIN_CUSTOMER_ID,
+        [CUSTOMER_ID, ACCESS_TOKEN, DEVELOPER_TOKEN, LOGIN_CUSTOMER_ID,
          query("level", "Level", "Level to report on.", enum=["campaign", "ad_group", "ad"], default="campaign",
                required=True, visibility="important"),
          query("date_range", "Date range", "Predefined range. Ignored when start and end dates are set.",
@@ -209,7 +235,7 @@ paths = {
     "/customers/{customer_id}/query": op(
         "post", "RunQuery", "Run GAQL query",
         "Runs any Google Ads Query Language (GAQL) SELECT and returns all pages.",
-        [CUSTOMER_ID, LOGIN_CUSTOMER_ID], "QueryResponse",
+        [CUSTOMER_ID, ACCESS_TOKEN, DEVELOPER_TOKEN, LOGIN_CUSTOMER_ID], "QueryResponse",
         body={"name": "body", "in": "body", "required": True, "schema": {
             "type": "object", "required": ["query"], "properties": {
                 "query": {"type": "string", "x-ms-summary": "GAQL query",
@@ -235,6 +261,12 @@ definitions = {
         "status": {"type": "string", "x-ms-summary": "Status"},
         "details": {"type": "array", "items": {"type": "object"}, "x-ms-summary": "Details"},
     }}}},
+    "AccessTokenResponse": {"type": "object", "properties": {
+        "access_token": {"type": "string", "x-ms-summary": "Access token"},
+        "expires_in": {"type": "integer", "x-ms-summary": "Expires in (seconds)"},
+        "token_type": {"type": "string", "x-ms-summary": "Token type"},
+        "scope": {"type": "string", "x-ms-summary": "Scope"},
+    }},
     "AccessibleCustomersResponse": {"type": "object", "properties": {
         "customer_ids": {"type": "array", "items": {"type": "string"}, "x-ms-summary": "Customer IDs"},
         "resource_names": {"type": "array", "items": {"type": "string"}, "x-ms-summary": "Resource names"},
@@ -274,7 +306,8 @@ swagger = {
     "swagger": "2.0",
     "info": {
         "title": "Google Ads",
-        "description": "Read-only access to Google Ads API campaigns, ad groups, ads and their performance.",
+        "description": "Read-only access to Google Ads API campaigns, ad groups, ads and their performance. "
+                       "Get an access token first, then pass it to the other actions.",
         "version": "1.0.0",
         "contact": {"name": "Al Sanidi Marketing", "email": "sa2@alsanidi.com.sa"},
     },
@@ -285,15 +318,8 @@ swagger = {
     "produces": ["application/json"],
     "paths": paths,
     "definitions": definitions,
-    "securityDefinitions": {
-        "oauth2_auth": {
-            "type": "oauth2", "flow": "accessCode",
-            "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
-            "tokenUrl": "https://oauth2.googleapis.com/token",
-            "scopes": {"https://www.googleapis.com/auth/adwords": "https://www.googleapis.com/auth/adwords"},
-        }
-    },
-    "security": [{"oauth2_auth": ["https://www.googleapis.com/auth/adwords"]}],
+    "securityDefinitions": {},
+    "security": [],
     "tags": [],
     "x-ms-connector-metadata": [
         {"propertyName": "Website", "propertyValue": "https://ads.google.com"},
