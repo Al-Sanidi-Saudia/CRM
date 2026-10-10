@@ -1,0 +1,589 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933-1": {
+        "api": {
+          "name": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+          "logicalName": "sanidi_googleads"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "sanidi_googleads_connref"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_commondataserviceforapps": {
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "sanidi_sharedcommondataserviceforapps_79822"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Google Ads Client ID (sanidi_GoogleAdsClientId)": {
+          "defaultValue": "",
+          "type": "String",
+          "metadata": {
+            "schemaName": "sanidi_GoogleAdsClientId"
+          }
+        },
+        "Google Ads Client Secret (sanidi_GoogleAdsClientSecret)": {
+          "defaultValue": "",
+          "type": "String",
+          "metadata": {
+            "schemaName": "sanidi_GoogleAdsClientSecret"
+          }
+        },
+        "Google Ads Refresh Token (sanidi_GoogleAdsRefreshToken)": {
+          "defaultValue": "",
+          "type": "String",
+          "metadata": {
+            "schemaName": "sanidi_GoogleAdsRefreshToken"
+          }
+        },
+        "Google Ads Developer Token (sanidi_GoogleAdsDeveloperToken)": {
+          "defaultValue": "",
+          "type": "String",
+          "metadata": {
+            "schemaName": "sanidi_GoogleAdsDeveloperToken"
+          }
+        },
+        "Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)": {
+          "defaultValue": "",
+          "type": "String",
+          "metadata": {
+            "schemaName": "sanidi_GoogleAdsLoginCustomerId"
+          }
+        },
+        "Google Ads Customer ID (sanidi_GoogleAdsCustomerId)": {
+          "defaultValue": "",
+          "type": "String",
+          "metadata": {
+            "schemaName": "sanidi_GoogleAdsCustomerId"
+          }
+        }
+      },
+      "triggers": {
+        "When_a_Google_Ads_Campaign_is_added_or_modified": {
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "parameters": {
+              "subscriptionRequest/message": 4,
+              "subscriptionRequest/entityname": "sanidi_googleadscampaign",
+              "subscriptionRequest/scope": 4
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Choice_maps": {
+          "runAfter": {},
+          "type": "Compose",
+          "inputs": {
+            "sanidi_status": {
+              "ENABLED": 1,
+              "PAUSED": 2,
+              "REMOVED": 3,
+              "UNKNOWN": 4,
+              "UNSPECIFIED": 5
+            },
+            "sanidi_primarystatus": {
+              "ELIGIBLE": 1,
+              "LIMITED": 2,
+              "NOT_ELIGIBLE": 3,
+              "PAUSED": 4,
+              "PENDING": 5,
+              "REMOVED": 6,
+              "UNKNOWN": 7,
+              "UNSPECIFIED": 8
+            },
+            "sanidi_primarystatusreasons": {
+              "AD_GROUP_ADS_PAUSED": 1,
+              "AD_GROUP_INCOMPLETE": 2,
+              "AD_GROUP_PAUSED": 3,
+              "AD_GROUP_PAUSED_DUE_TO_LOW_ACTIVITY": 4,
+              "AD_GROUP_REMOVED": 5,
+              "CAMPAIGN_DRAFT": 6,
+              "CAMPAIGN_ENDED": 7,
+              "CAMPAIGN_PAUSED": 8,
+              "CAMPAIGN_PENDING": 9,
+              "CAMPAIGN_REMOVED": 10,
+              "HAS_ADS_DISAPPROVED": 11,
+              "HAS_ADS_LIMITED_BY_POLICY": 12,
+              "KEYWORDS_PAUSED": 13,
+              "MOST_ADS_UNDER_REVIEW": 14,
+              "NO_AD_GROUP_ADS": 15,
+              "NO_KEYWORDS": 16,
+              "UNKNOWN": 17,
+              "UNSPECIFIED": 18
+            },
+            "sanidi_type": {
+              "DISPLAY_STANDARD": 1,
+              "HOTEL_ADS": 2,
+              "PROMOTED_HOTEL_ADS": 3,
+              "SEARCH_DYNAMIC_ADS": 4,
+              "SEARCH_STANDARD": 5,
+              "SHOPPING_COMPARISON_LISTING_ADS": 6,
+              "SHOPPING_PRODUCT_ADS": 7,
+              "SHOPPING_SMART_ADS": 8,
+              "SMART_CAMPAIGN_ADS": 9,
+              "TRAVEL_ADS": 10,
+              "UNKNOWN": 11,
+              "UNSPECIFIED": 12,
+              "VIDEO_BUMPER": 13,
+              "VIDEO_EFFICIENT_REACH": 14,
+              "VIDEO_NON_SKIPPABLE_IN_STREAM": 15,
+              "VIDEO_RESPONSIVE": 16,
+              "VIDEO_TRUE_VIEW_IN_DISPLAY": 17,
+              "VIDEO_TRUE_VIEW_IN_STREAM": 18,
+              "YOUTUBE_AUDIO": 19
+            },
+            "sanidi_adrotationmode": {
+              "OPTIMIZE": 1,
+              "ROTATE_FOREVER": 2,
+              "UNKNOWN": 3,
+              "UNSPECIFIED": 4
+            },
+            "sanidi_effectivetargetcpasource": {
+              "AD_GROUP": 1,
+              "AD_GROUP_CRITERION": 2,
+              "CAMPAIGN_BIDDING_STRATEGY": 3,
+              "UNKNOWN": 4,
+              "UNSPECIFIED": 5
+            },
+            "sanidi_effectivetargetcpcsource": {
+              "AD_GROUP": 1,
+              "AD_GROUP_CRITERION": 2,
+              "CAMPAIGN_BIDDING_STRATEGY": 3,
+              "UNKNOWN": 4,
+              "UNSPECIFIED": 5
+            },
+            "sanidi_effectivetargetroassource": {
+              "AD_GROUP": 1,
+              "AD_GROUP_CRITERION": 2,
+              "CAMPAIGN_BIDDING_STRATEGY": 3,
+              "UNKNOWN": 4,
+              "UNSPECIFIED": 5
+            },
+            "sanidi_displaycustombiddimension": {
+              "AGE_RANGE": 1,
+              "AUDIENCE": 2,
+              "GENDER": 3,
+              "INCOME_RANGE": 4,
+              "KEYWORD": 5,
+              "PARENTAL_STATUS": 6,
+              "PLACEMENT": 7,
+              "TOPIC": 8,
+              "UNKNOWN": 9,
+              "UNSPECIFIED": 10
+            },
+            "sanidi_excludedparentassetfieldtypes": {
+              "AD_IMAGE": 1,
+              "BOOK_ON_GOOGLE": 2,
+              "BUSINESS_LOGO": 3,
+              "BUSINESS_MESSAGE": 4,
+              "BUSINESS_NAME": 5,
+              "CALL": 6,
+              "CALLOUT": 7,
+              "CALL_TO_ACTION": 8,
+              "CALL_TO_ACTION_SELECTION": 9,
+              "CLASSIC_DISPLAY_IMAGE": 10,
+              "DEMAND_GEN_CAROUSEL_CARD": 11,
+              "DESCRIPTION": 12,
+              "HEADLINE": 13,
+              "HOTEL_CALLOUT": 14,
+              "HOTEL_PROPERTY": 15,
+              "LANDING_PAGE_PREVIEW": 16,
+              "LANDSCAPE_LOGO": 17,
+              "LEAD_FORM": 18,
+              "LOGO": 19,
+              "LONG_DESCRIPTION": 20,
+              "LONG_HEADLINE": 21,
+              "MANDATORY_AD_TEXT": 22,
+              "MARKETING_IMAGE": 23,
+              "MEDIA_BUNDLE": 24,
+              "MOBILE_APP": 25,
+              "PORTRAIT_MARKETING_IMAGE": 26,
+              "PRICE": 27,
+              "PROMOTION": 28,
+              "RELATED_YOUTUBE_VIDEOS": 29,
+              "SITELINK": 30,
+              "SQUARE_MARKETING_IMAGE": 31,
+              "STRUCTURED_SNIPPET": 32,
+              "TALL_PORTRAIT_MARKETING_IMAGE": 33,
+              "TEXT_DISCLAIMER": 34,
+              "UNKNOWN": 35,
+              "UNSPECIFIED": 36,
+              "VIDEO": 37,
+              "YOUTUBE_VIDEO": 38
+            },
+            "sanidi_channelconfig": {
+              "CHANNEL_STRATEGY": 1,
+              "SELECTED_CHANNELS": 2,
+              "UNKNOWN": 3,
+              "UNSPECIFIED": 4
+            },
+            "sanidi_channelstrategy": {
+              "ALL_CHANNELS": 1,
+              "ALL_OWNED_AND_OPERATED_CHANNELS": 2,
+              "UNKNOWN": 3,
+              "UNSPECIFIED": 4
+            }
+          },
+          "description": "Google Ads value -> Dataverse option value for every choice column"
+        },
+        "Get_access_token": {
+          "runAfter": {
+            "Choice_maps": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "body/client_id": "@parameters('Google Ads Client ID (sanidi_GoogleAdsClientId)')",
+              "body/client_secret": "@parameters('Google Ads Client Secret (sanidi_GoogleAdsClientSecret)')",
+              "body/refresh_token": "@parameters('Google Ads Refresh Token (sanidi_GoogleAdsRefreshToken)')"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+              "operationId": "GetAccessToken",
+              "connectionName": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933-1"
+            }
+          }
+        },
+        "List_ad_groups": {
+          "runAfter": {
+            "Get_access_token": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "customer_id": "@triggerOutputs()?['body/sanidi_customerid']",
+              "access-token": "@body('Get_access_token')?['access_token']",
+              "developer-token": "@parameters('Google Ads Developer Token (sanidi_GoogleAdsDeveloperToken)')",
+              "login-customer-id": "@if(empty(trim(coalesce(parameters('Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)'), ''))), replace(parameters('Google Ads Customer ID (sanidi_GoogleAdsCustomerId)'), '-', ''), replace(parameters('Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)'), '-', ''))",
+              "campaign_id": "@triggerOutputs()?['body/sanidi_campaignid']",
+              "status": "ALL",
+              "include_metrics": true
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+              "operationId": "ListAdGroups",
+              "connectionName": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933-1"
+            }
+          }
+        },
+        "For_each_ad_group": {
+          "type": "Foreach",
+          "foreach": "@coalesce(outputs('List_ad_groups')?['body/rows'], json('[]'))",
+          "runAfter": {
+            "List_ad_groups": [
+              "Succeeded"
+            ]
+          },
+          "actions": {
+            "Known_primarystatusreasons_values": {
+              "type": "Select",
+              "inputs": {
+                "from": "@coalesce(items('For_each_ad_group')?['primarystatusreasons'], json('[]'))",
+                "select": "@outputs('Choice_maps')?['sanidi_primarystatusreasons']?[item()]"
+              },
+              "runAfter": {}
+            },
+            "Known_primarystatusreasons": {
+              "type": "Query",
+              "inputs": {
+                "from": "@body('Known_primarystatusreasons_values')",
+                "where": "@not(equals(item(), null))"
+              },
+              "runAfter": {
+                "Known_primarystatusreasons_values": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Known_excludedparentassetfieldtypes_values": {
+              "type": "Select",
+              "inputs": {
+                "from": "@coalesce(items('For_each_ad_group')?['excludedparentassetfieldtypes'], json('[]'))",
+                "select": "@outputs('Choice_maps')?['sanidi_excludedparentassetfieldtypes']?[item()]"
+              },
+              "runAfter": {
+                "Known_primarystatusreasons": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Known_excludedparentassetfieldtypes": {
+              "type": "Query",
+              "inputs": {
+                "from": "@body('Known_excludedparentassetfieldtypes_values')",
+                "where": "@not(equals(item(), null))"
+              },
+              "runAfter": {
+                "Known_excludedparentassetfieldtypes_values": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Find_existing_ad_group": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "sanidi_googleadsadgroups",
+                  "$select": "sanidi_googleadsadgroupid",
+                  "$filter": "sanidi_adgroupid eq '@{items('For_each_ad_group')?['adgroupid']}'",
+                  "$top": 1
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              },
+              "runAfter": {
+                "Known_excludedparentassetfieldtypes": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "If_ad_group_exists": {
+              "type": "If",
+              "runAfter": {
+                "Find_existing_ad_group": [
+                  "Succeeded"
+                ]
+              },
+              "expression": {
+                "and": [
+                  {
+                    "greater": [
+                      "@length(outputs('Find_existing_ad_group')?['body/value'])",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Update_ad_group": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "entityName": "sanidi_googleadsadgroups",
+                      "recordId": "@first(outputs('Find_existing_ad_group')?['body/value'])?['sanidi_googleadsadgroupid']",
+                      "item/sanidi_adgroupname": "@items('For_each_ad_group')?['adgroupname']",
+                      "item/sanidi_adgroupid": "@items('For_each_ad_group')?['adgroupid']",
+                      "item/sanidi_resourcename": "@items('For_each_ad_group')?['resourcename']",
+                      "item/sanidi_campaignid": "@items('For_each_ad_group')?['campaignid']",
+                      "item/sanidi_campaignname": "@items('For_each_ad_group')?['campaignname']",
+                      "item/sanidi_customerid": "@items('For_each_ad_group')?['customerid']",
+                      "item/sanidi_baseadgroup": "@items('For_each_ad_group')?['baseadgroup']",
+                      "item/sanidi_labels": "@items('For_each_ad_group')?['labels']",
+                      "item/sanidi_status": "@outputs('Choice_maps')?['sanidi_status']?[string(items('For_each_ad_group')?['status'])]",
+                      "item/sanidi_primarystatus": "@outputs('Choice_maps')?['sanidi_primarystatus']?[string(items('For_each_ad_group')?['primarystatus'])]",
+                      "item/sanidi_primarystatusreasons": "@if(empty(body('Known_primarystatusreasons')), null, join(body('Known_primarystatusreasons'), ','))",
+                      "item/sanidi_type": "@outputs('Choice_maps')?['sanidi_type']?[string(items('For_each_ad_group')?['type'])]",
+                      "item/sanidi_adrotationmode": "@outputs('Choice_maps')?['sanidi_adrotationmode']?[string(items('For_each_ad_group')?['adrotationmode'])]",
+                      "item/sanidi_cpcbid": "@items('For_each_ad_group')?['cpcbid']",
+                      "item/sanidi_cpmbid": "@items('For_each_ad_group')?['cpmbid']",
+                      "item/sanidi_cpvbid": "@items('For_each_ad_group')?['cpvbid']",
+                      "item/sanidi_fixedcpm": "@items('For_each_ad_group')?['fixedcpm']",
+                      "item/sanidi_percentcpcbid": "@items('For_each_ad_group')?['percentcpcbid']",
+                      "item/sanidi_targetcpa": "@items('For_each_ad_group')?['targetcpa']",
+                      "item/sanidi_targetcpc": "@items('For_each_ad_group')?['targetcpc']",
+                      "item/sanidi_targetcpm": "@items('For_each_ad_group')?['targetcpm']",
+                      "item/sanidi_targetcpv": "@items('For_each_ad_group')?['targetcpv']",
+                      "item/sanidi_targetroas": "@items('For_each_ad_group')?['targetroas']",
+                      "item/sanidi_effectivecpcbid": "@items('For_each_ad_group')?['effectivecpcbid']",
+                      "item/sanidi_effectivetargetcpa": "@items('For_each_ad_group')?['effectivetargetcpa']",
+                      "item/sanidi_effectivetargetcpasource": "@outputs('Choice_maps')?['sanidi_effectivetargetcpasource']?[string(items('For_each_ad_group')?['effectivetargetcpasource'])]",
+                      "item/sanidi_effectivetargetcpc": "@items('For_each_ad_group')?['effectivetargetcpc']",
+                      "item/sanidi_effectivetargetcpcsource": "@outputs('Choice_maps')?['sanidi_effectivetargetcpcsource']?[string(items('For_each_ad_group')?['effectivetargetcpcsource'])]",
+                      "item/sanidi_effectivetargetroas": "@items('For_each_ad_group')?['effectivetargetroas']",
+                      "item/sanidi_effectivetargetroassource": "@outputs('Choice_maps')?['sanidi_effectivetargetroassource']?[string(items('For_each_ad_group')?['effectivetargetroassource'])]",
+                      "item/sanidi_optimizedtargetingenabled": "@items('For_each_ad_group')?['optimizedtargetingenabled']",
+                      "item/sanidi_excludedemographicexpansion": "@items('For_each_ad_group')?['excludedemographicexpansion']",
+                      "item/sanidi_useaudiencegrouped": "@items('For_each_ad_group')?['useaudiencegrouped']",
+                      "item/sanidi_displaycustombiddimension": "@outputs('Choice_maps')?['sanidi_displaycustombiddimension']?[string(items('For_each_ad_group')?['displaycustombiddimension'])]",
+                      "item/sanidi_disablesearchtermmatching": "@items('For_each_ad_group')?['disablesearchtermmatching']",
+                      "item/sanidi_targetrestrictions": "@items('For_each_ad_group')?['targetrestrictions']",
+                      "item/sanidi_excludedparentassetfieldtypes": "@if(empty(body('Known_excludedparentassetfieldtypes')), null, join(body('Known_excludedparentassetfieldtypes'), ','))",
+                      "item/sanidi_channelconfig": "@outputs('Choice_maps')?['sanidi_channelconfig']?[string(items('For_each_ad_group')?['channelconfig'])]",
+                      "item/sanidi_channelstrategy": "@outputs('Choice_maps')?['sanidi_channelstrategy']?[string(items('For_each_ad_group')?['channelstrategy'])]",
+                      "item/sanidi_channelyoutubeinstream": "@items('For_each_ad_group')?['channelyoutubeinstream']",
+                      "item/sanidi_channelyoutubeinfeed": "@items('For_each_ad_group')?['channelyoutubeinfeed']",
+                      "item/sanidi_channelyoutubeshorts": "@items('For_each_ad_group')?['channelyoutubeshorts']",
+                      "item/sanidi_channeldiscover": "@items('For_each_ad_group')?['channeldiscover']",
+                      "item/sanidi_channelgmail": "@items('For_each_ad_group')?['channelgmail']",
+                      "item/sanidi_channeldisplay": "@items('For_each_ad_group')?['channeldisplay']",
+                      "item/sanidi_channelmaps": "@items('For_each_ad_group')?['channelmaps']",
+                      "item/sanidi_trackingurltemplate": "@items('For_each_ad_group')?['trackingurltemplate']",
+                      "item/sanidi_finalurlsuffix": "@items('For_each_ad_group')?['finalurlsuffix']",
+                      "item/sanidi_urlcustomparameters": "@items('For_each_ad_group')?['urlcustomparameters']",
+                      "item/sanidi_impressions": "@items('For_each_ad_group')?['impressions']",
+                      "item/sanidi_clicks": "@items('For_each_ad_group')?['clicks']",
+                      "item/sanidi_ctr": "@items('For_each_ad_group')?['ctr']",
+                      "item/sanidi_averagecpc": "@items('For_each_ad_group')?['averagecpc']",
+                      "item/sanidi_averagecpm": "@items('For_each_ad_group')?['averagecpm']",
+                      "item/sanidi_averagecost": "@items('For_each_ad_group')?['averagecost']",
+                      "item/sanidi_cost": "@items('For_each_ad_group')?['cost']",
+                      "item/sanidi_interactions": "@items('For_each_ad_group')?['interactions']",
+                      "item/sanidi_interactionrate": "@items('For_each_ad_group')?['interactionrate']",
+                      "item/sanidi_engagements": "@items('For_each_ad_group')?['engagements']",
+                      "item/sanidi_engagementrate": "@items('For_each_ad_group')?['engagementrate']",
+                      "item/sanidi_conversions": "@items('For_each_ad_group')?['conversions']",
+                      "item/sanidi_conversionsvalue": "@items('For_each_ad_group')?['conversionsvalue']",
+                      "item/sanidi_costperconversion": "@items('For_each_ad_group')?['costperconversion']",
+                      "item/sanidi_valueperconversion": "@items('For_each_ad_group')?['valueperconversion']",
+                      "item/sanidi_conversionrate": "@items('For_each_ad_group')?['conversionrate']",
+                      "item/sanidi_allconversions": "@items('For_each_ad_group')?['allconversions']",
+                      "item/sanidi_allconversionsvalue": "@items('For_each_ad_group')?['allconversionsvalue']",
+                      "item/sanidi_viewthroughconversions": "@items('For_each_ad_group')?['viewthroughconversions']",
+                      "item/sanidi_phonecalls": "@items('For_each_ad_group')?['phonecalls']",
+                      "item/sanidi_videoviews": "@items('For_each_ad_group')?['videoviews']",
+                      "item/sanidi_videoviewrate": "@items('For_each_ad_group')?['videoviewrate']",
+                      "item/sanidi_topimpressionpct": "@items('For_each_ad_group')?['topimpressionpct']",
+                      "item/sanidi_absolutetopimpressionpct": "@items('For_each_ad_group')?['absolutetopimpressionpct']",
+                      "item/sanidi_searchimpressionshare": "@items('For_each_ad_group')?['searchimpressionshare']",
+                      "item/sanidi_searchtopimpressionshare": "@items('For_each_ad_group')?['searchtopimpressionshare']",
+                      "item/sanidi_searchabsolutetopimpressionshare": "@items('For_each_ad_group')?['searchabsolutetopimpressionshare']",
+                      "item/sanidi_lastsyncedon": "@items('For_each_ad_group')?['lastsyncedon']",
+                      "item/sanidi_rawpayload": "@items('For_each_ad_group')?['rawpayload']",
+                      "item/sanidi_googleadscampaign@odata.bind": "/sanidi_googleadscampaigns(@{triggerOutputs()?['body/sanidi_googleadscampaignid']})",
+                      "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{triggerOutputs()?['body/_transactioncurrencyid_value']})"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "UpdateOnlyRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                    }
+                  }
+                }
+              },
+              "else": {
+                "actions": {
+                  "Add_ad_group": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "entityName": "sanidi_googleadsadgroups",
+                        "item/sanidi_adgroupname": "@items('For_each_ad_group')?['adgroupname']",
+                        "item/sanidi_adgroupid": "@items('For_each_ad_group')?['adgroupid']",
+                        "item/sanidi_resourcename": "@items('For_each_ad_group')?['resourcename']",
+                        "item/sanidi_campaignid": "@items('For_each_ad_group')?['campaignid']",
+                        "item/sanidi_campaignname": "@items('For_each_ad_group')?['campaignname']",
+                        "item/sanidi_customerid": "@items('For_each_ad_group')?['customerid']",
+                        "item/sanidi_baseadgroup": "@items('For_each_ad_group')?['baseadgroup']",
+                        "item/sanidi_labels": "@items('For_each_ad_group')?['labels']",
+                        "item/sanidi_status": "@outputs('Choice_maps')?['sanidi_status']?[string(items('For_each_ad_group')?['status'])]",
+                        "item/sanidi_primarystatus": "@outputs('Choice_maps')?['sanidi_primarystatus']?[string(items('For_each_ad_group')?['primarystatus'])]",
+                        "item/sanidi_primarystatusreasons": "@if(empty(body('Known_primarystatusreasons')), null, join(body('Known_primarystatusreasons'), ','))",
+                        "item/sanidi_type": "@outputs('Choice_maps')?['sanidi_type']?[string(items('For_each_ad_group')?['type'])]",
+                        "item/sanidi_adrotationmode": "@outputs('Choice_maps')?['sanidi_adrotationmode']?[string(items('For_each_ad_group')?['adrotationmode'])]",
+                        "item/sanidi_cpcbid": "@items('For_each_ad_group')?['cpcbid']",
+                        "item/sanidi_cpmbid": "@items('For_each_ad_group')?['cpmbid']",
+                        "item/sanidi_cpvbid": "@items('For_each_ad_group')?['cpvbid']",
+                        "item/sanidi_fixedcpm": "@items('For_each_ad_group')?['fixedcpm']",
+                        "item/sanidi_percentcpcbid": "@items('For_each_ad_group')?['percentcpcbid']",
+                        "item/sanidi_targetcpa": "@items('For_each_ad_group')?['targetcpa']",
+                        "item/sanidi_targetcpc": "@items('For_each_ad_group')?['targetcpc']",
+                        "item/sanidi_targetcpm": "@items('For_each_ad_group')?['targetcpm']",
+                        "item/sanidi_targetcpv": "@items('For_each_ad_group')?['targetcpv']",
+                        "item/sanidi_targetroas": "@items('For_each_ad_group')?['targetroas']",
+                        "item/sanidi_effectivecpcbid": "@items('For_each_ad_group')?['effectivecpcbid']",
+                        "item/sanidi_effectivetargetcpa": "@items('For_each_ad_group')?['effectivetargetcpa']",
+                        "item/sanidi_effectivetargetcpasource": "@outputs('Choice_maps')?['sanidi_effectivetargetcpasource']?[string(items('For_each_ad_group')?['effectivetargetcpasource'])]",
+                        "item/sanidi_effectivetargetcpc": "@items('For_each_ad_group')?['effectivetargetcpc']",
+                        "item/sanidi_effectivetargetcpcsource": "@outputs('Choice_maps')?['sanidi_effectivetargetcpcsource']?[string(items('For_each_ad_group')?['effectivetargetcpcsource'])]",
+                        "item/sanidi_effectivetargetroas": "@items('For_each_ad_group')?['effectivetargetroas']",
+                        "item/sanidi_effectivetargetroassource": "@outputs('Choice_maps')?['sanidi_effectivetargetroassource']?[string(items('For_each_ad_group')?['effectivetargetroassource'])]",
+                        "item/sanidi_optimizedtargetingenabled": "@items('For_each_ad_group')?['optimizedtargetingenabled']",
+                        "item/sanidi_excludedemographicexpansion": "@items('For_each_ad_group')?['excludedemographicexpansion']",
+                        "item/sanidi_useaudiencegrouped": "@items('For_each_ad_group')?['useaudiencegrouped']",
+                        "item/sanidi_displaycustombiddimension": "@outputs('Choice_maps')?['sanidi_displaycustombiddimension']?[string(items('For_each_ad_group')?['displaycustombiddimension'])]",
+                        "item/sanidi_disablesearchtermmatching": "@items('For_each_ad_group')?['disablesearchtermmatching']",
+                        "item/sanidi_targetrestrictions": "@items('For_each_ad_group')?['targetrestrictions']",
+                        "item/sanidi_excludedparentassetfieldtypes": "@if(empty(body('Known_excludedparentassetfieldtypes')), null, join(body('Known_excludedparentassetfieldtypes'), ','))",
+                        "item/sanidi_channelconfig": "@outputs('Choice_maps')?['sanidi_channelconfig']?[string(items('For_each_ad_group')?['channelconfig'])]",
+                        "item/sanidi_channelstrategy": "@outputs('Choice_maps')?['sanidi_channelstrategy']?[string(items('For_each_ad_group')?['channelstrategy'])]",
+                        "item/sanidi_channelyoutubeinstream": "@items('For_each_ad_group')?['channelyoutubeinstream']",
+                        "item/sanidi_channelyoutubeinfeed": "@items('For_each_ad_group')?['channelyoutubeinfeed']",
+                        "item/sanidi_channelyoutubeshorts": "@items('For_each_ad_group')?['channelyoutubeshorts']",
+                        "item/sanidi_channeldiscover": "@items('For_each_ad_group')?['channeldiscover']",
+                        "item/sanidi_channelgmail": "@items('For_each_ad_group')?['channelgmail']",
+                        "item/sanidi_channeldisplay": "@items('For_each_ad_group')?['channeldisplay']",
+                        "item/sanidi_channelmaps": "@items('For_each_ad_group')?['channelmaps']",
+                        "item/sanidi_trackingurltemplate": "@items('For_each_ad_group')?['trackingurltemplate']",
+                        "item/sanidi_finalurlsuffix": "@items('For_each_ad_group')?['finalurlsuffix']",
+                        "item/sanidi_urlcustomparameters": "@items('For_each_ad_group')?['urlcustomparameters']",
+                        "item/sanidi_impressions": "@items('For_each_ad_group')?['impressions']",
+                        "item/sanidi_clicks": "@items('For_each_ad_group')?['clicks']",
+                        "item/sanidi_ctr": "@items('For_each_ad_group')?['ctr']",
+                        "item/sanidi_averagecpc": "@items('For_each_ad_group')?['averagecpc']",
+                        "item/sanidi_averagecpm": "@items('For_each_ad_group')?['averagecpm']",
+                        "item/sanidi_averagecost": "@items('For_each_ad_group')?['averagecost']",
+                        "item/sanidi_cost": "@items('For_each_ad_group')?['cost']",
+                        "item/sanidi_interactions": "@items('For_each_ad_group')?['interactions']",
+                        "item/sanidi_interactionrate": "@items('For_each_ad_group')?['interactionrate']",
+                        "item/sanidi_engagements": "@items('For_each_ad_group')?['engagements']",
+                        "item/sanidi_engagementrate": "@items('For_each_ad_group')?['engagementrate']",
+                        "item/sanidi_conversions": "@items('For_each_ad_group')?['conversions']",
+                        "item/sanidi_conversionsvalue": "@items('For_each_ad_group')?['conversionsvalue']",
+                        "item/sanidi_costperconversion": "@items('For_each_ad_group')?['costperconversion']",
+                        "item/sanidi_valueperconversion": "@items('For_each_ad_group')?['valueperconversion']",
+                        "item/sanidi_conversionrate": "@items('For_each_ad_group')?['conversionrate']",
+                        "item/sanidi_allconversions": "@items('For_each_ad_group')?['allconversions']",
+                        "item/sanidi_allconversionsvalue": "@items('For_each_ad_group')?['allconversionsvalue']",
+                        "item/sanidi_viewthroughconversions": "@items('For_each_ad_group')?['viewthroughconversions']",
+                        "item/sanidi_phonecalls": "@items('For_each_ad_group')?['phonecalls']",
+                        "item/sanidi_videoviews": "@items('For_each_ad_group')?['videoviews']",
+                        "item/sanidi_videoviewrate": "@items('For_each_ad_group')?['videoviewrate']",
+                        "item/sanidi_topimpressionpct": "@items('For_each_ad_group')?['topimpressionpct']",
+                        "item/sanidi_absolutetopimpressionpct": "@items('For_each_ad_group')?['absolutetopimpressionpct']",
+                        "item/sanidi_searchimpressionshare": "@items('For_each_ad_group')?['searchimpressionshare']",
+                        "item/sanidi_searchtopimpressionshare": "@items('For_each_ad_group')?['searchtopimpressionshare']",
+                        "item/sanidi_searchabsolutetopimpressionshare": "@items('For_each_ad_group')?['searchabsolutetopimpressionshare']",
+                        "item/sanidi_lastsyncedon": "@items('For_each_ad_group')?['lastsyncedon']",
+                        "item/sanidi_rawpayload": "@items('For_each_ad_group')?['rawpayload']",
+                        "item/sanidi_googleadscampaign@odata.bind": "/sanidi_googleadscampaigns(@{triggerOutputs()?['body/sanidi_googleadscampaignid']})",
+                        "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{triggerOutputs()?['body/_transactioncurrencyid_value']})"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                        "operationId": "CreateRecord",
+                        "connectionName": "shared_commondataserviceforapps"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}
