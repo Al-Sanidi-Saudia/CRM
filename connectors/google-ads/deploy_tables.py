@@ -37,7 +37,10 @@ def column_metadata(column, display, kind, src):
     srcs = spec.sources(src)
     description = "Google Ads: " + ", ".join(srcs) + "." if srcs else {
         "now": "When the Google Ads sync last wrote this record.",
-        "raw": "Full Google Ads API row (JSON, without metrics) from the last sync."}[kind]
+        "raw": "Full Google Ads API row (JSON, without metrics) from the last sync.",
+        "assetfield": "Google Ads: linked assets of type " + ", ".join(spec.ASSET_FIELDS.get(column, [])) + ".",
+        "assetcount": "Google Ads: number of linked assets (" + spec.ASSET_COUNTS.get(column, "").lower() + ").",
+    }[kind]
     base = {"SchemaName": schema, "DisplayName": label(display), "Description": label(description),
             "RequiredLevel": {"Value": "None", "CanBeChanged": True,
                               "ManagedPropertyLogicalName": "canmodifyrequirementlevelsettings"}}
@@ -48,7 +51,7 @@ def column_metadata(column, display, kind, src):
     if kind in spec.MULTILINE_KINDS:
         return {"@odata.type": "Microsoft.Dynamics.CRM.MemoAttributeMetadata", **base,
                 "MaxLength": length, "Format": "TextArea"}
-    if kind == "int":
+    if kind in ("int", "assetcount"):
         return {"@odata.type": "Microsoft.Dynamics.CRM.IntegerAttributeMetadata", **base,
                 "Format": "None", "MinValue": -2147483648, "MaxValue": 2147483647}
     if kind in ("dec", "pct", "pctmicros"):

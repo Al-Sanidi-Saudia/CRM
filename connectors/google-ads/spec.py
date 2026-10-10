@@ -16,7 +16,9 @@ Each table lists its columns as (column, label, section, kind, source):
               text     AdTextAsset -> text         texts   AdTextAsset[] -> multiline
               assets   AdImageAsset/AdVideoAsset[] -> multiline asset resource names
             (a repeated field mapped to str/id keeps its first value)
-  source  - GAQL field, or a list of fields (first non-empty wins).
+              assetfield  linked assets of the given types (ASSET_FIELDS) -> multiline, one per line
+              assetcount  number of linked assets (ASSET_COUNTS) -> whole number
+  source  - GAQL field, or a list of fields (first non-empty wins). None for assetfield/assetcount.
 
 Choice options are every value of the Google Ads v25 enum (fields_v25.json), numbered from 1
 in the order listed there.
@@ -342,6 +344,66 @@ ADVERTISEMENT = [
     ("urlcustomparameters", "URL Custom Parameters", "urls", "json", A + "url_custom_parameters"),
 ] + metrics("ad_group_ad") + SYNC
 
+G = "asset_group."
+
+# Performance Max asset groups. The creative columns come from the asset group's linked assets
+# (asset_group_asset + asset), grouped by field type; removed links are left out.
+ASSET_GROUP = [
+    ("assetgroupname", "Asset Group Name", "identity", "str", G + "name"),
+    ("assetgroupid", "Asset Group ID", "identity", "id", G + "id"),
+    ("resourcename", "Resource Name", "identity", "str", G + "resource_name"),
+    ("campaignid", "Campaign ID", "identity", "id", "campaign.id"),
+    ("campaignname", "Campaign Name", "identity", "str", "campaign.name"),
+    ("customerid", "Customer ID", "identity", "id", "customer.id"),
+    ("status", "Status", "status", "enum", G + "status"),
+    ("primarystatus", "Primary Status", "status", "enum", G + "primary_status"),
+    ("primarystatusreasons", "Primary Status Reasons", "status", "enums", G + "primary_status_reasons"),
+    ("adstrength", "Ad Strength", "status", "enum", G + "ad_strength"),
+    ("adstrengthactionitems", "Ad Strength Action Items", "status", "json",
+     G + "asset_coverage.ad_strength_action_items"),
+    ("headlines", "Headlines", "text", "assetfield", None),
+    ("longheadlines", "Long Headlines", "text", "assetfield", None),
+    ("descriptions", "Descriptions", "text", "assetfield", None),
+    ("businessname", "Business Name", "text", "assetfield", None),
+    ("calltoaction", "Call to Action", "text", "assetfield", None),
+    ("marketingimages", "Marketing Images", "media", "assetfield", None),
+    ("squaremarketingimages", "Square Marketing Images", "media", "assetfield", None),
+    ("portraitmarketingimages", "Portrait Marketing Images", "media", "assetfield", None),
+    ("logos", "Logos", "media", "assetfield", None),
+    ("landscapelogos", "Landscape Logos", "media", "assetfield", None),
+    ("videos", "Videos", "media", "assetfield", None),
+    ("totalassets", "Total Assets", "health", "assetcount", None),
+    ("disapprovedassets", "Disapproved Assets", "health", "assetcount", None),
+    ("assetsunderreview", "Assets Under Review", "health", "assetcount", None),
+    ("finalurl", "Final URL", "urls", "str", G + "final_urls"),
+    ("finalurls", "Final URLs", "urls", "strs", G + "final_urls"),
+    ("finalmobileurls", "Final Mobile URLs", "urls", "strs", G + "final_mobile_urls"),
+    ("path1", "Path 1", "urls", "str", G + "path1"),
+    ("path2", "Path 2", "urls", "str", G + "path2"),
+    ("trackingurltemplate", "Tracking URL Template", "urls", "str", G + "tracking_url_template"),
+    ("finalurlsuffix", "Final URL Suffix", "urls", "str", G + "final_url_suffix"),
+    ("urlcustomparameters", "URL Custom Parameters", "urls", "json", G + "url_custom_parameters"),
+] + metrics("ad_group_ad") + SYNC
+
+# assetfield column -> asset_group_asset.field_type values it collects
+ASSET_FIELDS = {
+    "headlines": ["HEADLINE"], "longheadlines": ["LONG_HEADLINE"], "descriptions": ["DESCRIPTION"],
+    "businessname": ["BUSINESS_NAME"], "calltoaction": ["CALL_TO_ACTION_SELECTION", "CALL_TO_ACTION"],
+    "marketingimages": ["MARKETING_IMAGE"], "squaremarketingimages": ["SQUARE_MARKETING_IMAGE"],
+    "portraitmarketingimages": ["PORTRAIT_MARKETING_IMAGE", "TALL_PORTRAIT_MARKETING_IMAGE"],
+    "logos": ["LOGO", "BUSINESS_LOGO"], "landscapelogos": ["LANDSCAPE_LOGO"], "videos": ["YOUTUBE_VIDEO", "VIDEO"],
+}
+# assetcount column -> which linked assets it counts
+ASSET_COUNTS = {"totalassets": "ALL", "disapprovedassets": "DISAPPROVED", "assetsunderreview": "UNDER_REVIEW"}
+# Read per linked asset (asset_group_asset is filtered like the asset groups themselves).
+ASSET_QUERY_FIELDS = [
+    G + "resource_name", "asset_group_asset.field_type", "asset_group_asset.status",
+    "asset_group_asset.policy_summary.approval_status", "asset_group_asset.policy_summary.review_status",
+    "asset.name", "asset.type", "asset.text_asset.text", "asset.image_asset.full_size.url",
+    "asset.youtube_video_asset.youtube_video_id", "asset.youtube_video_asset.youtube_video_title",
+    "asset.call_to_action_asset.call_to_action",
+]
+
 TABLES = {
     "googleadscampaign": {
         "display": "Google Ads Campaign", "plural": "Google Ads Campaigns",
@@ -361,10 +423,17 @@ TABLES = {
         "resource": "ad_group_ad", "primary": "adname", "googleid": "adid",
         "columns": ADVERTISEMENT, "parent": ("googleadsadgroup", "Google Ads Ad Group"),
     },
+    "googleadsassetgroup": {
+        "display": "Google Ads Asset Group", "plural": "Google Ads Asset Groups",
+        "description": "Performance Max asset groups synced from the Google Ads API by the Get Google Ads "
+                       "Asset Groups flow.",
+        "resource": "asset_group", "primary": "assetgroupname", "googleid": "assetgroupid",
+        "columns": ASSET_GROUP, "parent": ("googleadscampaign", "Google Ads Campaign"),
+    },
 }
 
 
-MULTILINE_KINDS = {"strs", "json", "texts", "assets", "raw"}
+MULTILINE_KINDS = {"strs", "json", "texts", "assets", "raw", "assetfield"}
 
 
 def max_length(column, kind):
@@ -410,7 +479,8 @@ FORMS = {
         ("Performance", [("performance", "Delivery (all time)"), ("conversions", "Conversions (all time)"),
                          ("video", "Video & Impression Share (all time)")]),
         ("Tracking", [("tracking", "Tracking")]),
-        ("Related", [("@related:googleadsadgroup", "Google Ads Ad Groups")]),
+        ("Related", [("@related:googleadsadgroup", "Google Ads Ad Groups"),
+                     ("@related:googleadsassetgroup", "Google Ads Asset Groups")]),
         ("Sync", [("sync", "Sync")]),
     ],
     "googleadsadgroup": [
@@ -421,6 +491,14 @@ FORMS = {
         ("Performance", [("performance", "Delivery (all time)"), ("conversions", "Conversions (all time)"),
                          ("video", "Video & Impression Share (all time)")]),
         ("Related", [("@related:googleadsadvertisement", "Google Ads Advertisements")]),
+        ("Sync", [("sync", "Sync")]),
+    ],
+    "googleadsassetgroup": [
+        ("General", [("identity", "Identity"), ("status", "Status")]),
+        ("Creative", [("text", "Text"), ("media", "Images & Videos")]),
+        ("Asset Health & URLs", [("health", "Asset Health"), ("urls", "URLs & Tracking")]),
+        ("Performance", [("performance", "Delivery (all time)"), ("conversions", "Conversions (all time)"),
+                         ("video", "Video & Top Impressions (all time)")]),
         ("Sync", [("sync", "Sync")]),
     ],
     "googleadsadvertisement": [
@@ -436,6 +514,8 @@ FORMS = {
 
 # Default "Active" view: main columns first (like Snap), then every other column.
 VIEW_MAIN = {
+    "googleadsassetgroup": ["assetgroupname", "status", "primarystatus", "adstrength", "@lookup", "finalurl",
+                            "impressions", "clicks", "cost", "conversions", "assetgroupid", "lastsyncedon"],
     "googleadscampaign": ["campaignname", "status", "primarystatus", "advertisingchanneltype",
                           "biddingstrategytype", "budgetamount", "startdatetime", "enddatetime", "impressions",
                           "clicks", "cost", "conversions", "campaignid", "customerid", "lastsyncedon"],

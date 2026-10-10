@@ -535,6 +535,119 @@
         }
       }
     },
+    "/customers/{customer_id}/assetgroups": {
+      "get": {
+        "operationId": "ListAssetGroups",
+        "summary": "List asset groups",
+        "description": "Lists Performance Max asset groups with their status, ad strength, linked assets (headlines, descriptions, images, videos, logos) and URLs, plus all-time metrics.",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Customer ID",
+            "description": "Google Ads customer (account) ID, 10 digits. Dashes are allowed.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "Google OAuth access token from the 'Get access token' action (valid for one hour).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "developer-token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Developer token",
+            "description": "Google Ads API developer token (Google Ads > Tools > API Center).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "login-customer-id",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Manager customer ID",
+            "description": "Manager (MCC) account ID to access the customer through. Required when the signed-in user reaches the account via a manager account.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Campaign ID",
+            "description": "Only return items of this campaign.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "asset_group_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Asset group ID",
+            "description": "Only return this asset group.",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Status",
+            "description": "Filter by status. ALL includes removed items so their status syncs too.",
+            "enum": [
+              "ALL",
+              "NOT_REMOVED",
+              "ENABLED",
+              "PAUSED",
+              "REMOVED"
+            ],
+            "default": "ALL",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "include_metrics",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Include all-time metrics",
+            "description": "Add all-time performance metrics (impressions, clicks, cost, conversions...).",
+            "default": true,
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "max_rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Max rows",
+            "description": "Stop after this many rows. Omit to return everything.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AssetGroupsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/customers/{customer_id}/performance": {
       "get": {
         "operationId": "GetPerformance",
@@ -931,6 +1044,11 @@
           "type": "string",
           "x-ms-summary": "Metrics error",
           "description": "Set when metrics could not be read; the rows are still returned."
+        },
+        "assets_error": {
+          "type": "string",
+          "x-ms-summary": "Assets error",
+          "description": "Set when linked assets could not be read; the rows are still returned."
         },
         "rows": {
           "type": "array",
@@ -1559,6 +1677,11 @@
           "x-ms-summary": "Metrics error",
           "description": "Set when metrics could not be read; the rows are still returned."
         },
+        "assets_error": {
+          "type": "string",
+          "x-ms-summary": "Assets error",
+          "description": "Set when linked assets could not be read; the rows are still returned."
+        },
         "rows": {
           "type": "array",
           "x-ms-summary": "Rows",
@@ -1993,6 +2116,11 @@
           "x-ms-summary": "Metrics error",
           "description": "Set when metrics could not be read; the rows are still returned."
         },
+        "assets_error": {
+          "type": "string",
+          "x-ms-summary": "Assets error",
+          "description": "Set when linked assets could not be read; the rows are still returned."
+        },
         "rows": {
           "type": "array",
           "x-ms-summary": "Rows",
@@ -2413,11 +2541,360 @@
           "x-ms-summary": "Metrics error",
           "description": "Set when metrics could not be read; the rows are still returned."
         },
+        "assets_error": {
+          "type": "string",
+          "x-ms-summary": "Assets error",
+          "description": "Set when linked assets could not be read; the rows are still returned."
+        },
         "rows": {
           "type": "array",
           "x-ms-summary": "Rows",
           "items": {
             "$ref": "#/definitions/Ad"
+          }
+        }
+      }
+    },
+    "AssetGroup": {
+      "type": "object",
+      "properties": {
+        "assetgroupname": {
+          "type": "string",
+          "x-ms-summary": "Asset Group Name",
+          "description": "Source: asset_group.name."
+        },
+        "assetgroupid": {
+          "type": "string",
+          "x-ms-summary": "Asset Group ID",
+          "description": "Source: asset_group.id."
+        },
+        "resourcename": {
+          "type": "string",
+          "x-ms-summary": "Resource Name",
+          "description": "Source: asset_group.resource_name."
+        },
+        "campaignid": {
+          "type": "string",
+          "x-ms-summary": "Campaign ID",
+          "description": "Source: campaign.id."
+        },
+        "campaignname": {
+          "type": "string",
+          "x-ms-summary": "Campaign Name",
+          "description": "Source: campaign.name."
+        },
+        "customerid": {
+          "type": "string",
+          "x-ms-summary": "Customer ID",
+          "description": "Source: customer.id."
+        },
+        "status": {
+          "type": "string",
+          "x-ms-summary": "Status",
+          "description": "One of: ENABLED, PAUSED, REMOVED, UNKNOWN, UNSPECIFIED. Source: asset_group.status."
+        },
+        "primarystatus": {
+          "type": "string",
+          "x-ms-summary": "Primary Status",
+          "description": "One of: ELIGIBLE, LIMITED, NOT_ELIGIBLE, PAUSED, PENDING, REMOVED, UNKNOWN, UNSPECIFIED. Source: asset_group.primary_status."
+        },
+        "primarystatusreasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Primary Status Reasons",
+          "description": "Google Ads enum values. Source: asset_group.primary_status_reasons."
+        },
+        "adstrength": {
+          "type": "string",
+          "x-ms-summary": "Ad Strength",
+          "description": "One of: AVERAGE, EXCELLENT, GOOD, NO_ADS, PENDING, POOR, UNKNOWN, UNSPECIFIED. Source: asset_group.ad_strength."
+        },
+        "adstrengthactionitems": {
+          "type": "string",
+          "x-ms-summary": "Ad Strength Action Items",
+          "description": "JSON. Source: asset_group.asset_coverage.ad_strength_action_items."
+        },
+        "headlines": {
+          "type": "string",
+          "x-ms-summary": "Headlines",
+          "description": "Linked assets, one per line: text, image URL or YouTube video. Asset field types: HEADLINE."
+        },
+        "longheadlines": {
+          "type": "string",
+          "x-ms-summary": "Long Headlines",
+          "description": "Linked assets, one per line: text, image URL or YouTube video. Asset field types: LONG_HEADLINE."
+        },
+        "descriptions": {
+          "type": "string",
+          "x-ms-summary": "Descriptions",
+          "description": "Linked assets, one per line: text, image URL or YouTube video. Asset field types: DESCRIPTION."
+        },
+        "businessname": {
+          "type": "string",
+          "x-ms-summary": "Business Name",
+          "description": "Linked assets, one per line: text, image URL or YouTube video. Asset field types: BUSINESS_NAME."
+        },
+        "calltoaction": {
+          "type": "string",
+          "x-ms-summary": "Call to Action",
+          "description": "Linked assets, one per line: text, image URL or YouTube video. Asset field types: CALL_TO_ACTION_SELECTION, CALL_TO_ACTION."
+        },
+        "marketingimages": {
+          "type": "string",
+          "x-ms-summary": "Marketing Images",
+          "description": "Linked assets, one per line: text, image URL or YouTube video. Asset field types: MARKETING_IMAGE."
+        },
+        "squaremarketingimages": {
+          "type": "string",
+          "x-ms-summary": "Square Marketing Images",
+          "description": "Linked assets, one per line: text, image URL or YouTube video. Asset field types: SQUARE_MARKETING_IMAGE."
+        },
+        "portraitmarketingimages": {
+          "type": "string",
+          "x-ms-summary": "Portrait Marketing Images",
+          "description": "Linked assets, one per line: text, image URL or YouTube video. Asset field types: PORTRAIT_MARKETING_IMAGE, TALL_PORTRAIT_MARKETING_IMAGE."
+        },
+        "logos": {
+          "type": "string",
+          "x-ms-summary": "Logos",
+          "description": "Linked assets, one per line: text, image URL or YouTube video. Asset field types: LOGO, BUSINESS_LOGO."
+        },
+        "landscapelogos": {
+          "type": "string",
+          "x-ms-summary": "Landscape Logos",
+          "description": "Linked assets, one per line: text, image URL or YouTube video. Asset field types: LANDSCAPE_LOGO."
+        },
+        "videos": {
+          "type": "string",
+          "x-ms-summary": "Videos",
+          "description": "Linked assets, one per line: text, image URL or YouTube video. Asset field types: YOUTUBE_VIDEO, VIDEO."
+        },
+        "totalassets": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Total Assets",
+          "description": "Number of linked assets (removed links excluded)."
+        },
+        "disapprovedassets": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Disapproved Assets",
+          "description": "Number of linked assets (removed links excluded)."
+        },
+        "assetsunderreview": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Assets Under Review",
+          "description": "Number of linked assets (removed links excluded)."
+        },
+        "finalurl": {
+          "type": "string",
+          "x-ms-summary": "Final URL",
+          "description": "Source: asset_group.final_urls."
+        },
+        "finalurls": {
+          "type": "string",
+          "x-ms-summary": "Final URLs",
+          "description": "One value per line. Source: asset_group.final_urls."
+        },
+        "finalmobileurls": {
+          "type": "string",
+          "x-ms-summary": "Final Mobile URLs",
+          "description": "One value per line. Source: asset_group.final_mobile_urls."
+        },
+        "path1": {
+          "type": "string",
+          "x-ms-summary": "Path 1",
+          "description": "Source: asset_group.path1."
+        },
+        "path2": {
+          "type": "string",
+          "x-ms-summary": "Path 2",
+          "description": "Source: asset_group.path2."
+        },
+        "trackingurltemplate": {
+          "type": "string",
+          "x-ms-summary": "Tracking URL Template",
+          "description": "Source: asset_group.tracking_url_template."
+        },
+        "finalurlsuffix": {
+          "type": "string",
+          "x-ms-summary": "Final URL Suffix",
+          "description": "Source: asset_group.final_url_suffix."
+        },
+        "urlcustomparameters": {
+          "type": "string",
+          "x-ms-summary": "URL Custom Parameters",
+          "description": "JSON. Source: asset_group.url_custom_parameters."
+        },
+        "impressions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Impressions",
+          "description": "Source: metrics.impressions."
+        },
+        "clicks": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Clicks",
+          "description": "Source: metrics.clicks."
+        },
+        "ctr": {
+          "type": "number",
+          "x-ms-summary": "CTR (%)",
+          "description": "Percent (0-100). Source: metrics.ctr."
+        },
+        "averagecpc": {
+          "type": "number",
+          "x-ms-summary": "Avg. CPC",
+          "description": "In account currency (converted from micros). Source: metrics.average_cpc."
+        },
+        "averagecpm": {
+          "type": "number",
+          "x-ms-summary": "Avg. CPM",
+          "description": "In account currency (converted from micros). Source: metrics.average_cpm."
+        },
+        "averagecost": {
+          "type": "number",
+          "x-ms-summary": "Avg. Cost",
+          "description": "In account currency (converted from micros). Source: metrics.average_cost."
+        },
+        "cost": {
+          "type": "number",
+          "x-ms-summary": "Cost",
+          "description": "In account currency (converted from micros). Source: metrics.cost_micros."
+        },
+        "interactions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Interactions",
+          "description": "Source: metrics.interactions."
+        },
+        "interactionrate": {
+          "type": "number",
+          "x-ms-summary": "Interaction Rate (%)",
+          "description": "Percent (0-100). Source: metrics.interaction_rate."
+        },
+        "engagements": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Engagements",
+          "description": "Source: metrics.engagements."
+        },
+        "engagementrate": {
+          "type": "number",
+          "x-ms-summary": "Engagement Rate (%)",
+          "description": "Percent (0-100). Source: metrics.engagement_rate."
+        },
+        "conversions": {
+          "type": "number",
+          "x-ms-summary": "Conversions",
+          "description": "Source: metrics.conversions."
+        },
+        "conversionsvalue": {
+          "type": "number",
+          "x-ms-summary": "Conversions Value",
+          "description": "In account currency. Source: metrics.conversions_value."
+        },
+        "costperconversion": {
+          "type": "number",
+          "x-ms-summary": "Cost / Conversion",
+          "description": "In account currency (converted from micros). Source: metrics.cost_per_conversion."
+        },
+        "valueperconversion": {
+          "type": "number",
+          "x-ms-summary": "Value / Conversion",
+          "description": "In account currency. Source: metrics.value_per_conversion."
+        },
+        "conversionrate": {
+          "type": "number",
+          "x-ms-summary": "Conversion Rate (%)",
+          "description": "Percent (0-100). Source: metrics.conversions_from_interactions_rate."
+        },
+        "allconversions": {
+          "type": "number",
+          "x-ms-summary": "All Conversions",
+          "description": "Source: metrics.all_conversions."
+        },
+        "allconversionsvalue": {
+          "type": "number",
+          "x-ms-summary": "All Conversions Value",
+          "description": "In account currency. Source: metrics.all_conversions_value."
+        },
+        "viewthroughconversions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "View-through Conversions",
+          "description": "Source: metrics.view_through_conversions."
+        },
+        "phonecalls": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Phone Calls",
+          "description": "Source: metrics.phone_calls."
+        },
+        "videoviews": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Video Views",
+          "description": "Source: metrics.video_trueview_views."
+        },
+        "videoviewrate": {
+          "type": "number",
+          "x-ms-summary": "Video View Rate (%)",
+          "description": "Percent (0-100). Source: metrics.video_trueview_view_rate."
+        },
+        "topimpressionpct": {
+          "type": "number",
+          "x-ms-summary": "Top Impression (%)",
+          "description": "Percent (0-100). Source: metrics.top_impression_percentage."
+        },
+        "absolutetopimpressionpct": {
+          "type": "number",
+          "x-ms-summary": "Absolute Top Impression (%)",
+          "description": "Percent (0-100). Source: metrics.absolute_top_impression_percentage."
+        },
+        "lastsyncedon": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Last Synced On",
+          "description": "When the connector read the data (UTC)."
+        },
+        "rawpayload": {
+          "type": "string",
+          "x-ms-summary": "Raw Payload",
+          "description": "Full Google Ads row as JSON (without metrics)."
+        }
+      }
+    },
+    "AssetGroupsResponse": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string",
+          "x-ms-summary": "Customer ID"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "metrics_error": {
+          "type": "string",
+          "x-ms-summary": "Metrics error",
+          "description": "Set when metrics could not be read; the rows are still returned."
+        },
+        "assets_error": {
+          "type": "string",
+          "x-ms-summary": "Assets error",
+          "description": "Set when linked assets could not be read; the rows are still returned."
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "$ref": "#/definitions/AssetGroup"
           }
         }
       }
@@ -2645,6 +3122,11 @@
           "type": "string",
           "x-ms-summary": "Metrics error",
           "description": "Set when metrics could not be read; the rows are still returned."
+        },
+        "assets_error": {
+          "type": "string",
+          "x-ms-summary": "Assets error",
+          "description": "Set when linked assets could not be read; the rows are still returned."
         },
         "rows": {
           "type": "array",

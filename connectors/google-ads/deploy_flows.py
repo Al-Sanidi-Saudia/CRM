@@ -4,9 +4,11 @@ in the AlSanidi | Marketing solution.
   Get Google Ads Campaigns       instant (manual): token -> client accounts -> campaigns -> upsert
   Get Google Ads Ad Groups       when a Google Ads Campaign is added or modified -> ad groups -> upsert
   Get Google Ads Advertisements  when a Google Ads Ad Group is added or modified -> ads -> upsert
+  Get Google Ads Asset Groups    when a Performance Max Google Ads Campaign is added or modified -> asset groups
 
   python3 deploy_flows.py              # write flows/*.json for review
-  python3 deploy_flows.py --apply      # also create/update the connection reference and the flows (off)
+  python3 deploy_flows.py --apply      # create flows that don't exist yet (turned off)
+  python3 deploy_flows.py --apply --update-existing   # also overwrite existing flows (resets designer edits)
 
 Every flow starts with the connector's "Get access token" (client ID / secret / refresh token from
 environment variables) and passes the token and the developer token to the Google Ads actions.
@@ -25,7 +27,8 @@ from deploy_tables import SOLUTION  # noqa: E402
 GADS_API = "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933"
 DV_API = "shared_commondataserviceforapps"
 GADS_CONN = "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933-1"
-GADS_REF = "sanidi_googleads_connref"
+# The Google Ads connection reference the live flows use (picked in the flow designer in UAT).
+GADS_REF = "sanidi_sharedsanidi5fgoogle20ads5f43b530b23a0dc933_ba16b"
 DV_REF = "sanidi_sharedcommondataserviceforapps_79822"  # existing Dataverse reference used by Snap/Meta
 NS = uuid.UUID("0b9a3d7e-2f41-4c55-9c1e-7a8b6d5e4f32")
 
@@ -205,7 +208,7 @@ def flow_campaigns():
     return definition(triggers, actions)
 
 
-def flow_children(table, parent, list_op, filter_param, filter_col, loop, row_name):
+def flow_children(table, parent, list_op, filter_param, filter_col, loop, row_name, only_channel=None):
     parent_logical = spec.PREFIX + parent
     trigger_name = f"When_a_{spec.TABLES[parent]['display'].replace(' ', '_')}_is_added_or_modified"
     t = tokens()
@@ -228,6 +231,12 @@ def flow_children(table, parent, list_op, filter_param, filter_col, loop, row_na
                        "subscriptionRequest/scope": 4},
         "host": {"apiId": f"/providers/Microsoft.PowerApps/apis/{DV_API}", "operationId": "SubscribeWebhookTrigger",
                  "connectionName": DV_API}}}}
+    if only_channel:
+        # Trigger condition: run only for campaigns of this channel type (option value from spec).
+        value = next(o["value"] for o in spec.enum_options("campaign.advertising_channel_type")
+                     if o["label"] == only_channel)
+        triggers[trigger_name]["conditions"] = [
+            {"expression": f"@equals(triggerOutputs()?['body/sanidi_advertisingchanneltype'], {value})"}]
     return definition(triggers, actions)
 
 
@@ -242,10 +251,15 @@ FLOWS = {
         "googleadsadvertisement", "googleadsadgroup", "ListAds", "ad_group_id", "sanidi_adgroupid",
         "For_each_ad", "ad"),
         "When a Google Ads Ad Group is added or modified: syncs its ads into Google Ads Advertisement records."),
+    "Get Google Ads Asset Groups": (lambda: flow_children(
+        "googleadsassetgroup", "googleadscampaign", "ListAssetGroups", "campaign_id", "sanidi_campaignid",
+        "For_each_asset_group", "asset_group", only_channel="PERFORMANCE_MAX"),
+        "When a Performance Max Google Ads Campaign is added or modified: syncs its asset groups into "
+        "Google Ads Asset Group records."),
 }
 
 
-def main(apply):
+def main(apply, update_existing=False):
     out = HERE / "flows"
     out.mkdir(exist_ok=True)
     built = {}
@@ -268,7 +282,9 @@ def main(apply):
     for name, (clientdata, description) in built.items():
         existing = dv.first(f"workflows?$select=workflowid,statecode&$filter=name eq '{name}' and category eq 5")
         body = {"name": name, "description": description, "clientdata": json.dumps(clientdata)}
-        if existing:
+        if existing and not update_existing:
+            print(f"{name}: exists, left unchanged")
+        elif existing:
             dv.request("PATCH", f"workflows({existing['workflowid']})", body, solution=SOLUTION)
             print(f"updated {name} ({existing['workflowid']})")
         else:
@@ -279,4 +295,4 @@ def main(apply):
 
 
 if __name__ == "__main__":
-    main("--apply" in sys.argv)
+    main("--apply" in sys.argv, "--update-existing" in sys.argv)

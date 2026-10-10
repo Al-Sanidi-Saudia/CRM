@@ -7,7 +7,7 @@
           "logicalName": "sanidi_googleads"
         },
         "connection": {
-          "connectionReferenceLogicalName": "sanidi_googleads_connref"
+          "connectionReferenceLogicalName": "sanidi_sharedsanidi5fgoogle20ads5f43b530b23a0dc933_ba16b"
         },
         "runtimeSource": "embedded"
       },

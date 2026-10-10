@@ -32,6 +32,7 @@ KIND_CLASS = {
     "str": "text", "id": "text", "int": "int", "dec": "decimal", "pct": "decimal", "pctmicros": "decimal",
     "money": "money", "cur": "money", "bool": "bool", "date": "date", "now": "date", "enum": "choice",
     "enums": "multi", "strs": "memo", "json": "memo", "texts": "memo", "assets": "memo", "raw": "memo",
+    "assetfield": "memo", "assetcount": "int",
 }
 
 

@@ -865,6 +865,294 @@
    "UNSPECIFIED"
   ]
  },
+ "asset.call_to_action_asset.call_to_action": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "APPLY_NOW",
+   "BOOK_NOW",
+   "BUY_NOW",
+   "CONTACT_US",
+   "DONATE_NOW",
+   "DOWNLOAD",
+   "GET_QUOTE",
+   "LEARN_MORE",
+   "ORDER_NOW",
+   "PLAY_NOW",
+   "SEE_MORE",
+   "SHOP_NOW",
+   "SIGN_UP",
+   "START_NOW",
+   "SUBSCRIBE",
+   "UNKNOWN",
+   "UNSPECIFIED",
+   "VISIT_SITE",
+   "WATCH_NOW"
+  ]
+ },
+ "asset.image_asset.full_size.url": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "asset.name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "asset.text_asset.text": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "asset.type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "APP_DEEP_LINK",
+   "BOOK_ON_GOOGLE",
+   "BUSINESS_MESSAGE",
+   "CALL",
+   "CALLOUT",
+   "CALL_TO_ACTION",
+   "DEMAND_GEN_CAROUSEL_CARD",
+   "DYNAMIC_CUSTOM",
+   "DYNAMIC_EDUCATION",
+   "DYNAMIC_FLIGHTS",
+   "DYNAMIC_HOTELS_AND_RENTALS",
+   "DYNAMIC_JOBS",
+   "DYNAMIC_LOCAL",
+   "DYNAMIC_REAL_ESTATE",
+   "DYNAMIC_TRAVEL",
+   "HOTEL_CALLOUT",
+   "HOTEL_PROPERTY",
+   "IMAGE",
+   "LEAD_FORM",
+   "LOCATION",
+   "MEDIA_BUNDLE",
+   "MOBILE_APP",
+   "PAGE_FEED",
+   "PRICE",
+   "PROMOTION",
+   "SITELINK",
+   "STRUCTURED_SNIPPET",
+   "TEXT",
+   "UNKNOWN",
+   "UNSPECIFIED",
+   "YOUTUBE_VIDEO",
+   "YOUTUBE_VIDEO_LIST"
+  ]
+ },
+ "asset.youtube_video_asset.youtube_video_id": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "asset.youtube_video_asset.youtube_video_title": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "asset_group.ad_strength": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "AVERAGE",
+   "EXCELLENT",
+   "GOOD",
+   "NO_ADS",
+   "PENDING",
+   "POOR",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "asset_group.asset_coverage.ad_strength_action_items": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "asset_group.final_mobile_urls": {
+  "type": "STRING",
+  "repeated": true,
+  "selectable": true
+ },
+ "asset_group.final_url_suffix": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "asset_group.final_urls": {
+  "type": "STRING",
+  "repeated": true,
+  "selectable": true
+ },
+ "asset_group.id": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "asset_group.name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "asset_group.path1": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "asset_group.path2": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "asset_group.primary_status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ELIGIBLE",
+   "LIMITED",
+   "NOT_ELIGIBLE",
+   "PAUSED",
+   "PENDING",
+   "REMOVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "asset_group.primary_status_reasons": {
+  "type": "ENUM",
+  "repeated": true,
+  "selectable": true,
+  "enum": [
+   "ASSET_GROUP_DISAPPROVED",
+   "ASSET_GROUP_LIMITED",
+   "ASSET_GROUP_PAUSED",
+   "ASSET_GROUP_REMOVED",
+   "ASSET_GROUP_UNDER_REVIEW",
+   "CAMPAIGN_ENDED",
+   "CAMPAIGN_PAUSED",
+   "CAMPAIGN_PENDING",
+   "CAMPAIGN_REMOVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "asset_group.resource_name": {
+  "type": "RESOURCE_NAME",
+  "repeated": false,
+  "selectable": true
+ },
+ "asset_group.status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ENABLED",
+   "PAUSED",
+   "REMOVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "asset_group.tracking_url_template": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "asset_group.url_custom_parameters": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "asset_group_asset.field_type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "AD_IMAGE",
+   "BOOK_ON_GOOGLE",
+   "BUSINESS_LOGO",
+   "BUSINESS_MESSAGE",
+   "BUSINESS_NAME",
+   "CALL",
+   "CALLOUT",
+   "CALL_TO_ACTION",
+   "CALL_TO_ACTION_SELECTION",
+   "CLASSIC_DISPLAY_IMAGE",
+   "DEMAND_GEN_CAROUSEL_CARD",
+   "DESCRIPTION",
+   "HEADLINE",
+   "HOTEL_CALLOUT",
+   "HOTEL_PROPERTY",
+   "LANDING_PAGE_PREVIEW",
+   "LANDSCAPE_LOGO",
+   "LEAD_FORM",
+   "LOGO",
+   "LONG_DESCRIPTION",
+   "LONG_HEADLINE",
+   "MANDATORY_AD_TEXT",
+   "MARKETING_IMAGE",
+   "MEDIA_BUNDLE",
+   "MOBILE_APP",
+   "PORTRAIT_MARKETING_IMAGE",
+   "PRICE",
+   "PROMOTION",
+   "RELATED_YOUTUBE_VIDEOS",
+   "SITELINK",
+   "SQUARE_MARKETING_IMAGE",
+   "STRUCTURED_SNIPPET",
+   "TALL_PORTRAIT_MARKETING_IMAGE",
+   "TEXT_DISCLAIMER",
+   "UNKNOWN",
+   "UNSPECIFIED",
+   "VIDEO",
+   "YOUTUBE_VIDEO"
+  ]
+ },
+ "asset_group_asset.policy_summary.approval_status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "APPROVED",
+   "APPROVED_LIMITED",
+   "AREA_OF_INTEREST_ONLY",
+   "DISAPPROVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "asset_group_asset.policy_summary.review_status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ELIGIBLE_MAY_SERVE",
+   "REVIEWED",
+   "REVIEW_IN_PROGRESS",
+   "UNDER_APPEAL",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "asset_group_asset.status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ENABLED",
+   "PAUSED",
+   "REMOVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
  "campaign.accessible_bidding_strategy": {
   "type": "RESOURCE_NAME",
   "repeated": false,

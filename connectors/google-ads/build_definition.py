@@ -70,6 +70,7 @@ KIND_SCHEMA = {
     "enums": {"type": "array", "items": {"type": "string"}}, "strs": {"type": "string"},
     "json": {"type": "string"}, "texts": {"type": "string"}, "assets": {"type": "string"},
     "now": {"type": "string", "format": "date-time"}, "raw": {"type": "string"},
+    "assetfield": {"type": "string"}, "assetcount": {"type": "integer", "format": "int64"},
 }
 
 KIND_NOTE = {
@@ -78,6 +79,8 @@ KIND_NOTE = {
     "strs": "One value per line.", "texts": "One text per line.", "assets": "Asset resource names, one per line.",
     "json": "JSON.", "date": "Account time zone.", "now": "When the connector read the data (UTC).",
     "raw": "Full Google Ads row as JSON (without metrics).",
+    "assetfield": "Linked assets, one per line: text, image URL or YouTube video.",
+    "assetcount": "Number of linked assets (removed links excluded).",
 }
 
 
@@ -91,6 +94,8 @@ def row_schema(columns):
             note = "One of: " + ", ".join(o["label"] for o in spec.enum_options(src)) + "."
         if src:
             note = (note + " Source: " + ", ".join(spec.sources(src)) + ".").strip()
+        if kind == "assetfield":
+            note += " Asset field types: " + ", ".join(spec.ASSET_FIELDS[col]) + "."
         if note:
             p["description"] = note
         props[col] = p
@@ -103,6 +108,8 @@ def list_response(ref):
         "row_count": {"type": "integer", "x-ms-summary": "Row count"},
         "metrics_error": {"type": "string", "x-ms-summary": "Metrics error",
                           "description": "Set when metrics could not be read; the rows are still returned."},
+        "assets_error": {"type": "string", "x-ms-summary": "Assets error",
+                         "description": "Set when linked assets could not be read; the rows are still returned."},
         "rows": {"type": "array", "x-ms-summary": "Rows", "items": {"$ref": f"#/definitions/{ref}"}},
     }}
 
@@ -122,13 +129,22 @@ def op(method, operation_id, summary, description, params, schema_ref, body=None
 # ---- operations map for script.csx -------------------------------------------------------------
 
 def script_columns(columns):
-    return [[c, kind, spec.sources(src), spec.max_length(c, kind)] for c, _, _, kind, src in columns]
+    out = []
+    for c, _, _, kind, src in columns:
+        col = [c, kind, spec.sources(src), spec.max_length(c, kind)]
+        if kind == "assetfield":
+            col.append(spec.ASSET_FIELDS[c])
+        elif kind == "assetcount":
+            col.append([spec.ASSET_COUNTS[c]])
+        out.append(col)
+    return out
 
 
 ENTITY_OPS = {
     "ListCampaigns": ("googleadscampaign", {"campaign_id": "campaign.id"}),
     "ListAdGroups": ("googleadsadgroup", {"campaign_id": "campaign.id", "ad_group_id": "ad_group.id"}),
     "ListAds": ("googleadsadvertisement", {"campaign_id": "campaign.id", "ad_group_id": "ad_group.id"}),
+    "ListAssetGroups": ("googleadsassetgroup", {"campaign_id": "campaign.id", "asset_group_id": "asset_group.id"}),
 }
 
 ops = {}
@@ -143,6 +159,10 @@ for operation_id, (table, filters) in ENTITY_OPS.items():
         "filters": filters,
         "columns": script_columns(t["columns"]),
     }
+    if any(c[3] in ("assetfield", "assetcount") for c in t["columns"]):
+        ops[operation_id]["assets"] = {
+            "resource": "asset_group_asset", "link": spec.ASSET_QUERY_FIELDS[0], "fields": spec.ASSET_QUERY_FIELDS,
+            "exclude": "asset_group_asset.status != 'REMOVED'"}
 
 PERF_IDENTITY = {
     "campaign": [("campaignid", "Campaign ID", "", "id", "campaign.id"),
@@ -215,6 +235,14 @@ paths = {
         "Lists ads (ad group ads) with their creative, policy review and URLs, plus all-time metrics.",
         [CUSTOMER_ID, ACCESS_TOKEN, DEVELOPER_TOKEN, LOGIN_CUSTOMER_ID, AD_GROUP_FILTER, CAMPAIGN_FILTER, STATUS, INCLUDE_METRICS, MAX_ROWS],
         "AdsResponse"),
+    "/customers/{customer_id}/assetgroups": op(
+        "get", "ListAssetGroups", "List asset groups",
+        "Lists Performance Max asset groups with their status, ad strength, linked assets (headlines, "
+        "descriptions, images, videos, logos) and URLs, plus all-time metrics.",
+        [CUSTOMER_ID, ACCESS_TOKEN, DEVELOPER_TOKEN, LOGIN_CUSTOMER_ID, CAMPAIGN_FILTER,
+         query("asset_group_id", "Asset group ID", "Only return this asset group.", visibility="advanced"),
+         STATUS, INCLUDE_METRICS, MAX_ROWS],
+        "AssetGroupsResponse"),
     "/customers/{customer_id}/performance": op(
         "get", "GetPerformance", "Get performance",
         "Performance metrics per campaign, ad group or ad for a date range, optionally per day/week/month.",
@@ -292,6 +320,8 @@ definitions = {
     "AdGroupsResponse": list_response("AdGroup"),
     "Ad": row_schema(spec.TABLES["googleadsadvertisement"]["columns"]),
     "AdsResponse": list_response("Ad"),
+    "AssetGroup": row_schema(spec.TABLES["googleadsassetgroup"]["columns"]),
+    "AssetGroupsResponse": list_response("AssetGroup"),
     "PerformanceRow": {"type": "object", "properties": perf_props},
     "PerformanceResponse": {**list_response("PerformanceRow")},
     "QueryResponse": {"type": "object", "properties": {
