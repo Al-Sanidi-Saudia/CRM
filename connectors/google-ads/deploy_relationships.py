@@ -56,7 +56,7 @@ def main(apply):
             dv.request("POST", "RelationshipDefinitions", body, solution=SOLUTION)
     if apply:
         tables = "".join(f"<entity>{spec.PREFIX + t}</entity>" for t in spec.TABLES)
-        dv.request("POST", "PublishXml",
+        dv.request("POST", "PublishXml", idempotent=True, body=
                    {"ParameterXml": f"<importexportxml><entities>{tables}</entities></importexportxml>"})
         print("published")
 

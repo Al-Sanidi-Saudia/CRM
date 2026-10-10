@@ -132,7 +132,7 @@ def main(apply):
                 print(f"  {i}/{len(todo)} columns")
     if apply:
         tables = "".join(f"<entity>{spec.PREFIX + t}</entity>" for t in spec.TABLES)
-        dv.request("POST", "PublishXml",
+        dv.request("POST", "PublishXml", idempotent=True, body=
                    {"ParameterXml": f"<importexportxml><entities>{tables}</entities></importexportxml>"})
         print("published")
 

@@ -72,28 +72,30 @@ def form_xml(table, active_view_ids):
         by_section.setdefault(section, []).append((spec.PREFIX + col, display, KIND_CLASS[kind]))
     tabs = []
     for tab_label, sections in spec.FORMS[table]:
-        columns = []
-        width = f"{100 // len(sections)}%"
+        bodies = []
         for key, section_label in sections:
             if key.startswith("@related:"):
                 child = key.split(":", 1)[1]
-                body = subgrid(table, child, section_label, active_view_ids[child])
+                bodies.append(subgrid(table, child, section_label, active_view_ids[child]))
+                continue
+            rows = []
+            if key == "identity":
+                first = by_section[key][0]
+                rows.append(cell(table, *first))
+                if t["parent"]:
+                    parent, parent_display = t["parent"]
+                    rows.append(cell(table, spec.PREFIX + parent, parent_display, "lookup"))
+                rows.append(cell(table, "ownerid", "Owner", "lookup"))
+                rows += [cell(table, *c) for c in by_section[key][1:]]
             else:
-                rows = []
-                if key == "identity":
-                    first = by_section[key][0]
-                    rows.append(cell(table, *first))
-                    if t["parent"]:
-                        parent, parent_display = t["parent"]
-                        rows.append(cell(table, spec.PREFIX + parent, parent_display, "lookup"))
-                    rows.append(cell(table, "ownerid", "Owner", "lookup"))
-                    rows += [cell(table, *c) for c in by_section[key][1:]]
-                else:
-                    rows = [cell(table, *c) for c in by_section[key]]
-                body = (f'<section name="{key}" showlabel="true" showbar="false" IsUserDefined="0" '
-                        f'id="{gid(table, "section", key)}" columns="1" labelwidth="200">{lbl(section_label)}'
-                        f'<rows>{"".join(rows)}</rows></section>')
-            columns.append(f'<column width="{width}"><sections>{body}</sections></column>')
+                rows = [cell(table, *c) for c in by_section[key]]
+            bodies.append(f'<section name="{key}" showlabel="true" showbar="false" IsUserDefined="0" '
+                          f'id="{gid(table, "section", key)}" columns="1" labelwidth="200">{lbl(section_label)}'
+                          f'<rows>{"".join(rows)}</rows></section>')
+        # Forms allow at most 3 columns per tab: extra sections stack in the last column.
+        groups = [[b] for b in bodies[:2]] + [bodies[2:]] if len(bodies) > 3 else [[b] for b in bodies]
+        width = f"{100 // len(groups)}%"
+        columns = [f'<column width="{width}"><sections>{"".join(g)}</sections></column>' for g in groups]
         name = tab_label.lower().replace(" & ", "").replace(" ", "")
         tabs.append(f'<tab name="{name}" verticallayout="true" id="{gid(table, "tab", name)}" IsUserDefined="1" '
                     f'expanded="true" showlabel="true">{lbl(tab_label)}<columns>{"".join(columns)}</columns></tab>')
@@ -168,7 +170,7 @@ def main(apply):
                        {"fetchxml": fetch, "layoutxml": layout}, solution=SOLUTION)
     if apply:
         tables = "".join(f"<entity>{spec.PREFIX + t}</entity>" for t in spec.TABLES)
-        dv.request("POST", "PublishXml",
+        dv.request("POST", "PublishXml", idempotent=True, body=
                    {"ParameterXml": f"<importexportxml><entities>{tables}</entities></importexportxml>"})
         print("published")
 

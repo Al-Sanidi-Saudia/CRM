@@ -32,7 +32,7 @@ class Dataverse:
         with urllib.request.urlopen(f"https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token", form) as r:
             self.token = json.load(r)["access_token"]
 
-    def request(self, method, path, body=None, solution=None, headers=None):
+    def request(self, method, path, body=None, solution=None, headers=None, idempotent=None):
         url = path if path.startswith("https://") else (
             self.url + "/api/data/v9.2/" + urllib.parse.quote(path, safe="/?$=&(),'@:"))
         h = {"Authorization": "Bearer " + self.token, "Accept": "application/json",
@@ -54,8 +54,10 @@ class Dataverse:
                     continue
                 self._raise(method, path, e)
             except (urllib.error.URLError, ConnectionError, TimeoutError):
-                # Network blips: only reads are retried, a write may already have been applied.
-                if method != "GET" or attempt == 3:
+                # Network blips: retried only when repeating the call is harmless (reads, PATCH, PublishXml);
+                # a create may already have been applied.
+                retry = idempotent if idempotent is not None else method in ("GET", "PATCH", "PUT", "DELETE")
+                if not retry or attempt == 3:
                     raise
                 time.sleep(2 ** (attempt + 1))
 
