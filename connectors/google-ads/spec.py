@@ -397,3 +397,51 @@ def gaql_fields(columns, metrics_only=False):
             if f.startswith("metrics.") == metrics_only and f not in out:
                 out.append(f)
     return out
+
+
+# Main form layout: tab label -> [(section key, section label)]. Section keys are the "section" of each
+# column above. "@related:<table>" adds a sub-grid of child records; "@lookup" puts the parent lookup first.
+FORMS = {
+    "googleadscampaign": [
+        ("General", [("identity", "Identity"), ("status", "Status"), ("channel", "Channel"), ("schedule", "Schedule")]),
+        ("Budget & Bidding", [("budget", "Budget"), ("bidding", "Bidding")]),
+        ("Networks & Targeting", [("networks", "Networks"), ("geo", "Geo & Audience"),
+                                  ("channelsettings", "Channel Settings")]),
+        ("Performance", [("performance", "Delivery (all time)"), ("conversions", "Conversions (all time)"),
+                         ("video", "Video & Impression Share (all time)")]),
+        ("Tracking", [("tracking", "Tracking")]),
+        ("Related", [("@related:googleadsadgroup", "Google Ads Ad Groups")]),
+        ("Sync", [("sync", "Sync")]),
+    ],
+    "googleadsadgroup": [
+        ("General", [("identity", "Identity"), ("status", "Status")]),
+        ("Bidding", [("bids", "Bids"), ("effectivebids", "Effective Bids")]),
+        ("Targeting & Tracking", [("targeting", "Targeting"), ("demandgen", "Demand Gen Channels"),
+                                  ("tracking", "Tracking")]),
+        ("Performance", [("performance", "Delivery (all time)"), ("conversions", "Conversions (all time)"),
+                         ("video", "Video & Impression Share (all time)")]),
+        ("Related", [("@related:googleadsadvertisement", "Google Ads Advertisements")]),
+        ("Sync", [("sync", "Sync")]),
+    ],
+    "googleadsadvertisement": [
+        ("General", [("identity", "Identity"), ("status", "Status")]),
+        ("Creative", [("text", "Text"), ("assets", "Assets")]),
+        ("Review & Policy", [("policy", "Policy")]),
+        ("URLs & Tracking", [("urls", "URLs & Tracking")]),
+        ("Performance", [("performance", "Delivery (all time)"), ("conversions", "Conversions (all time)"),
+                         ("video", "Video & Top Impressions (all time)")]),
+        ("Sync", [("sync", "Sync")]),
+    ],
+}
+
+# Default "Active" view: main columns first (like Snap), then every other column.
+VIEW_MAIN = {
+    "googleadscampaign": ["campaignname", "status", "primarystatus", "advertisingchanneltype",
+                          "biddingstrategytype", "budgetamount", "startdatetime", "enddatetime", "impressions",
+                          "clicks", "cost", "conversions", "campaignid", "customerid", "lastsyncedon"],
+    "googleadsadgroup": ["adgroupname", "status", "primarystatus", "@lookup", "type", "cpcbid", "impressions",
+                         "clicks", "cost", "conversions", "adgroupid", "campaignid", "lastsyncedon"],
+    "googleadsadvertisement": ["adname", "status", "approvalstatus", "adstrength", "type", "@lookup",
+                               "finalurl", "impressions", "clicks", "cost", "conversions", "adid", "adgroupid",
+                               "lastsyncedon"],
+}
