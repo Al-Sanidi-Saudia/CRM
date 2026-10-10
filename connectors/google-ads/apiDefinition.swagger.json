@@ -1,0 +1,2519 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Google Ads",
+    "description": "Read-only access to Google Ads API campaigns, ad groups, ads and their performance.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Al Sanidi Marketing",
+      "email": "sa2@alsanidi.com.sa"
+    }
+  },
+  "host": "googleads.googleapis.com",
+  "basePath": "/v25",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/customers": {
+      "get": {
+        "operationId": "ListAccessibleCustomers",
+        "summary": "List accessible customers",
+        "description": "Lists the customer IDs the signed-in Google user can access directly.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AccessibleCustomersResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customer_id}/clients": {
+      "get": {
+        "operationId": "ListClientAccounts",
+        "summary": "List client accounts",
+        "description": "Lists the accounts under a customer. For a manager (MCC) this is its client accounts; for a regular account it is the account itself.",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Customer ID",
+            "description": "Google Ads customer (account) ID, 10 digits. Dashes are allowed.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "login-customer-id",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Manager customer ID",
+            "description": "Manager (MCC) account ID to access the customer through. Required when the signed-in user reaches the account via a manager account.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "include_managers",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Include managers",
+            "description": "Also return manager accounts.",
+            "default": false,
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "include_hidden",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Include hidden",
+            "description": "Also return hidden accounts.",
+            "default": false,
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "include_all_levels",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "All levels",
+            "description": "Return the whole tree, not just direct children.",
+            "default": false,
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ClientAccountsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customer_id}/campaigns": {
+      "get": {
+        "operationId": "ListCampaigns",
+        "summary": "List campaigns",
+        "description": "Lists campaigns with their budget, bidding, network, tracking and channel settings, plus all-time metrics.",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Customer ID",
+            "description": "Google Ads customer (account) ID, 10 digits. Dashes are allowed.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "login-customer-id",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Manager customer ID",
+            "description": "Manager (MCC) account ID to access the customer through. Required when the signed-in user reaches the account via a manager account.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Status",
+            "description": "Filter by status. ALL includes removed items so their status syncs too.",
+            "enum": [
+              "ALL",
+              "NOT_REMOVED",
+              "ENABLED",
+              "PAUSED",
+              "REMOVED"
+            ],
+            "default": "ALL",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Campaign ID",
+            "description": "Only return items of this campaign.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "include_metrics",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Include all-time metrics",
+            "description": "Add all-time performance metrics (impressions, clicks, cost, conversions...).",
+            "default": true,
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "max_rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Max rows",
+            "description": "Stop after this many rows. Omit to return everything.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CampaignsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customer_id}/adgroups": {
+      "get": {
+        "operationId": "ListAdGroups",
+        "summary": "List ad groups",
+        "description": "Lists ad groups with their bids and targeting settings, plus all-time metrics.",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Customer ID",
+            "description": "Google Ads customer (account) ID, 10 digits. Dashes are allowed.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "login-customer-id",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Manager customer ID",
+            "description": "Manager (MCC) account ID to access the customer through. Required when the signed-in user reaches the account via a manager account.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Campaign ID",
+            "description": "Only return items of this campaign.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "ad_group_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Ad group ID",
+            "description": "Only return items of this ad group.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Status",
+            "description": "Filter by status. ALL includes removed items so their status syncs too.",
+            "enum": [
+              "ALL",
+              "NOT_REMOVED",
+              "ENABLED",
+              "PAUSED",
+              "REMOVED"
+            ],
+            "default": "ALL",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "include_metrics",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Include all-time metrics",
+            "description": "Add all-time performance metrics (impressions, clicks, cost, conversions...).",
+            "default": true,
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "max_rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Max rows",
+            "description": "Stop after this many rows. Omit to return everything.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdGroupsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customer_id}/ads": {
+      "get": {
+        "operationId": "ListAds",
+        "summary": "List ads",
+        "description": "Lists ads (ad group ads) with their creative, policy review and URLs, plus all-time metrics.",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Customer ID",
+            "description": "Google Ads customer (account) ID, 10 digits. Dashes are allowed.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "login-customer-id",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Manager customer ID",
+            "description": "Manager (MCC) account ID to access the customer through. Required when the signed-in user reaches the account via a manager account.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "ad_group_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Ad group ID",
+            "description": "Only return items of this ad group.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Campaign ID",
+            "description": "Only return items of this campaign.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Status",
+            "description": "Filter by status. ALL includes removed items so their status syncs too.",
+            "enum": [
+              "ALL",
+              "NOT_REMOVED",
+              "ENABLED",
+              "PAUSED",
+              "REMOVED"
+            ],
+            "default": "ALL",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "include_metrics",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Include all-time metrics",
+            "description": "Add all-time performance metrics (impressions, clicks, cost, conversions...).",
+            "default": true,
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "max_rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Max rows",
+            "description": "Stop after this many rows. Omit to return everything.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customer_id}/performance": {
+      "get": {
+        "operationId": "GetPerformance",
+        "summary": "Get performance",
+        "description": "Performance metrics per campaign, ad group or ad for a date range, optionally per day/week/month.",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Customer ID",
+            "description": "Google Ads customer (account) ID, 10 digits. Dashes are allowed.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "login-customer-id",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Manager customer ID",
+            "description": "Manager (MCC) account ID to access the customer through. Required when the signed-in user reaches the account via a manager account.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Level",
+            "description": "Level to report on.",
+            "enum": [
+              "campaign",
+              "ad_group",
+              "ad"
+            ],
+            "default": "campaign",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "date_range",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Date range",
+            "description": "Predefined range. Ignored when start and end dates are set.",
+            "enum": [
+              "ALL_TIME",
+              "TODAY",
+              "YESTERDAY",
+              "LAST_7_DAYS",
+              "LAST_14_DAYS",
+              "LAST_30_DAYS",
+              "THIS_MONTH",
+              "LAST_MONTH",
+              "LAST_BUSINESS_WEEK",
+              "LAST_WEEK_SUN_SAT",
+              "LAST_WEEK_MON_SUN",
+              "THIS_WEEK_SUN_TODAY",
+              "THIS_WEEK_MON_TODAY"
+            ],
+            "default": "LAST_30_DAYS",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Start date",
+            "description": "YYYY-MM-DD, inclusive.",
+            "x-ms-visibility": "advanced",
+            "format": "date"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "End date",
+            "description": "YYYY-MM-DD, inclusive.",
+            "x-ms-visibility": "advanced",
+            "format": "date"
+          },
+          {
+            "name": "granularity",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Granularity",
+            "description": "TOTAL returns one row per entity.",
+            "enum": [
+              "TOTAL",
+              "DAILY",
+              "WEEKLY",
+              "MONTHLY"
+            ],
+            "default": "TOTAL",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "breakdown",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Breakdown",
+            "description": "Split rows by device or network.",
+            "enum": [
+              "NONE",
+              "DEVICE",
+              "AD_NETWORK_TYPE"
+            ],
+            "default": "NONE",
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Campaign ID",
+            "description": "Only return items of this campaign.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "ad_group_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Ad group ID",
+            "description": "Only return items of this ad group.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "max_rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Max rows",
+            "description": "Stop after this many rows. Omit to return everything.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PerformanceResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/customers/{customer_id}/query": {
+      "post": {
+        "operationId": "RunQuery",
+        "summary": "Run GAQL query",
+        "description": "Runs any Google Ads Query Language (GAQL) SELECT and returns all pages.",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Customer ID",
+            "description": "Google Ads customer (account) ID, 10 digits. Dashes are allowed.",
+            "x-ms-url-encoding": "single"
+          },
+          {
+            "name": "login-customer-id",
+            "in": "header",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Manager customer ID",
+            "description": "Manager (MCC) account ID to access the customer through. Required when the signed-in user reaches the account via a manager account.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "query"
+              ],
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "x-ms-summary": "GAQL query",
+                  "description": "e.g. SELECT campaign.id, metrics.clicks FROM campaign WHERE segments.date DURING LAST_7_DAYS"
+                },
+                "max_rows": {
+                  "type": "integer",
+                  "x-ms-summary": "Max rows",
+                  "default": 10000
+                },
+                "flatten": {
+                  "type": "boolean",
+                  "x-ms-summary": "Flatten rows",
+                  "default": true,
+                  "description": "Return rows as flat snake_case keys (campaign_id, metrics_clicks)."
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/QueryResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "integer",
+              "x-ms-summary": "Code"
+            },
+            "message": {
+              "type": "string",
+              "x-ms-summary": "Message"
+            },
+            "status": {
+              "type": "string",
+              "x-ms-summary": "Status"
+            },
+            "details": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "x-ms-summary": "Details"
+            }
+          }
+        }
+      }
+    },
+    "AccessibleCustomersResponse": {
+      "type": "object",
+      "properties": {
+        "customer_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Customer IDs"
+        },
+        "resource_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Resource names"
+        }
+      }
+    },
+    "ClientAccount": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string",
+          "x-ms-summary": "Customer ID"
+        },
+        "name": {
+          "type": "string",
+          "x-ms-summary": "Account name"
+        },
+        "currency_code": {
+          "type": "string",
+          "x-ms-summary": "Currency code"
+        },
+        "time_zone": {
+          "type": "string",
+          "x-ms-summary": "Time zone"
+        },
+        "manager": {
+          "type": "boolean",
+          "x-ms-summary": "Is manager"
+        },
+        "test_account": {
+          "type": "boolean",
+          "x-ms-summary": "Is test account"
+        },
+        "level": {
+          "type": "integer",
+          "x-ms-summary": "Level"
+        },
+        "status": {
+          "type": "string",
+          "x-ms-summary": "Status"
+        },
+        "hidden": {
+          "type": "boolean",
+          "x-ms-summary": "Hidden"
+        },
+        "resource_name": {
+          "type": "string",
+          "x-ms-summary": "Resource name"
+        }
+      }
+    },
+    "ClientAccountsResponse": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string",
+          "x-ms-summary": "Customer ID"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "metrics_error": {
+          "type": "string",
+          "x-ms-summary": "Metrics error",
+          "description": "Set when metrics could not be read; the rows are still returned."
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "$ref": "#/definitions/ClientAccount"
+          }
+        }
+      }
+    },
+    "Campaign": {
+      "type": "object",
+      "properties": {
+        "campaignname": {
+          "type": "string",
+          "x-ms-summary": "Campaign Name",
+          "description": "Source: campaign.name."
+        },
+        "campaignid": {
+          "type": "string",
+          "x-ms-summary": "Campaign ID",
+          "description": "Source: campaign.id."
+        },
+        "resourcename": {
+          "type": "string",
+          "x-ms-summary": "Resource Name",
+          "description": "Source: campaign.resource_name."
+        },
+        "customerid": {
+          "type": "string",
+          "x-ms-summary": "Customer ID",
+          "description": "Source: customer.id."
+        },
+        "customername": {
+          "type": "string",
+          "x-ms-summary": "Customer Name",
+          "description": "Source: customer.descriptive_name."
+        },
+        "currencycode": {
+          "type": "string",
+          "x-ms-summary": "Currency Code",
+          "description": "Source: customer.currency_code."
+        },
+        "accounttimezone": {
+          "type": "string",
+          "x-ms-summary": "Account Time Zone",
+          "description": "Source: customer.time_zone."
+        },
+        "campaigngroup": {
+          "type": "string",
+          "x-ms-summary": "Campaign Group",
+          "description": "Source: campaign.campaign_group."
+        },
+        "basecampaign": {
+          "type": "string",
+          "x-ms-summary": "Base Campaign",
+          "description": "Source: campaign.base_campaign."
+        },
+        "labels": {
+          "type": "string",
+          "x-ms-summary": "Labels",
+          "description": "One value per line. Source: campaign.labels."
+        },
+        "status": {
+          "type": "string",
+          "x-ms-summary": "Status",
+          "description": "One of: ENABLED, PAUSED, REMOVED, UNKNOWN, UNSPECIFIED. Source: campaign.status."
+        },
+        "servingstatus": {
+          "type": "string",
+          "x-ms-summary": "Serving Status",
+          "description": "One of: ENDED, NONE, PENDING, SERVING, SUSPENDED, UNKNOWN, UNSPECIFIED. Source: campaign.serving_status."
+        },
+        "primarystatus": {
+          "type": "string",
+          "x-ms-summary": "Primary Status",
+          "description": "One of: ELIGIBLE, ENDED, LEARNING, LIMITED, MISCONFIGURED, NOT_ELIGIBLE, PAUSED, PENDING, REMOVED, UNKNOWN, UNSPECIFIED. Source: campaign.primary_status."
+        },
+        "primarystatusreasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Primary Status Reasons",
+          "description": "Google Ads enum values. Source: campaign.primary_status_reasons."
+        },
+        "experimenttype": {
+          "type": "string",
+          "x-ms-summary": "Experiment Type",
+          "description": "One of: BASE, DRAFT, EXPERIMENT, UNKNOWN, UNSPECIFIED. Source: campaign.experiment_type."
+        },
+        "adservingoptimizationstatus": {
+          "type": "string",
+          "x-ms-summary": "Ad Serving Optimization Status",
+          "description": "One of: CONVERSION_OPTIMIZE, OPTIMIZE, ROTATE, ROTATE_INDEFINITELY, UNAVAILABLE, UNKNOWN, UNSPECIFIED. Source: campaign.ad_serving_optimization_status."
+        },
+        "biddingstrategysystemstatus": {
+          "type": "string",
+          "x-ms-summary": "Bidding Strategy System Status",
+          "description": "One of: ENABLED, LEARNING_BUDGET_CHANGE, LEARNING_COMPOSITION_CHANGE, LEARNING_CONVERSION_SETTING_CHANGE, LEARNING_CONVERSION_TYPE_CHANGE, LEARNING_NEW, LEARNING_SETTING_CHANGE, LIMITED_BY_BUDGET, LIMITED_BY_CPC_BID_CEILING, LIMITED_BY_CPC_BID_FLOOR, LIMITED_BY_DATA, LIMITED_BY_INVENTORY, LIMITED_BY_LOW_PRIORITY_SPEND, LIMITED_BY_LOW_QUALITY, MISCONFIGURED_CONVERSION_SETTINGS, MISCONFIGURED_CONVERSION_TYPES, MISCONFIGURED_SHARED_BUDGET, MISCONFIGURED_STRATEGY_TYPE, MISCONFIGURED_ZERO_ELIGIBILITY, MULTIPLE, MULTIPLE_LEARNING, MULTIPLE_LIMITED, MULTIPLE_MISCONFIGURED, PAUSED, UNAVAILABLE, UNKNOWN, UNSPECIFIED. Source: campaign.bidding_strategy_system_status."
+        },
+        "optimizationscore": {
+          "type": "number",
+          "x-ms-summary": "Optimization Score (%)",
+          "description": "Percent (0-100). Source: campaign.optimization_score."
+        },
+        "advertisingchanneltype": {
+          "type": "string",
+          "x-ms-summary": "Advertising Channel Type",
+          "description": "One of: DEMAND_GEN, DISPLAY, HOTEL, LOCAL, LOCAL_SERVICES, MULTI_CHANNEL, PERFORMANCE_MAX, SEARCH, SHOPPING, SMART, TRAVEL, UNKNOWN, UNSPECIFIED, VIDEO. Source: campaign.advertising_channel_type."
+        },
+        "advertisingchannelsubtype": {
+          "type": "string",
+          "x-ms-summary": "Advertising Channel Sub Type",
+          "description": "One of: APP_CAMPAIGN, APP_CAMPAIGN_FOR_ENGAGEMENT, APP_CAMPAIGN_FOR_PRE_REGISTRATION, DISPLAY_EXPRESS, DISPLAY_GMAIL_AD, DISPLAY_MOBILE_APP, DISPLAY_SMART_CAMPAIGN, LOCAL_CAMPAIGN, SEARCH_EXPRESS, SEARCH_MOBILE_APP, SHOPPING_COMPARISON_LISTING_ADS, SHOPPING_SMART_ADS, SMART_CAMPAIGN, TRAVEL_ACTIVITIES, UNKNOWN, UNSPECIFIED, VIDEO_ACTION, VIDEO_NON_SKIPPABLE, VIDEO_REACH_TARGET_FREQUENCY, VIDEO_SEQUENCE, YOUTUBE_AUDIO. Source: campaign.advertising_channel_sub_type."
+        },
+        "paymentmode": {
+          "type": "string",
+          "x-ms-summary": "Payment Mode",
+          "description": "One of: CLICKS, CONVERSIONS, CONVERSION_VALUE, GUEST_STAY, UNKNOWN, UNSPECIFIED. Source: campaign.payment_mode."
+        },
+        "keywordmatchtype": {
+          "type": "string",
+          "x-ms-summary": "Keyword Match Type",
+          "description": "One of: BROAD, UNKNOWN, UNSPECIFIED. Source: campaign.keyword_match_type."
+        },
+        "listingtype": {
+          "type": "string",
+          "x-ms-summary": "Listing Type",
+          "description": "One of: UNKNOWN, UNSPECIFIED, VEHICLES. Source: campaign.listing_type."
+        },
+        "startdatetime": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Start Date Time",
+          "description": "Account time zone. Source: campaign.start_date_time."
+        },
+        "enddatetime": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "End Date Time",
+          "description": "Account time zone. Source: campaign.end_date_time."
+        },
+        "budgetid": {
+          "type": "string",
+          "x-ms-summary": "Budget ID",
+          "description": "Source: campaign_budget.id."
+        },
+        "budgetname": {
+          "type": "string",
+          "x-ms-summary": "Budget Name",
+          "description": "Source: campaign_budget.name."
+        },
+        "budgetamount": {
+          "type": "number",
+          "x-ms-summary": "Budget Amount",
+          "description": "In account currency (converted from micros). Source: campaign_budget.amount_micros."
+        },
+        "totalbudget": {
+          "type": "number",
+          "x-ms-summary": "Total Budget",
+          "description": "In account currency (converted from micros). Source: campaign_budget.total_amount_micros."
+        },
+        "budgetperiod": {
+          "type": "string",
+          "x-ms-summary": "Budget Period",
+          "description": "One of: CUSTOM_PERIOD, DAILY, UNKNOWN, UNSPECIFIED. Source: campaign_budget.period."
+        },
+        "budgetdeliverymethod": {
+          "type": "string",
+          "x-ms-summary": "Budget Delivery Method",
+          "description": "One of: ACCELERATED, STANDARD, UNKNOWN, UNSPECIFIED. Source: campaign_budget.delivery_method."
+        },
+        "budgettype": {
+          "type": "string",
+          "x-ms-summary": "Budget Type",
+          "description": "One of: FIXED_CPA, LOCAL_SERVICES, SMART_CAMPAIGN, STANDARD, UNKNOWN, UNSPECIFIED. Source: campaign_budget.type."
+        },
+        "budgetstatus": {
+          "type": "string",
+          "x-ms-summary": "Budget Status",
+          "description": "One of: ENABLED, REMOVED, UNKNOWN, UNSPECIFIED. Source: campaign_budget.status."
+        },
+        "budgetexplicitlyshared": {
+          "type": "boolean",
+          "x-ms-summary": "Budget Explicitly Shared",
+          "description": "Source: campaign_budget.explicitly_shared."
+        },
+        "budgetreferencecount": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Campaigns Sharing Budget",
+          "description": "Source: campaign_budget.reference_count."
+        },
+        "hasrecommendedbudget": {
+          "type": "boolean",
+          "x-ms-summary": "Has Recommended Budget",
+          "description": "Source: campaign_budget.has_recommended_budget."
+        },
+        "recommendedbudget": {
+          "type": "number",
+          "x-ms-summary": "Recommended Budget",
+          "description": "In account currency (converted from micros). Source: campaign_budget.recommended_budget_amount_micros."
+        },
+        "biddingstrategytype": {
+          "type": "string",
+          "x-ms-summary": "Bidding Strategy Type",
+          "description": "One of: COMMISSION, ENHANCED_CPC, FIXED_CPM, FIXED_SHARE_OF_VOICE, INVALID, MANUAL_CPA, MANUAL_CPC, MANUAL_CPM, MANUAL_CPV, MAXIMIZE_CONVERSIONS, MAXIMIZE_CONVERSION_VALUE, PAGE_ONE_PROMOTED, PERCENT_CPC, TARGET_CPA, TARGET_CPC, TARGET_CPM, TARGET_CPV, TARGET_IMPRESSION_SHARE, TARGET_OUTRANK_SHARE, TARGET_ROAS, TARGET_SPEND, UNKNOWN, UNSPECIFIED. Source: campaign.bidding_strategy_type."
+        },
+        "portfoliobiddingstrategy": {
+          "type": "string",
+          "x-ms-summary": "Portfolio Bidding Strategy",
+          "description": "Source: campaign.bidding_strategy."
+        },
+        "accessiblebiddingstrategy": {
+          "type": "string",
+          "x-ms-summary": "Accessible Bidding Strategy",
+          "description": "Source: campaign.accessible_bidding_strategy."
+        },
+        "targetcpa": {
+          "type": "number",
+          "x-ms-summary": "Target CPA",
+          "description": "In account currency (converted from micros). Source: campaign.target_cpa.target_cpa_micros, campaign.maximize_conversions.target_cpa_micros."
+        },
+        "targetroas": {
+          "type": "number",
+          "x-ms-summary": "Target ROAS",
+          "description": "Source: campaign.target_roas.target_roas, campaign.maximize_conversion_value.target_roas."
+        },
+        "targetcpc": {
+          "type": "number",
+          "x-ms-summary": "Target CPC",
+          "description": "In account currency (converted from micros). Source: campaign.target_cpc.target_cpc_micros."
+        },
+        "cpcbidceiling": {
+          "type": "number",
+          "x-ms-summary": "CPC Bid Ceiling",
+          "description": "In account currency (converted from micros). Source: campaign.target_cpa.cpc_bid_ceiling_micros, campaign.target_roas.cpc_bid_ceiling_micros, campaign.target_impression_share.cpc_bid_ceiling_micros, campaign.target_spend.cpc_bid_ceiling_micros, campaign.percent_cpc.cpc_bid_ceiling_micros."
+        },
+        "cpcbidfloor": {
+          "type": "number",
+          "x-ms-summary": "CPC Bid Floor",
+          "description": "In account currency (converted from micros). Source: campaign.target_cpa.cpc_bid_floor_micros, campaign.target_roas.cpc_bid_floor_micros."
+        },
+        "targetimpressionsharelocation": {
+          "type": "string",
+          "x-ms-summary": "Target Impression Share Location",
+          "description": "One of: ABSOLUTE_TOP_OF_PAGE, ANYWHERE_ON_PAGE, TOP_OF_PAGE, UNKNOWN, UNSPECIFIED. Source: campaign.target_impression_share.location."
+        },
+        "targetimpressionshare": {
+          "type": "number",
+          "x-ms-summary": "Target Impression Share (%)",
+          "description": "Percent (0-100). Source: campaign.target_impression_share.location_fraction_micros."
+        },
+        "enhancedcpcenabled": {
+          "type": "boolean",
+          "x-ms-summary": "Enhanced CPC Enabled",
+          "description": "Source: campaign.manual_cpc.enhanced_cpc_enabled."
+        },
+        "commissionrate": {
+          "type": "number",
+          "x-ms-summary": "Commission Rate (%)",
+          "description": "Percent (0-100). Source: campaign.commission.commission_rate_micros."
+        },
+        "viewthroughconversionoptimization": {
+          "type": "boolean",
+          "x-ms-summary": "View-through Conversion Optimization",
+          "description": "Source: campaign.view_through_conversion_optimization_enabled."
+        },
+        "targetgooglesearch": {
+          "type": "boolean",
+          "x-ms-summary": "Target Google Search",
+          "description": "Source: campaign.network_settings.target_google_search."
+        },
+        "targetsearchnetwork": {
+          "type": "boolean",
+          "x-ms-summary": "Target Search Network",
+          "description": "Source: campaign.network_settings.target_search_network."
+        },
+        "targetcontentnetwork": {
+          "type": "boolean",
+          "x-ms-summary": "Target Content Network",
+          "description": "Source: campaign.network_settings.target_content_network."
+        },
+        "targetpartnersearchnetwork": {
+          "type": "boolean",
+          "x-ms-summary": "Target Partner Search Network",
+          "description": "Source: campaign.network_settings.target_partner_search_network."
+        },
+        "targetyoutube": {
+          "type": "boolean",
+          "x-ms-summary": "Target YouTube",
+          "description": "Source: campaign.network_settings.target_youtube."
+        },
+        "targetgoogletvnetwork": {
+          "type": "boolean",
+          "x-ms-summary": "Target Google TV Network",
+          "description": "Source: campaign.network_settings.target_google_tv_network."
+        },
+        "realtimebiddingoptin": {
+          "type": "boolean",
+          "x-ms-summary": "Real-time Bidding Opt-in",
+          "description": "Source: campaign.real_time_bidding_setting.opt_in."
+        },
+        "positivegeotargettype": {
+          "type": "string",
+          "x-ms-summary": "Positive Geo Target Type",
+          "description": "One of: PRESENCE, PRESENCE_OR_INTEREST, SEARCH_INTEREST, UNKNOWN, UNSPECIFIED. Source: campaign.geo_target_type_setting.positive_geo_target_type."
+        },
+        "negativegeotargettype": {
+          "type": "string",
+          "x-ms-summary": "Negative Geo Target Type",
+          "description": "One of: PRESENCE, PRESENCE_OR_INTEREST, UNKNOWN, UNSPECIFIED. Source: campaign.geo_target_type_setting.negative_geo_target_type."
+        },
+        "targetrestrictions": {
+          "type": "string",
+          "x-ms-summary": "Targeting Restrictions",
+          "description": "JSON. Source: campaign.targeting_setting.target_restrictions."
+        },
+        "useaudiencegrouped": {
+          "type": "boolean",
+          "x-ms-summary": "Use Audience Grouped",
+          "description": "Source: campaign.audience_setting.use_audience_grouped."
+        },
+        "frequencycaps": {
+          "type": "string",
+          "x-ms-summary": "Frequency Caps",
+          "description": "JSON. Source: campaign.frequency_caps."
+        },
+        "merchantid": {
+          "type": "string",
+          "x-ms-summary": "Merchant Center ID",
+          "description": "Source: campaign.shopping_setting.merchant_id."
+        },
+        "feedlabel": {
+          "type": "string",
+          "x-ms-summary": "Feed Label",
+          "description": "Source: campaign.shopping_setting.feed_label."
+        },
+        "campaignpriority": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Shopping Campaign Priority",
+          "description": "Source: campaign.shopping_setting.campaign_priority."
+        },
+        "enablelocal": {
+          "type": "boolean",
+          "x-ms-summary": "Shopping Local Inventory",
+          "description": "Source: campaign.shopping_setting.enable_local."
+        },
+        "dsadomain": {
+          "type": "string",
+          "x-ms-summary": "DSA Domain",
+          "description": "Source: campaign.dynamic_search_ads_setting.domain_name."
+        },
+        "dsalanguage": {
+          "type": "string",
+          "x-ms-summary": "DSA Language",
+          "description": "Source: campaign.dynamic_search_ads_setting.language_code."
+        },
+        "dsasuppliedurlsonly": {
+          "type": "boolean",
+          "x-ms-summary": "DSA Supplied URLs Only",
+          "description": "Source: campaign.dynamic_search_ads_setting.use_supplied_urls_only."
+        },
+        "appid": {
+          "type": "string",
+          "x-ms-summary": "App ID",
+          "description": "Source: campaign.app_campaign_setting.app_id."
+        },
+        "appstore": {
+          "type": "string",
+          "x-ms-summary": "App Store",
+          "description": "One of: APPLE_APP_STORE, GOOGLE_APP_STORE, UNKNOWN, UNSPECIFIED. Source: campaign.app_campaign_setting.app_store."
+        },
+        "appbiddinggoal": {
+          "type": "string",
+          "x-ms-summary": "App Bidding Goal",
+          "description": "One of: OPTIMIZE_INSTALLS_TARGET_INSTALL_COST, OPTIMIZE_INSTALLS_WITHOUT_TARGET_INSTALL_COST, OPTIMIZE_IN_APP_CONVERSIONS_TARGET_CONVERSION_COST, OPTIMIZE_IN_APP_CONVERSIONS_TARGET_INSTALL_COST, OPTIMIZE_IN_APP_CONVERSIONS_WITHOUT_TARGET_CPA, OPTIMIZE_PRE_REGISTRATION_CONVERSION_VOLUME, OPTIMIZE_RETURN_ON_ADVERTISING_SPEND, OPTIMIZE_TOTAL_VALUE_WITHOUT_TARGET_ROAS, UNKNOWN, UNSPECIFIED. Source: campaign.app_campaign_setting.bidding_strategy_goal_type."
+        },
+        "hotelcenterid": {
+          "type": "string",
+          "x-ms-summary": "Hotel Center ID",
+          "description": "Source: campaign.hotel_setting.hotel_center_id."
+        },
+        "travelaccountid": {
+          "type": "string",
+          "x-ms-summary": "Travel Account ID",
+          "description": "Source: campaign.travel_campaign_settings.travel_account_id."
+        },
+        "locationsourcetype": {
+          "type": "string",
+          "x-ms-summary": "Location Source Type",
+          "description": "One of: AFFILIATE, GOOGLE_MY_BUSINESS, UNKNOWN, UNSPECIFIED. Source: campaign.local_campaign_setting.location_source_type."
+        },
+        "brandguidelinesenabled": {
+          "type": "boolean",
+          "x-ms-summary": "Brand Guidelines Enabled",
+          "description": "Source: campaign.brand_guidelines_enabled."
+        },
+        "aimaxenabled": {
+          "type": "boolean",
+          "x-ms-summary": "AI Max Enabled",
+          "description": "Source: campaign.ai_max_setting.enable_ai_max."
+        },
+        "containseupoliticaladvertising": {
+          "type": "string",
+          "x-ms-summary": "Contains EU Political Advertising",
+          "description": "One of: CONTAINS_EU_POLITICAL_ADVERTISING, DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING, UNKNOWN, UNSPECIFIED. Source: campaign.contains_eu_political_advertising."
+        },
+        "optimizationgoaltypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Optimization Goal Types",
+          "description": "Google Ads enum values. Source: campaign.optimization_goal_setting.optimization_goal_types."
+        },
+        "excludedparentassetfieldtypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Excluded Parent Asset Field Types",
+          "description": "Google Ads enum values. Source: campaign.excluded_parent_asset_field_types."
+        },
+        "selectiveoptimizationactions": {
+          "type": "string",
+          "x-ms-summary": "Selective Optimization Conversion Actions",
+          "description": "One value per line. Source: campaign.selective_optimization.conversion_actions."
+        },
+        "trackingurltemplate": {
+          "type": "string",
+          "x-ms-summary": "Tracking URL Template",
+          "description": "Source: campaign.tracking_url_template."
+        },
+        "finalurlsuffix": {
+          "type": "string",
+          "x-ms-summary": "Final URL Suffix",
+          "description": "Source: campaign.final_url_suffix."
+        },
+        "urlcustomparameters": {
+          "type": "string",
+          "x-ms-summary": "URL Custom Parameters",
+          "description": "JSON. Source: campaign.url_custom_parameters."
+        },
+        "trackingurl": {
+          "type": "string",
+          "x-ms-summary": "Tracking URL",
+          "description": "Source: campaign.tracking_setting.tracking_url."
+        },
+        "impressions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Impressions",
+          "description": "Source: metrics.impressions."
+        },
+        "clicks": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Clicks",
+          "description": "Source: metrics.clicks."
+        },
+        "ctr": {
+          "type": "number",
+          "x-ms-summary": "CTR (%)",
+          "description": "Percent (0-100). Source: metrics.ctr."
+        },
+        "averagecpc": {
+          "type": "number",
+          "x-ms-summary": "Avg. CPC",
+          "description": "In account currency (converted from micros). Source: metrics.average_cpc."
+        },
+        "averagecpm": {
+          "type": "number",
+          "x-ms-summary": "Avg. CPM",
+          "description": "In account currency (converted from micros). Source: metrics.average_cpm."
+        },
+        "averagecost": {
+          "type": "number",
+          "x-ms-summary": "Avg. Cost",
+          "description": "In account currency (converted from micros). Source: metrics.average_cost."
+        },
+        "cost": {
+          "type": "number",
+          "x-ms-summary": "Cost",
+          "description": "In account currency (converted from micros). Source: metrics.cost_micros."
+        },
+        "interactions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Interactions",
+          "description": "Source: metrics.interactions."
+        },
+        "interactionrate": {
+          "type": "number",
+          "x-ms-summary": "Interaction Rate (%)",
+          "description": "Percent (0-100). Source: metrics.interaction_rate."
+        },
+        "engagements": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Engagements",
+          "description": "Source: metrics.engagements."
+        },
+        "engagementrate": {
+          "type": "number",
+          "x-ms-summary": "Engagement Rate (%)",
+          "description": "Percent (0-100). Source: metrics.engagement_rate."
+        },
+        "conversions": {
+          "type": "number",
+          "x-ms-summary": "Conversions",
+          "description": "Source: metrics.conversions."
+        },
+        "conversionsvalue": {
+          "type": "number",
+          "x-ms-summary": "Conversions Value",
+          "description": "In account currency. Source: metrics.conversions_value."
+        },
+        "costperconversion": {
+          "type": "number",
+          "x-ms-summary": "Cost / Conversion",
+          "description": "In account currency (converted from micros). Source: metrics.cost_per_conversion."
+        },
+        "valueperconversion": {
+          "type": "number",
+          "x-ms-summary": "Value / Conversion",
+          "description": "In account currency. Source: metrics.value_per_conversion."
+        },
+        "conversionrate": {
+          "type": "number",
+          "x-ms-summary": "Conversion Rate (%)",
+          "description": "Percent (0-100). Source: metrics.conversions_from_interactions_rate."
+        },
+        "allconversions": {
+          "type": "number",
+          "x-ms-summary": "All Conversions",
+          "description": "Source: metrics.all_conversions."
+        },
+        "allconversionsvalue": {
+          "type": "number",
+          "x-ms-summary": "All Conversions Value",
+          "description": "In account currency. Source: metrics.all_conversions_value."
+        },
+        "viewthroughconversions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "View-through Conversions",
+          "description": "Source: metrics.view_through_conversions."
+        },
+        "phonecalls": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Phone Calls",
+          "description": "Source: metrics.phone_calls."
+        },
+        "videoviews": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Video Views",
+          "description": "Source: metrics.video_trueview_views."
+        },
+        "videoviewrate": {
+          "type": "number",
+          "x-ms-summary": "Video View Rate (%)",
+          "description": "Percent (0-100). Source: metrics.video_trueview_view_rate."
+        },
+        "topimpressionpct": {
+          "type": "number",
+          "x-ms-summary": "Top Impression (%)",
+          "description": "Percent (0-100). Source: metrics.top_impression_percentage."
+        },
+        "absolutetopimpressionpct": {
+          "type": "number",
+          "x-ms-summary": "Absolute Top Impression (%)",
+          "description": "Percent (0-100). Source: metrics.absolute_top_impression_percentage."
+        },
+        "searchimpressionshare": {
+          "type": "number",
+          "x-ms-summary": "Search Impression Share (%)",
+          "description": "Percent (0-100). Source: metrics.search_impression_share."
+        },
+        "searchtopimpressionshare": {
+          "type": "number",
+          "x-ms-summary": "Search Top Impression Share (%)",
+          "description": "Percent (0-100). Source: metrics.search_top_impression_share."
+        },
+        "searchabsolutetopimpressionshare": {
+          "type": "number",
+          "x-ms-summary": "Search Abs. Top Impression Share (%)",
+          "description": "Percent (0-100). Source: metrics.search_absolute_top_impression_share."
+        },
+        "invalidclicks": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Invalid Clicks",
+          "description": "Source: metrics.invalid_clicks."
+        },
+        "lastsyncedon": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Last Synced On",
+          "description": "When the connector read the data (UTC)."
+        },
+        "rawpayload": {
+          "type": "string",
+          "x-ms-summary": "Raw Payload",
+          "description": "Full Google Ads row as JSON (without metrics)."
+        }
+      }
+    },
+    "CampaignsResponse": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string",
+          "x-ms-summary": "Customer ID"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "metrics_error": {
+          "type": "string",
+          "x-ms-summary": "Metrics error",
+          "description": "Set when metrics could not be read; the rows are still returned."
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "$ref": "#/definitions/Campaign"
+          }
+        }
+      }
+    },
+    "AdGroup": {
+      "type": "object",
+      "properties": {
+        "adgroupname": {
+          "type": "string",
+          "x-ms-summary": "Ad Group Name",
+          "description": "Source: ad_group.name."
+        },
+        "adgroupid": {
+          "type": "string",
+          "x-ms-summary": "Ad Group ID",
+          "description": "Source: ad_group.id."
+        },
+        "resourcename": {
+          "type": "string",
+          "x-ms-summary": "Resource Name",
+          "description": "Source: ad_group.resource_name."
+        },
+        "campaignid": {
+          "type": "string",
+          "x-ms-summary": "Campaign ID",
+          "description": "Source: campaign.id."
+        },
+        "campaignname": {
+          "type": "string",
+          "x-ms-summary": "Campaign Name",
+          "description": "Source: campaign.name."
+        },
+        "customerid": {
+          "type": "string",
+          "x-ms-summary": "Customer ID",
+          "description": "Source: customer.id."
+        },
+        "baseadgroup": {
+          "type": "string",
+          "x-ms-summary": "Base Ad Group",
+          "description": "Source: ad_group.base_ad_group."
+        },
+        "labels": {
+          "type": "string",
+          "x-ms-summary": "Labels",
+          "description": "One value per line. Source: ad_group.labels."
+        },
+        "status": {
+          "type": "string",
+          "x-ms-summary": "Status",
+          "description": "One of: ENABLED, PAUSED, REMOVED, UNKNOWN, UNSPECIFIED. Source: ad_group.status."
+        },
+        "primarystatus": {
+          "type": "string",
+          "x-ms-summary": "Primary Status",
+          "description": "One of: ELIGIBLE, LIMITED, NOT_ELIGIBLE, PAUSED, PENDING, REMOVED, UNKNOWN, UNSPECIFIED. Source: ad_group.primary_status."
+        },
+        "primarystatusreasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Primary Status Reasons",
+          "description": "Google Ads enum values. Source: ad_group.primary_status_reasons."
+        },
+        "type": {
+          "type": "string",
+          "x-ms-summary": "Ad Group Type",
+          "description": "One of: DISPLAY_STANDARD, HOTEL_ADS, PROMOTED_HOTEL_ADS, SEARCH_DYNAMIC_ADS, SEARCH_STANDARD, SHOPPING_COMPARISON_LISTING_ADS, SHOPPING_PRODUCT_ADS, SHOPPING_SMART_ADS, SMART_CAMPAIGN_ADS, TRAVEL_ADS, UNKNOWN, UNSPECIFIED, VIDEO_BUMPER, VIDEO_EFFICIENT_REACH, VIDEO_NON_SKIPPABLE_IN_STREAM, VIDEO_RESPONSIVE, VIDEO_TRUE_VIEW_IN_DISPLAY, VIDEO_TRUE_VIEW_IN_STREAM, YOUTUBE_AUDIO. Source: ad_group.type."
+        },
+        "adrotationmode": {
+          "type": "string",
+          "x-ms-summary": "Ad Rotation Mode",
+          "description": "One of: OPTIMIZE, ROTATE_FOREVER, UNKNOWN, UNSPECIFIED. Source: ad_group.ad_rotation_mode."
+        },
+        "cpcbid": {
+          "type": "number",
+          "x-ms-summary": "Max CPC Bid",
+          "description": "In account currency (converted from micros). Source: ad_group.cpc_bid_micros."
+        },
+        "cpmbid": {
+          "type": "number",
+          "x-ms-summary": "Max CPM Bid",
+          "description": "In account currency (converted from micros). Source: ad_group.cpm_bid_micros."
+        },
+        "cpvbid": {
+          "type": "number",
+          "x-ms-summary": "Max CPV Bid",
+          "description": "In account currency (converted from micros). Source: ad_group.cpv_bid_micros."
+        },
+        "fixedcpm": {
+          "type": "number",
+          "x-ms-summary": "Fixed CPM",
+          "description": "In account currency (converted from micros). Source: ad_group.fixed_cpm_micros."
+        },
+        "percentcpcbid": {
+          "type": "number",
+          "x-ms-summary": "Percent CPC Bid (%)",
+          "description": "Percent (0-100). Source: ad_group.percent_cpc_bid_micros."
+        },
+        "targetcpa": {
+          "type": "number",
+          "x-ms-summary": "Target CPA",
+          "description": "In account currency (converted from micros). Source: ad_group.target_cpa_micros."
+        },
+        "targetcpc": {
+          "type": "number",
+          "x-ms-summary": "Target CPC",
+          "description": "In account currency (converted from micros). Source: ad_group.target_cpc_micros."
+        },
+        "targetcpm": {
+          "type": "number",
+          "x-ms-summary": "Target CPM",
+          "description": "In account currency (converted from micros). Source: ad_group.target_cpm_micros."
+        },
+        "targetcpv": {
+          "type": "number",
+          "x-ms-summary": "Target CPV",
+          "description": "In account currency (converted from micros). Source: ad_group.target_cpv_micros."
+        },
+        "targetroas": {
+          "type": "number",
+          "x-ms-summary": "Target ROAS",
+          "description": "Source: ad_group.target_roas."
+        },
+        "effectivecpcbid": {
+          "type": "number",
+          "x-ms-summary": "Effective CPC Bid",
+          "description": "In account currency (converted from micros). Source: ad_group.effective_cpc_bid_micros."
+        },
+        "effectivetargetcpa": {
+          "type": "number",
+          "x-ms-summary": "Effective Target CPA",
+          "description": "In account currency (converted from micros). Source: ad_group.effective_target_cpa_micros."
+        },
+        "effectivetargetcpasource": {
+          "type": "string",
+          "x-ms-summary": "Effective Target CPA Source",
+          "description": "One of: AD_GROUP, AD_GROUP_CRITERION, CAMPAIGN_BIDDING_STRATEGY, UNKNOWN, UNSPECIFIED. Source: ad_group.effective_target_cpa_source."
+        },
+        "effectivetargetcpc": {
+          "type": "number",
+          "x-ms-summary": "Effective Target CPC",
+          "description": "In account currency (converted from micros). Source: ad_group.effective_target_cpc."
+        },
+        "effectivetargetcpcsource": {
+          "type": "string",
+          "x-ms-summary": "Effective Target CPC Source",
+          "description": "One of: AD_GROUP, AD_GROUP_CRITERION, CAMPAIGN_BIDDING_STRATEGY, UNKNOWN, UNSPECIFIED. Source: ad_group.effective_target_cpc_source."
+        },
+        "effectivetargetroas": {
+          "type": "number",
+          "x-ms-summary": "Effective Target ROAS",
+          "description": "Source: ad_group.effective_target_roas."
+        },
+        "effectivetargetroassource": {
+          "type": "string",
+          "x-ms-summary": "Effective Target ROAS Source",
+          "description": "One of: AD_GROUP, AD_GROUP_CRITERION, CAMPAIGN_BIDDING_STRATEGY, UNKNOWN, UNSPECIFIED. Source: ad_group.effective_target_roas_source."
+        },
+        "optimizedtargetingenabled": {
+          "type": "boolean",
+          "x-ms-summary": "Optimized Targeting Enabled",
+          "description": "Source: ad_group.optimized_targeting_enabled."
+        },
+        "excludedemographicexpansion": {
+          "type": "boolean",
+          "x-ms-summary": "Exclude Demographic Expansion",
+          "description": "Source: ad_group.exclude_demographic_expansion."
+        },
+        "useaudiencegrouped": {
+          "type": "boolean",
+          "x-ms-summary": "Use Audience Grouped",
+          "description": "Source: ad_group.audience_setting.use_audience_grouped."
+        },
+        "displaycustombiddimension": {
+          "type": "string",
+          "x-ms-summary": "Display Custom Bid Dimension",
+          "description": "One of: AGE_RANGE, AUDIENCE, GENDER, INCOME_RANGE, KEYWORD, PARENTAL_STATUS, PLACEMENT, TOPIC, UNKNOWN, UNSPECIFIED. Source: ad_group.display_custom_bid_dimension."
+        },
+        "disablesearchtermmatching": {
+          "type": "boolean",
+          "x-ms-summary": "AI Max: Disable Search Term Matching",
+          "description": "Source: ad_group.ai_max_ad_group_setting.disable_search_term_matching."
+        },
+        "targetrestrictions": {
+          "type": "string",
+          "x-ms-summary": "Targeting Restrictions",
+          "description": "JSON. Source: ad_group.targeting_setting.target_restrictions."
+        },
+        "excludedparentassetfieldtypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Excluded Parent Asset Field Types",
+          "description": "Google Ads enum values. Source: ad_group.excluded_parent_asset_field_types."
+        },
+        "channelconfig": {
+          "type": "string",
+          "x-ms-summary": "Demand Gen Channel Config",
+          "description": "One of: CHANNEL_STRATEGY, SELECTED_CHANNELS, UNKNOWN, UNSPECIFIED. Source: ad_group.demand_gen_ad_group_settings.channel_controls.channel_config."
+        },
+        "channelstrategy": {
+          "type": "string",
+          "x-ms-summary": "Demand Gen Channel Strategy",
+          "description": "One of: ALL_CHANNELS, ALL_OWNED_AND_OPERATED_CHANNELS, UNKNOWN, UNSPECIFIED. Source: ad_group.demand_gen_ad_group_settings.channel_controls.channel_strategy."
+        },
+        "channelyoutubeinstream": {
+          "type": "boolean",
+          "x-ms-summary": "Demand Gen: YouTube In-stream",
+          "description": "Source: ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.youtube_in_stream."
+        },
+        "channelyoutubeinfeed": {
+          "type": "boolean",
+          "x-ms-summary": "Demand Gen: YouTube In-feed",
+          "description": "Source: ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.youtube_in_feed."
+        },
+        "channelyoutubeshorts": {
+          "type": "boolean",
+          "x-ms-summary": "Demand Gen: YouTube Shorts",
+          "description": "Source: ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.youtube_shorts."
+        },
+        "channeldiscover": {
+          "type": "boolean",
+          "x-ms-summary": "Demand Gen: Discover",
+          "description": "Source: ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.discover."
+        },
+        "channelgmail": {
+          "type": "boolean",
+          "x-ms-summary": "Demand Gen: Gmail",
+          "description": "Source: ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.gmail."
+        },
+        "channeldisplay": {
+          "type": "boolean",
+          "x-ms-summary": "Demand Gen: Display",
+          "description": "Source: ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.display."
+        },
+        "channelmaps": {
+          "type": "boolean",
+          "x-ms-summary": "Demand Gen: Maps",
+          "description": "Source: ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.maps."
+        },
+        "trackingurltemplate": {
+          "type": "string",
+          "x-ms-summary": "Tracking URL Template",
+          "description": "Source: ad_group.tracking_url_template."
+        },
+        "finalurlsuffix": {
+          "type": "string",
+          "x-ms-summary": "Final URL Suffix",
+          "description": "Source: ad_group.final_url_suffix."
+        },
+        "urlcustomparameters": {
+          "type": "string",
+          "x-ms-summary": "URL Custom Parameters",
+          "description": "JSON. Source: ad_group.url_custom_parameters."
+        },
+        "impressions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Impressions",
+          "description": "Source: metrics.impressions."
+        },
+        "clicks": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Clicks",
+          "description": "Source: metrics.clicks."
+        },
+        "ctr": {
+          "type": "number",
+          "x-ms-summary": "CTR (%)",
+          "description": "Percent (0-100). Source: metrics.ctr."
+        },
+        "averagecpc": {
+          "type": "number",
+          "x-ms-summary": "Avg. CPC",
+          "description": "In account currency (converted from micros). Source: metrics.average_cpc."
+        },
+        "averagecpm": {
+          "type": "number",
+          "x-ms-summary": "Avg. CPM",
+          "description": "In account currency (converted from micros). Source: metrics.average_cpm."
+        },
+        "averagecost": {
+          "type": "number",
+          "x-ms-summary": "Avg. Cost",
+          "description": "In account currency (converted from micros). Source: metrics.average_cost."
+        },
+        "cost": {
+          "type": "number",
+          "x-ms-summary": "Cost",
+          "description": "In account currency (converted from micros). Source: metrics.cost_micros."
+        },
+        "interactions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Interactions",
+          "description": "Source: metrics.interactions."
+        },
+        "interactionrate": {
+          "type": "number",
+          "x-ms-summary": "Interaction Rate (%)",
+          "description": "Percent (0-100). Source: metrics.interaction_rate."
+        },
+        "engagements": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Engagements",
+          "description": "Source: metrics.engagements."
+        },
+        "engagementrate": {
+          "type": "number",
+          "x-ms-summary": "Engagement Rate (%)",
+          "description": "Percent (0-100). Source: metrics.engagement_rate."
+        },
+        "conversions": {
+          "type": "number",
+          "x-ms-summary": "Conversions",
+          "description": "Source: metrics.conversions."
+        },
+        "conversionsvalue": {
+          "type": "number",
+          "x-ms-summary": "Conversions Value",
+          "description": "In account currency. Source: metrics.conversions_value."
+        },
+        "costperconversion": {
+          "type": "number",
+          "x-ms-summary": "Cost / Conversion",
+          "description": "In account currency (converted from micros). Source: metrics.cost_per_conversion."
+        },
+        "valueperconversion": {
+          "type": "number",
+          "x-ms-summary": "Value / Conversion",
+          "description": "In account currency. Source: metrics.value_per_conversion."
+        },
+        "conversionrate": {
+          "type": "number",
+          "x-ms-summary": "Conversion Rate (%)",
+          "description": "Percent (0-100). Source: metrics.conversions_from_interactions_rate."
+        },
+        "allconversions": {
+          "type": "number",
+          "x-ms-summary": "All Conversions",
+          "description": "Source: metrics.all_conversions."
+        },
+        "allconversionsvalue": {
+          "type": "number",
+          "x-ms-summary": "All Conversions Value",
+          "description": "In account currency. Source: metrics.all_conversions_value."
+        },
+        "viewthroughconversions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "View-through Conversions",
+          "description": "Source: metrics.view_through_conversions."
+        },
+        "phonecalls": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Phone Calls",
+          "description": "Source: metrics.phone_calls."
+        },
+        "videoviews": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Video Views",
+          "description": "Source: metrics.video_trueview_views."
+        },
+        "videoviewrate": {
+          "type": "number",
+          "x-ms-summary": "Video View Rate (%)",
+          "description": "Percent (0-100). Source: metrics.video_trueview_view_rate."
+        },
+        "topimpressionpct": {
+          "type": "number",
+          "x-ms-summary": "Top Impression (%)",
+          "description": "Percent (0-100). Source: metrics.top_impression_percentage."
+        },
+        "absolutetopimpressionpct": {
+          "type": "number",
+          "x-ms-summary": "Absolute Top Impression (%)",
+          "description": "Percent (0-100). Source: metrics.absolute_top_impression_percentage."
+        },
+        "searchimpressionshare": {
+          "type": "number",
+          "x-ms-summary": "Search Impression Share (%)",
+          "description": "Percent (0-100). Source: metrics.search_impression_share."
+        },
+        "searchtopimpressionshare": {
+          "type": "number",
+          "x-ms-summary": "Search Top Impression Share (%)",
+          "description": "Percent (0-100). Source: metrics.search_top_impression_share."
+        },
+        "searchabsolutetopimpressionshare": {
+          "type": "number",
+          "x-ms-summary": "Search Abs. Top Impression Share (%)",
+          "description": "Percent (0-100). Source: metrics.search_absolute_top_impression_share."
+        },
+        "lastsyncedon": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Last Synced On",
+          "description": "When the connector read the data (UTC)."
+        },
+        "rawpayload": {
+          "type": "string",
+          "x-ms-summary": "Raw Payload",
+          "description": "Full Google Ads row as JSON (without metrics)."
+        }
+      }
+    },
+    "AdGroupsResponse": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string",
+          "x-ms-summary": "Customer ID"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "metrics_error": {
+          "type": "string",
+          "x-ms-summary": "Metrics error",
+          "description": "Set when metrics could not be read; the rows are still returned."
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "$ref": "#/definitions/AdGroup"
+          }
+        }
+      }
+    },
+    "Ad": {
+      "type": "object",
+      "properties": {
+        "adname": {
+          "type": "string",
+          "x-ms-summary": "Ad Name",
+          "description": "Source: ad_group_ad.ad.name."
+        },
+        "adid": {
+          "type": "string",
+          "x-ms-summary": "Ad ID",
+          "description": "Source: ad_group_ad.ad.id."
+        },
+        "resourcename": {
+          "type": "string",
+          "x-ms-summary": "Resource Name",
+          "description": "Source: ad_group_ad.resource_name."
+        },
+        "adgroupid": {
+          "type": "string",
+          "x-ms-summary": "Ad Group ID",
+          "description": "Source: ad_group.id."
+        },
+        "adgroupname": {
+          "type": "string",
+          "x-ms-summary": "Ad Group Name",
+          "description": "Source: ad_group.name."
+        },
+        "campaignid": {
+          "type": "string",
+          "x-ms-summary": "Campaign ID",
+          "description": "Source: campaign.id."
+        },
+        "campaignname": {
+          "type": "string",
+          "x-ms-summary": "Campaign Name",
+          "description": "Source: campaign.name."
+        },
+        "customerid": {
+          "type": "string",
+          "x-ms-summary": "Customer ID",
+          "description": "Source: customer.id."
+        },
+        "labels": {
+          "type": "string",
+          "x-ms-summary": "Labels",
+          "description": "One value per line. Source: ad_group_ad.labels."
+        },
+        "status": {
+          "type": "string",
+          "x-ms-summary": "Status",
+          "description": "One of: ENABLED, PAUSED, REMOVED, UNKNOWN, UNSPECIFIED. Source: ad_group_ad.status."
+        },
+        "primarystatus": {
+          "type": "string",
+          "x-ms-summary": "Primary Status",
+          "description": "One of: ELIGIBLE, LIMITED, NOT_ELIGIBLE, PAUSED, PENDING, REMOVED, UNKNOWN, UNSPECIFIED. Source: ad_group_ad.primary_status."
+        },
+        "primarystatusreasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Primary Status Reasons",
+          "description": "Google Ads enum values. Source: ad_group_ad.primary_status_reasons."
+        },
+        "adstrength": {
+          "type": "string",
+          "x-ms-summary": "Ad Strength",
+          "description": "One of: AVERAGE, EXCELLENT, GOOD, NO_ADS, PENDING, POOR, UNKNOWN, UNSPECIFIED. Source: ad_group_ad.ad_strength."
+        },
+        "actionitems": {
+          "type": "string",
+          "x-ms-summary": "Action Items",
+          "description": "One value per line. Source: ad_group_ad.action_items."
+        },
+        "startdatetime": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Start Date Time",
+          "description": "Account time zone. Source: ad_group_ad.start_date_time."
+        },
+        "enddatetime": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "End Date Time",
+          "description": "Account time zone. Source: ad_group_ad.end_date_time."
+        },
+        "type": {
+          "type": "string",
+          "x-ms-summary": "Ad Type",
+          "description": "One of: APP_AD, APP_ENGAGEMENT_AD, APP_PRE_REGISTRATION_AD, CALL_AD, DEMAND_GEN_CAROUSEL_AD, DEMAND_GEN_MULTI_ASSET_AD, DEMAND_GEN_PRODUCT_AD, DEMAND_GEN_VIDEO_RESPONSIVE_AD, DYNAMIC_HTML5_AD, EXPANDED_DYNAMIC_SEARCH_AD, EXPANDED_TEXT_AD, HOTEL_AD, HTML5_UPLOAD_AD, IMAGE_AD, IN_FEED_VIDEO_AD, LEGACY_APP_INSTALL_AD, LEGACY_RESPONSIVE_DISPLAY_AD, LOCAL_AD, RESPONSIVE_DISPLAY_AD, RESPONSIVE_SEARCH_AD, SHOPPING_COMPARISON_LISTING_AD, SHOPPING_PRODUCT_AD, SHOPPING_SMART_AD, SMART_CAMPAIGN_AD, TEXT_AD, TRAVEL_AD, UNKNOWN, UNSPECIFIED, VIDEO_AD, VIDEO_BUMPER_AD, VIDEO_NON_SKIPPABLE_IN_STREAM_AD, VIDEO_RESPONSIVE_AD, VIDEO_TRUEVIEW_IN_STREAM_AD, YOUTUBE_AUDIO_AD. Source: ad_group_ad.ad.type."
+        },
+        "devicepreference": {
+          "type": "string",
+          "x-ms-summary": "Device Preference",
+          "description": "One of: CONNECTED_TV, DESKTOP, MOBILE, OTHER, TABLET, UNKNOWN, UNSPECIFIED. Source: ad_group_ad.ad.device_preference."
+        },
+        "addedbygoogleads": {
+          "type": "boolean",
+          "x-ms-summary": "Added by Google Ads",
+          "description": "Source: ad_group_ad.ad.added_by_google_ads."
+        },
+        "systemmanagedsource": {
+          "type": "string",
+          "x-ms-summary": "System Managed Source",
+          "description": "One of: AD_VARIATIONS, UNKNOWN, UNSPECIFIED. Source: ad_group_ad.ad.system_managed_resource_source."
+        },
+        "approvalstatus": {
+          "type": "string",
+          "x-ms-summary": "Approval Status",
+          "description": "One of: APPROVED, APPROVED_LIMITED, AREA_OF_INTEREST_ONLY, DISAPPROVED, UNKNOWN, UNSPECIFIED. Source: ad_group_ad.policy_summary.approval_status."
+        },
+        "reviewstatus": {
+          "type": "string",
+          "x-ms-summary": "Review Status",
+          "description": "One of: ELIGIBLE_MAY_SERVE, REVIEWED, REVIEW_IN_PROGRESS, UNDER_APPEAL, UNKNOWN, UNSPECIFIED. Source: ad_group_ad.policy_summary.review_status."
+        },
+        "policytopics": {
+          "type": "string",
+          "x-ms-summary": "Policy Topics",
+          "description": "JSON. Source: ad_group_ad.policy_summary.policy_topic_entries."
+        },
+        "headlines": {
+          "type": "string",
+          "x-ms-summary": "Headlines",
+          "description": "One text per line. Source: ad_group_ad.ad.responsive_search_ad.headlines, ad_group_ad.ad.responsive_display_ad.headlines, ad_group_ad.ad.demand_gen_multi_asset_ad.headlines, ad_group_ad.ad.demand_gen_video_responsive_ad.headlines, ad_group_ad.ad.video_responsive_ad.headlines, ad_group_ad.ad.app_ad.headlines."
+        },
+        "longheadline": {
+          "type": "string",
+          "x-ms-summary": "Long Headline",
+          "description": "One text per line. Source: ad_group_ad.ad.responsive_display_ad.long_headline, ad_group_ad.ad.demand_gen_video_responsive_ad.long_headlines, ad_group_ad.ad.video_responsive_ad.long_headlines, ad_group_ad.ad.demand_gen_carousel_ad.headline."
+        },
+        "descriptions": {
+          "type": "string",
+          "x-ms-summary": "Descriptions",
+          "description": "One text per line. Source: ad_group_ad.ad.responsive_search_ad.descriptions, ad_group_ad.ad.responsive_display_ad.descriptions, ad_group_ad.ad.demand_gen_multi_asset_ad.descriptions, ad_group_ad.ad.demand_gen_video_responsive_ad.descriptions, ad_group_ad.ad.video_responsive_ad.descriptions, ad_group_ad.ad.app_ad.descriptions, ad_group_ad.ad.demand_gen_carousel_ad.description."
+        },
+        "businessname": {
+          "type": "string",
+          "x-ms-summary": "Business Name",
+          "description": "One text per line. Source: ad_group_ad.ad.responsive_display_ad.business_name, ad_group_ad.ad.demand_gen_multi_asset_ad.business_name, ad_group_ad.ad.demand_gen_video_responsive_ad.business_name, ad_group_ad.ad.video_responsive_ad.business_name, ad_group_ad.ad.demand_gen_carousel_ad.business_name."
+        },
+        "calltoaction": {
+          "type": "string",
+          "x-ms-summary": "Call to Action",
+          "description": "One text per line. Source: ad_group_ad.ad.responsive_display_ad.call_to_action_text, ad_group_ad.ad.demand_gen_multi_asset_ad.call_to_action_text, ad_group_ad.ad.demand_gen_carousel_ad.call_to_action_text, ad_group_ad.ad.video_responsive_ad.call_to_actions, ad_group_ad.ad.demand_gen_video_responsive_ad.call_to_actions."
+        },
+        "path1": {
+          "type": "string",
+          "x-ms-summary": "Path 1",
+          "description": "Source: ad_group_ad.ad.responsive_search_ad.path1."
+        },
+        "path2": {
+          "type": "string",
+          "x-ms-summary": "Path 2",
+          "description": "Source: ad_group_ad.ad.responsive_search_ad.path2."
+        },
+        "displayurl": {
+          "type": "string",
+          "x-ms-summary": "Display URL",
+          "description": "Source: ad_group_ad.ad.display_url."
+        },
+        "mandatoryadtext": {
+          "type": "string",
+          "x-ms-summary": "Mandatory Ad Text",
+          "description": "One text per line. Source: ad_group_ad.ad.app_ad.mandatory_ad_text."
+        },
+        "marketingimages": {
+          "type": "string",
+          "x-ms-summary": "Marketing Images",
+          "description": "Asset resource names, one per line. Source: ad_group_ad.ad.responsive_display_ad.marketing_images, ad_group_ad.ad.demand_gen_multi_asset_ad.marketing_images, ad_group_ad.ad.app_ad.images."
+        },
+        "squaremarketingimages": {
+          "type": "string",
+          "x-ms-summary": "Square Marketing Images",
+          "description": "Asset resource names, one per line. Source: ad_group_ad.ad.responsive_display_ad.square_marketing_images, ad_group_ad.ad.demand_gen_multi_asset_ad.square_marketing_images."
+        },
+        "portraitmarketingimages": {
+          "type": "string",
+          "x-ms-summary": "Portrait Marketing Images",
+          "description": "Asset resource names, one per line. Source: ad_group_ad.ad.demand_gen_multi_asset_ad.portrait_marketing_images."
+        },
+        "logoimages": {
+          "type": "string",
+          "x-ms-summary": "Logo Images",
+          "description": "Asset resource names, one per line. Source: ad_group_ad.ad.responsive_display_ad.logo_images, ad_group_ad.ad.demand_gen_multi_asset_ad.logo_images, ad_group_ad.ad.demand_gen_video_responsive_ad.logo_images, ad_group_ad.ad.video_responsive_ad.logo_images, ad_group_ad.ad.demand_gen_carousel_ad.logo_image."
+        },
+        "videos": {
+          "type": "string",
+          "x-ms-summary": "Videos",
+          "description": "Asset resource names, one per line. Source: ad_group_ad.ad.responsive_display_ad.youtube_videos, ad_group_ad.ad.video_responsive_ad.videos, ad_group_ad.ad.demand_gen_video_responsive_ad.videos, ad_group_ad.ad.app_ad.youtube_videos."
+        },
+        "carouselcards": {
+          "type": "string",
+          "x-ms-summary": "Carousel Cards",
+          "description": "Asset resource names, one per line. Source: ad_group_ad.ad.demand_gen_carousel_ad.carousel_cards."
+        },
+        "imageurl": {
+          "type": "string",
+          "x-ms-summary": "Image URL",
+          "description": "Source: ad_group_ad.ad.image_ad.image_url."
+        },
+        "imagename": {
+          "type": "string",
+          "x-ms-summary": "Image Name",
+          "description": "Source: ad_group_ad.ad.image_ad.name."
+        },
+        "imagewidth": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Image Width (px)",
+          "description": "Source: ad_group_ad.ad.image_ad.pixel_width."
+        },
+        "imageheight": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Image Height (px)",
+          "description": "Source: ad_group_ad.ad.image_ad.pixel_height."
+        },
+        "finalurl": {
+          "type": "string",
+          "x-ms-summary": "Final URL",
+          "description": "Source: ad_group_ad.ad.final_urls."
+        },
+        "finalurls": {
+          "type": "string",
+          "x-ms-summary": "Final URLs",
+          "description": "One value per line. Source: ad_group_ad.ad.final_urls."
+        },
+        "finalmobileurls": {
+          "type": "string",
+          "x-ms-summary": "Final Mobile URLs",
+          "description": "One value per line. Source: ad_group_ad.ad.final_mobile_urls."
+        },
+        "finalappurls": {
+          "type": "string",
+          "x-ms-summary": "Final App URLs",
+          "description": "JSON. Source: ad_group_ad.ad.final_app_urls."
+        },
+        "trackingurltemplate": {
+          "type": "string",
+          "x-ms-summary": "Tracking URL Template",
+          "description": "Source: ad_group_ad.ad.tracking_url_template."
+        },
+        "finalurlsuffix": {
+          "type": "string",
+          "x-ms-summary": "Final URL Suffix",
+          "description": "Source: ad_group_ad.ad.final_url_suffix."
+        },
+        "urlcustomparameters": {
+          "type": "string",
+          "x-ms-summary": "URL Custom Parameters",
+          "description": "JSON. Source: ad_group_ad.ad.url_custom_parameters."
+        },
+        "impressions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Impressions",
+          "description": "Source: metrics.impressions."
+        },
+        "clicks": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Clicks",
+          "description": "Source: metrics.clicks."
+        },
+        "ctr": {
+          "type": "number",
+          "x-ms-summary": "CTR (%)",
+          "description": "Percent (0-100). Source: metrics.ctr."
+        },
+        "averagecpc": {
+          "type": "number",
+          "x-ms-summary": "Avg. CPC",
+          "description": "In account currency (converted from micros). Source: metrics.average_cpc."
+        },
+        "averagecpm": {
+          "type": "number",
+          "x-ms-summary": "Avg. CPM",
+          "description": "In account currency (converted from micros). Source: metrics.average_cpm."
+        },
+        "averagecost": {
+          "type": "number",
+          "x-ms-summary": "Avg. Cost",
+          "description": "In account currency (converted from micros). Source: metrics.average_cost."
+        },
+        "cost": {
+          "type": "number",
+          "x-ms-summary": "Cost",
+          "description": "In account currency (converted from micros). Source: metrics.cost_micros."
+        },
+        "interactions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Interactions",
+          "description": "Source: metrics.interactions."
+        },
+        "interactionrate": {
+          "type": "number",
+          "x-ms-summary": "Interaction Rate (%)",
+          "description": "Percent (0-100). Source: metrics.interaction_rate."
+        },
+        "engagements": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Engagements",
+          "description": "Source: metrics.engagements."
+        },
+        "engagementrate": {
+          "type": "number",
+          "x-ms-summary": "Engagement Rate (%)",
+          "description": "Percent (0-100). Source: metrics.engagement_rate."
+        },
+        "conversions": {
+          "type": "number",
+          "x-ms-summary": "Conversions",
+          "description": "Source: metrics.conversions."
+        },
+        "conversionsvalue": {
+          "type": "number",
+          "x-ms-summary": "Conversions Value",
+          "description": "In account currency. Source: metrics.conversions_value."
+        },
+        "costperconversion": {
+          "type": "number",
+          "x-ms-summary": "Cost / Conversion",
+          "description": "In account currency (converted from micros). Source: metrics.cost_per_conversion."
+        },
+        "valueperconversion": {
+          "type": "number",
+          "x-ms-summary": "Value / Conversion",
+          "description": "In account currency. Source: metrics.value_per_conversion."
+        },
+        "conversionrate": {
+          "type": "number",
+          "x-ms-summary": "Conversion Rate (%)",
+          "description": "Percent (0-100). Source: metrics.conversions_from_interactions_rate."
+        },
+        "allconversions": {
+          "type": "number",
+          "x-ms-summary": "All Conversions",
+          "description": "Source: metrics.all_conversions."
+        },
+        "allconversionsvalue": {
+          "type": "number",
+          "x-ms-summary": "All Conversions Value",
+          "description": "In account currency. Source: metrics.all_conversions_value."
+        },
+        "viewthroughconversions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "View-through Conversions",
+          "description": "Source: metrics.view_through_conversions."
+        },
+        "phonecalls": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Phone Calls",
+          "description": "Source: metrics.phone_calls."
+        },
+        "videoviews": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Video Views",
+          "description": "Source: metrics.video_trueview_views."
+        },
+        "videoviewrate": {
+          "type": "number",
+          "x-ms-summary": "Video View Rate (%)",
+          "description": "Percent (0-100). Source: metrics.video_trueview_view_rate."
+        },
+        "topimpressionpct": {
+          "type": "number",
+          "x-ms-summary": "Top Impression (%)",
+          "description": "Percent (0-100). Source: metrics.top_impression_percentage."
+        },
+        "absolutetopimpressionpct": {
+          "type": "number",
+          "x-ms-summary": "Absolute Top Impression (%)",
+          "description": "Percent (0-100). Source: metrics.absolute_top_impression_percentage."
+        },
+        "lastsyncedon": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Last Synced On",
+          "description": "When the connector read the data (UTC)."
+        },
+        "rawpayload": {
+          "type": "string",
+          "x-ms-summary": "Raw Payload",
+          "description": "Full Google Ads row as JSON (without metrics)."
+        }
+      }
+    },
+    "AdsResponse": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string",
+          "x-ms-summary": "Customer ID"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "metrics_error": {
+          "type": "string",
+          "x-ms-summary": "Metrics error",
+          "description": "Set when metrics could not be read; the rows are still returned."
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "$ref": "#/definitions/Ad"
+          }
+        }
+      }
+    },
+    "PerformanceRow": {
+      "type": "object",
+      "properties": {
+        "customerid": {
+          "type": "string",
+          "x-ms-summary": "Customer ID",
+          "description": "Source: customer.id."
+        },
+        "campaignid": {
+          "type": "string",
+          "x-ms-summary": "Campaign ID",
+          "description": "Source: campaign.id."
+        },
+        "campaignname": {
+          "type": "string",
+          "x-ms-summary": "Campaign Name",
+          "description": "Source: campaign.name."
+        },
+        "impressions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Impressions",
+          "description": "Source: metrics.impressions."
+        },
+        "clicks": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Clicks",
+          "description": "Source: metrics.clicks."
+        },
+        "ctr": {
+          "type": "number",
+          "x-ms-summary": "CTR (%)",
+          "description": "Percent (0-100). Source: metrics.ctr."
+        },
+        "averagecpc": {
+          "type": "number",
+          "x-ms-summary": "Avg. CPC",
+          "description": "In account currency (converted from micros). Source: metrics.average_cpc."
+        },
+        "averagecpm": {
+          "type": "number",
+          "x-ms-summary": "Avg. CPM",
+          "description": "In account currency (converted from micros). Source: metrics.average_cpm."
+        },
+        "averagecost": {
+          "type": "number",
+          "x-ms-summary": "Avg. Cost",
+          "description": "In account currency (converted from micros). Source: metrics.average_cost."
+        },
+        "cost": {
+          "type": "number",
+          "x-ms-summary": "Cost",
+          "description": "In account currency (converted from micros). Source: metrics.cost_micros."
+        },
+        "interactions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Interactions",
+          "description": "Source: metrics.interactions."
+        },
+        "interactionrate": {
+          "type": "number",
+          "x-ms-summary": "Interaction Rate (%)",
+          "description": "Percent (0-100). Source: metrics.interaction_rate."
+        },
+        "engagements": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Engagements",
+          "description": "Source: metrics.engagements."
+        },
+        "engagementrate": {
+          "type": "number",
+          "x-ms-summary": "Engagement Rate (%)",
+          "description": "Percent (0-100). Source: metrics.engagement_rate."
+        },
+        "conversions": {
+          "type": "number",
+          "x-ms-summary": "Conversions",
+          "description": "Source: metrics.conversions."
+        },
+        "conversionsvalue": {
+          "type": "number",
+          "x-ms-summary": "Conversions Value",
+          "description": "In account currency. Source: metrics.conversions_value."
+        },
+        "costperconversion": {
+          "type": "number",
+          "x-ms-summary": "Cost / Conversion",
+          "description": "In account currency (converted from micros). Source: metrics.cost_per_conversion."
+        },
+        "valueperconversion": {
+          "type": "number",
+          "x-ms-summary": "Value / Conversion",
+          "description": "In account currency. Source: metrics.value_per_conversion."
+        },
+        "conversionrate": {
+          "type": "number",
+          "x-ms-summary": "Conversion Rate (%)",
+          "description": "Percent (0-100). Source: metrics.conversions_from_interactions_rate."
+        },
+        "allconversions": {
+          "type": "number",
+          "x-ms-summary": "All Conversions",
+          "description": "Source: metrics.all_conversions."
+        },
+        "allconversionsvalue": {
+          "type": "number",
+          "x-ms-summary": "All Conversions Value",
+          "description": "In account currency. Source: metrics.all_conversions_value."
+        },
+        "viewthroughconversions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "View-through Conversions",
+          "description": "Source: metrics.view_through_conversions."
+        },
+        "phonecalls": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Phone Calls",
+          "description": "Source: metrics.phone_calls."
+        },
+        "videoviews": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Video Views",
+          "description": "Source: metrics.video_trueview_views."
+        },
+        "videoviewrate": {
+          "type": "number",
+          "x-ms-summary": "Video View Rate (%)",
+          "description": "Percent (0-100). Source: metrics.video_trueview_view_rate."
+        },
+        "topimpressionpct": {
+          "type": "number",
+          "x-ms-summary": "Top Impression (%)",
+          "description": "Percent (0-100). Source: metrics.top_impression_percentage."
+        },
+        "absolutetopimpressionpct": {
+          "type": "number",
+          "x-ms-summary": "Absolute Top Impression (%)",
+          "description": "Percent (0-100). Source: metrics.absolute_top_impression_percentage."
+        },
+        "searchimpressionshare": {
+          "type": "number",
+          "x-ms-summary": "Search Impression Share (%)",
+          "description": "Percent (0-100). Source: metrics.search_impression_share."
+        },
+        "searchtopimpressionshare": {
+          "type": "number",
+          "x-ms-summary": "Search Top Impression Share (%)",
+          "description": "Percent (0-100). Source: metrics.search_top_impression_share."
+        },
+        "searchabsolutetopimpressionshare": {
+          "type": "number",
+          "x-ms-summary": "Search Abs. Top Impression Share (%)",
+          "description": "Percent (0-100). Source: metrics.search_absolute_top_impression_share."
+        },
+        "invalidclicks": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Invalid Clicks",
+          "description": "Source: metrics.invalid_clicks."
+        },
+        "adgroupid": {
+          "type": "string",
+          "x-ms-summary": "Ad Group ID",
+          "description": "Source: ad_group.id."
+        },
+        "adgroupname": {
+          "type": "string",
+          "x-ms-summary": "Ad Group Name",
+          "description": "Source: ad_group.name."
+        },
+        "adid": {
+          "type": "string",
+          "x-ms-summary": "Ad ID",
+          "description": "Source: ad_group_ad.ad.id."
+        },
+        "adname": {
+          "type": "string",
+          "x-ms-summary": "Ad Name",
+          "description": "Source: ad_group_ad.ad.name."
+        },
+        "date": {
+          "type": "string",
+          "x-ms-summary": "Date"
+        },
+        "week": {
+          "type": "string",
+          "x-ms-summary": "Week"
+        },
+        "month": {
+          "type": "string",
+          "x-ms-summary": "Month"
+        },
+        "device": {
+          "type": "string",
+          "x-ms-summary": "Device"
+        },
+        "ad_network_type": {
+          "type": "string",
+          "x-ms-summary": "Ad network type"
+        }
+      }
+    },
+    "PerformanceResponse": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string",
+          "x-ms-summary": "Customer ID"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "metrics_error": {
+          "type": "string",
+          "x-ms-summary": "Metrics error",
+          "description": "Set when metrics could not be read; the rows are still returned."
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "$ref": "#/definitions/PerformanceRow"
+          }
+        },
+        "query": {
+          "type": "string",
+          "x-ms-summary": "GAQL query"
+        }
+      }
+    },
+    "QueryResponse": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "string",
+          "x-ms-summary": "Customer ID"
+        },
+        "query": {
+          "type": "string",
+          "x-ms-summary": "Query"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "oauth2_auth": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "https://accounts.google.com/o/oauth2/v2/auth",
+      "tokenUrl": "https://oauth2.googleapis.com/token",
+      "scopes": {
+        "https://www.googleapis.com/auth/adwords": "https://www.googleapis.com/auth/adwords"
+      }
+    }
+  },
+  "security": [
+    {
+      "oauth2_auth": [
+        "https://www.googleapis.com/auth/adwords"
+      ]
+    }
+  ],
+  "tags": [],
+  "x-ms-connector-metadata": [
+    {
+      "propertyName": "Website",
+      "propertyValue": "https://ads.google.com"
+    },
+    {
+      "propertyName": "Privacy policy",
+      "propertyValue": "https://policies.google.com/privacy"
+    },
+    {
+      "propertyName": "Categories",
+      "propertyValue": "Marketing"
+    }
+  ]
+}

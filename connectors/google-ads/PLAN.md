@@ -1,6 +1,14 @@
 # Google Ads integration: plan (AlSanidi-UAT)
 
-Status: **draft for approval**. Nothing has been created in Dataverse or Power Automate.
+Status: **approved** (2026-10-10). Step 1 (connector in repo) done; every step that changes UAT still needs approval.
+
+Decisions:
+- **Legacy items are left untouched**: the `sanidi_google_*` tables and the daily "Google Ads Sync" flow.
+- **Metrics are all-time totals**, refreshed on every sync.
+- **Credentials:** reuse the Google OAuth client of the old sync flow. The old flow has no developer
+  token (it never synced: `campaigns=0`, errors on every run), so a **developer token is still needed**.
+- **Choices:** every Google Ads enum becomes a Dataverse choice with **all** v25 enum values (including
+  `UNSPECIFIED` / `UNKNOWN`), numbered **from 1**. Repeated enums become multi-select choices.
 
 Environment: `https://operations-alsenidiuat.crm4.dynamics.com`
 Solution: **AlSanidi | Marketing** (`AlSanidiMarketing`), publisher prefix **`sanidi`**
@@ -51,6 +59,9 @@ Read-only actions:
 
 ## 2. Tables
 
+The exact column list (logical name, label, type, GAQL source, form section) is in
+[`spec.py`](spec.py). The lists below summarise it.
+
 All three tables are:
 - User-owned and in the solution.
 - Currency-enabled for the money columns.
@@ -61,7 +72,7 @@ Choice values start at 1, like Snap. Arrays (status reasons, URLs, labels, headl
 multiline text, comma- or newline-joined. Every table also gets **Raw payload** (the full Google
 JSON) and **Last synced on**, so no data from the API is lost.
 
-### 2.1 `sanidi_googleadscampaign`: Google Ads Campaign (~75 columns)
+### 2.1 `sanidi_googleadscampaign`: Google Ads Campaign (115 columns)
 
 **Identity**
 - Campaign Name (primary, 375)
@@ -145,7 +156,7 @@ JSON) and **Last synced on**, so no data from the API is lost.
 - Frequency Caps
 - Excluded Parent Asset Field Types
 
-**Performance (metrics window, see open question 4)**
+**Performance (all-time)**
 - Impressions
 - Clicks
 - CTR
@@ -167,7 +178,7 @@ JSON) and **Last synced on**, so no data from the API is lost.
 - Last Synced On
 - Raw Payload
 
-### 2.2 `sanidi_googleadsadgroup`: Google Ads Ad Group (~50 columns)
+### 2.2 `sanidi_googleadsadgroup`: Google Ads Ad Group (78 columns + campaign lookup)
 
 **Identity**
 - Ad Group Name (primary)
@@ -220,7 +231,7 @@ JSON) and **Last synced on**, so no data from the API is lost.
 - Last Synced On
 - Raw Payload
 
-### 2.3 `sanidi_googleadsadvertisement`: Google Ads Advertisement (~50 columns)
+### 2.3 `sanidi_googleadsadvertisement`: Google Ads Advertisement (75 columns + ad group lookup)
 
 **Identity**
 - Ad Name (primary; falls back to the first headline / ad ID when Google has no name)

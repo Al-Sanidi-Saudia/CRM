@@ -1,0 +1,1846 @@
+{
+ "ad_group.ad_rotation_mode": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "OPTIMIZE",
+   "ROTATE_FOREVER",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group.ai_max_ad_group_setting.disable_search_term_matching": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.audience_setting.use_audience_grouped": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.base_ad_group": {
+  "type": "RESOURCE_NAME",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.cpc_bid_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.cpm_bid_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.cpv_bid_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.demand_gen_ad_group_settings.channel_controls.channel_config": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "CHANNEL_STRATEGY",
+   "SELECTED_CHANNELS",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group.demand_gen_ad_group_settings.channel_controls.channel_strategy": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ALL_CHANNELS",
+   "ALL_OWNED_AND_OPERATED_CHANNELS",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.discover": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.display": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.gmail": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.maps": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.youtube_in_feed": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.youtube_in_stream": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.demand_gen_ad_group_settings.channel_controls.selected_channels.youtube_shorts": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.display_custom_bid_dimension": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "AGE_RANGE",
+   "AUDIENCE",
+   "GENDER",
+   "INCOME_RANGE",
+   "KEYWORD",
+   "PARENTAL_STATUS",
+   "PLACEMENT",
+   "TOPIC",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group.effective_cpc_bid_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.effective_target_cpa_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.effective_target_cpa_source": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "AD_GROUP",
+   "AD_GROUP_CRITERION",
+   "CAMPAIGN_BIDDING_STRATEGY",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group.effective_target_cpc": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.effective_target_cpc_source": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "AD_GROUP",
+   "AD_GROUP_CRITERION",
+   "CAMPAIGN_BIDDING_STRATEGY",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group.effective_target_roas": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.effective_target_roas_source": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "AD_GROUP",
+   "AD_GROUP_CRITERION",
+   "CAMPAIGN_BIDDING_STRATEGY",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group.exclude_demographic_expansion": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.excluded_parent_asset_field_types": {
+  "type": "ENUM",
+  "repeated": true,
+  "selectable": true,
+  "enum": [
+   "AD_IMAGE",
+   "BOOK_ON_GOOGLE",
+   "BUSINESS_LOGO",
+   "BUSINESS_MESSAGE",
+   "BUSINESS_NAME",
+   "CALL",
+   "CALLOUT",
+   "CALL_TO_ACTION",
+   "CALL_TO_ACTION_SELECTION",
+   "CLASSIC_DISPLAY_IMAGE",
+   "DEMAND_GEN_CAROUSEL_CARD",
+   "DESCRIPTION",
+   "HEADLINE",
+   "HOTEL_CALLOUT",
+   "HOTEL_PROPERTY",
+   "LANDING_PAGE_PREVIEW",
+   "LANDSCAPE_LOGO",
+   "LEAD_FORM",
+   "LOGO",
+   "LONG_DESCRIPTION",
+   "LONG_HEADLINE",
+   "MANDATORY_AD_TEXT",
+   "MARKETING_IMAGE",
+   "MEDIA_BUNDLE",
+   "MOBILE_APP",
+   "PORTRAIT_MARKETING_IMAGE",
+   "PRICE",
+   "PROMOTION",
+   "RELATED_YOUTUBE_VIDEOS",
+   "SITELINK",
+   "SQUARE_MARKETING_IMAGE",
+   "STRUCTURED_SNIPPET",
+   "TALL_PORTRAIT_MARKETING_IMAGE",
+   "TEXT_DISCLAIMER",
+   "UNKNOWN",
+   "UNSPECIFIED",
+   "VIDEO",
+   "YOUTUBE_VIDEO"
+  ]
+ },
+ "ad_group.final_url_suffix": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.fixed_cpm_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.id": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.labels": {
+  "type": "RESOURCE_NAME",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group.name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.optimized_targeting_enabled": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.percent_cpc_bid_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.primary_status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ELIGIBLE",
+   "LIMITED",
+   "NOT_ELIGIBLE",
+   "PAUSED",
+   "PENDING",
+   "REMOVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group.primary_status_reasons": {
+  "type": "ENUM",
+  "repeated": true,
+  "selectable": true,
+  "enum": [
+   "AD_GROUP_ADS_PAUSED",
+   "AD_GROUP_INCOMPLETE",
+   "AD_GROUP_PAUSED",
+   "AD_GROUP_PAUSED_DUE_TO_LOW_ACTIVITY",
+   "AD_GROUP_REMOVED",
+   "CAMPAIGN_DRAFT",
+   "CAMPAIGN_ENDED",
+   "CAMPAIGN_PAUSED",
+   "CAMPAIGN_PENDING",
+   "CAMPAIGN_REMOVED",
+   "HAS_ADS_DISAPPROVED",
+   "HAS_ADS_LIMITED_BY_POLICY",
+   "KEYWORDS_PAUSED",
+   "MOST_ADS_UNDER_REVIEW",
+   "NO_AD_GROUP_ADS",
+   "NO_KEYWORDS",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group.resource_name": {
+  "type": "RESOURCE_NAME",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ENABLED",
+   "PAUSED",
+   "REMOVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group.target_cpa_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.target_cpc_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.target_cpm_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.target_cpv_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.target_roas": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.targeting_setting.target_restrictions": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group.tracking_url_template": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group.type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "DISPLAY_STANDARD",
+   "HOTEL_ADS",
+   "PROMOTED_HOTEL_ADS",
+   "SEARCH_DYNAMIC_ADS",
+   "SEARCH_STANDARD",
+   "SHOPPING_COMPARISON_LISTING_ADS",
+   "SHOPPING_PRODUCT_ADS",
+   "SHOPPING_SMART_ADS",
+   "SMART_CAMPAIGN_ADS",
+   "TRAVEL_ADS",
+   "UNKNOWN",
+   "UNSPECIFIED",
+   "VIDEO_BUMPER",
+   "VIDEO_EFFICIENT_REACH",
+   "VIDEO_NON_SKIPPABLE_IN_STREAM",
+   "VIDEO_RESPONSIVE",
+   "VIDEO_TRUE_VIEW_IN_DISPLAY",
+   "VIDEO_TRUE_VIEW_IN_STREAM",
+   "YOUTUBE_AUDIO"
+  ]
+ },
+ "ad_group.url_custom_parameters": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.action_items": {
+  "type": "STRING",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.added_by_google_ads": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.app_ad.descriptions": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.app_ad.headlines": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.app_ad.images": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.app_ad.mandatory_ad_text": {
+  "type": "MESSAGE",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.app_ad.youtube_videos": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_carousel_ad.business_name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_carousel_ad.call_to_action_text": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_carousel_ad.carousel_cards": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_carousel_ad.description": {
+  "type": "MESSAGE",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_carousel_ad.headline": {
+  "type": "MESSAGE",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_carousel_ad.logo_image": {
+  "type": "MESSAGE",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_multi_asset_ad.business_name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_multi_asset_ad.call_to_action_text": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_multi_asset_ad.descriptions": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_multi_asset_ad.headlines": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_multi_asset_ad.logo_images": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_multi_asset_ad.marketing_images": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_multi_asset_ad.portrait_marketing_images": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_multi_asset_ad.square_marketing_images": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_video_responsive_ad.business_name": {
+  "type": "MESSAGE",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_video_responsive_ad.call_to_actions": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_video_responsive_ad.descriptions": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_video_responsive_ad.headlines": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_video_responsive_ad.logo_images": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_video_responsive_ad.long_headlines": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.demand_gen_video_responsive_ad.videos": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.device_preference": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "CONNECTED_TV",
+   "DESKTOP",
+   "MOBILE",
+   "OTHER",
+   "TABLET",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group_ad.ad.display_url": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.final_app_urls": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.final_mobile_urls": {
+  "type": "STRING",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.final_url_suffix": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.final_urls": {
+  "type": "STRING",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.id": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.image_ad.image_url": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.image_ad.name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.image_ad.pixel_height": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.image_ad.pixel_width": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_display_ad.business_name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_display_ad.call_to_action_text": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_display_ad.descriptions": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_display_ad.headlines": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_display_ad.logo_images": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_display_ad.long_headline": {
+  "type": "MESSAGE",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_display_ad.marketing_images": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_display_ad.square_marketing_images": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_display_ad.youtube_videos": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_search_ad.descriptions": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_search_ad.headlines": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_search_ad.path1": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.responsive_search_ad.path2": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.system_managed_resource_source": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "AD_VARIATIONS",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group_ad.ad.tracking_url_template": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "APP_AD",
+   "APP_ENGAGEMENT_AD",
+   "APP_PRE_REGISTRATION_AD",
+   "CALL_AD",
+   "DEMAND_GEN_CAROUSEL_AD",
+   "DEMAND_GEN_MULTI_ASSET_AD",
+   "DEMAND_GEN_PRODUCT_AD",
+   "DEMAND_GEN_VIDEO_RESPONSIVE_AD",
+   "DYNAMIC_HTML5_AD",
+   "EXPANDED_DYNAMIC_SEARCH_AD",
+   "EXPANDED_TEXT_AD",
+   "HOTEL_AD",
+   "HTML5_UPLOAD_AD",
+   "IMAGE_AD",
+   "IN_FEED_VIDEO_AD",
+   "LEGACY_APP_INSTALL_AD",
+   "LEGACY_RESPONSIVE_DISPLAY_AD",
+   "LOCAL_AD",
+   "RESPONSIVE_DISPLAY_AD",
+   "RESPONSIVE_SEARCH_AD",
+   "SHOPPING_COMPARISON_LISTING_AD",
+   "SHOPPING_PRODUCT_AD",
+   "SHOPPING_SMART_AD",
+   "SMART_CAMPAIGN_AD",
+   "TEXT_AD",
+   "TRAVEL_AD",
+   "UNKNOWN",
+   "UNSPECIFIED",
+   "VIDEO_AD",
+   "VIDEO_BUMPER_AD",
+   "VIDEO_NON_SKIPPABLE_IN_STREAM_AD",
+   "VIDEO_RESPONSIVE_AD",
+   "VIDEO_TRUEVIEW_IN_STREAM_AD",
+   "YOUTUBE_AUDIO_AD"
+  ]
+ },
+ "ad_group_ad.ad.url_custom_parameters": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.video_responsive_ad.business_name": {
+  "type": "MESSAGE",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.ad.video_responsive_ad.call_to_actions": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.video_responsive_ad.descriptions": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.video_responsive_ad.headlines": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.video_responsive_ad.logo_images": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.video_responsive_ad.long_headlines": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad.video_responsive_ad.videos": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.ad_strength": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "AVERAGE",
+   "EXCELLENT",
+   "GOOD",
+   "NO_ADS",
+   "PENDING",
+   "POOR",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group_ad.end_date_time": {
+  "type": "DATE",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.labels": {
+  "type": "RESOURCE_NAME",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.policy_summary.approval_status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "APPROVED",
+   "APPROVED_LIMITED",
+   "AREA_OF_INTEREST_ONLY",
+   "DISAPPROVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group_ad.policy_summary.policy_topic_entries": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "ad_group_ad.policy_summary.review_status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ELIGIBLE_MAY_SERVE",
+   "REVIEWED",
+   "REVIEW_IN_PROGRESS",
+   "UNDER_APPEAL",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group_ad.primary_status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ELIGIBLE",
+   "LIMITED",
+   "NOT_ELIGIBLE",
+   "PAUSED",
+   "PENDING",
+   "REMOVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group_ad.primary_status_reasons": {
+  "type": "ENUM",
+  "repeated": true,
+  "selectable": true,
+  "enum": [
+   "AD_GROUP_AD_APPROVED_LABELED",
+   "AD_GROUP_AD_AREA_OF_INTEREST_ONLY",
+   "AD_GROUP_AD_DISAPPROVED",
+   "AD_GROUP_AD_NO_ADS",
+   "AD_GROUP_AD_PAUSED",
+   "AD_GROUP_AD_POOR_QUALITY",
+   "AD_GROUP_AD_REMOVED",
+   "AD_GROUP_AD_UNDER_APPEAL",
+   "AD_GROUP_AD_UNDER_REVIEW",
+   "AD_GROUP_PAUSED",
+   "AD_GROUP_REMOVED",
+   "CAMPAIGN_ENDED",
+   "CAMPAIGN_PAUSED",
+   "CAMPAIGN_PENDING",
+   "CAMPAIGN_REMOVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "ad_group_ad.resource_name": {
+  "type": "RESOURCE_NAME",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.start_date_time": {
+  "type": "DATE",
+  "repeated": false,
+  "selectable": true
+ },
+ "ad_group_ad.status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ENABLED",
+   "PAUSED",
+   "REMOVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.accessible_bidding_strategy": {
+  "type": "RESOURCE_NAME",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.ad_serving_optimization_status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "CONVERSION_OPTIMIZE",
+   "OPTIMIZE",
+   "ROTATE",
+   "ROTATE_INDEFINITELY",
+   "UNAVAILABLE",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.advertising_channel_sub_type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "APP_CAMPAIGN",
+   "APP_CAMPAIGN_FOR_ENGAGEMENT",
+   "APP_CAMPAIGN_FOR_PRE_REGISTRATION",
+   "DISPLAY_EXPRESS",
+   "DISPLAY_GMAIL_AD",
+   "DISPLAY_MOBILE_APP",
+   "DISPLAY_SMART_CAMPAIGN",
+   "LOCAL_CAMPAIGN",
+   "SEARCH_EXPRESS",
+   "SEARCH_MOBILE_APP",
+   "SHOPPING_COMPARISON_LISTING_ADS",
+   "SHOPPING_SMART_ADS",
+   "SMART_CAMPAIGN",
+   "TRAVEL_ACTIVITIES",
+   "UNKNOWN",
+   "UNSPECIFIED",
+   "VIDEO_ACTION",
+   "VIDEO_NON_SKIPPABLE",
+   "VIDEO_REACH_TARGET_FREQUENCY",
+   "VIDEO_SEQUENCE",
+   "YOUTUBE_AUDIO"
+  ]
+ },
+ "campaign.advertising_channel_type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "DEMAND_GEN",
+   "DISPLAY",
+   "HOTEL",
+   "LOCAL",
+   "LOCAL_SERVICES",
+   "MULTI_CHANNEL",
+   "PERFORMANCE_MAX",
+   "SEARCH",
+   "SHOPPING",
+   "SMART",
+   "TRAVEL",
+   "UNKNOWN",
+   "UNSPECIFIED",
+   "VIDEO"
+  ]
+ },
+ "campaign.ai_max_setting.enable_ai_max": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.app_campaign_setting.app_id": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.app_campaign_setting.app_store": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "APPLE_APP_STORE",
+   "GOOGLE_APP_STORE",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.app_campaign_setting.bidding_strategy_goal_type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "OPTIMIZE_INSTALLS_TARGET_INSTALL_COST",
+   "OPTIMIZE_INSTALLS_WITHOUT_TARGET_INSTALL_COST",
+   "OPTIMIZE_IN_APP_CONVERSIONS_TARGET_CONVERSION_COST",
+   "OPTIMIZE_IN_APP_CONVERSIONS_TARGET_INSTALL_COST",
+   "OPTIMIZE_IN_APP_CONVERSIONS_WITHOUT_TARGET_CPA",
+   "OPTIMIZE_PRE_REGISTRATION_CONVERSION_VOLUME",
+   "OPTIMIZE_RETURN_ON_ADVERTISING_SPEND",
+   "OPTIMIZE_TOTAL_VALUE_WITHOUT_TARGET_ROAS",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.audience_setting.use_audience_grouped": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.base_campaign": {
+  "type": "RESOURCE_NAME",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.bidding_strategy": {
+  "type": "RESOURCE_NAME",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.bidding_strategy_system_status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ENABLED",
+   "LEARNING_BUDGET_CHANGE",
+   "LEARNING_COMPOSITION_CHANGE",
+   "LEARNING_CONVERSION_SETTING_CHANGE",
+   "LEARNING_CONVERSION_TYPE_CHANGE",
+   "LEARNING_NEW",
+   "LEARNING_SETTING_CHANGE",
+   "LIMITED_BY_BUDGET",
+   "LIMITED_BY_CPC_BID_CEILING",
+   "LIMITED_BY_CPC_BID_FLOOR",
+   "LIMITED_BY_DATA",
+   "LIMITED_BY_INVENTORY",
+   "LIMITED_BY_LOW_PRIORITY_SPEND",
+   "LIMITED_BY_LOW_QUALITY",
+   "MISCONFIGURED_CONVERSION_SETTINGS",
+   "MISCONFIGURED_CONVERSION_TYPES",
+   "MISCONFIGURED_SHARED_BUDGET",
+   "MISCONFIGURED_STRATEGY_TYPE",
+   "MISCONFIGURED_ZERO_ELIGIBILITY",
+   "MULTIPLE",
+   "MULTIPLE_LEARNING",
+   "MULTIPLE_LIMITED",
+   "MULTIPLE_MISCONFIGURED",
+   "PAUSED",
+   "UNAVAILABLE",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.bidding_strategy_type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "COMMISSION",
+   "ENHANCED_CPC",
+   "FIXED_CPM",
+   "FIXED_SHARE_OF_VOICE",
+   "INVALID",
+   "MANUAL_CPA",
+   "MANUAL_CPC",
+   "MANUAL_CPM",
+   "MANUAL_CPV",
+   "MAXIMIZE_CONVERSIONS",
+   "MAXIMIZE_CONVERSION_VALUE",
+   "PAGE_ONE_PROMOTED",
+   "PERCENT_CPC",
+   "TARGET_CPA",
+   "TARGET_CPC",
+   "TARGET_CPM",
+   "TARGET_CPV",
+   "TARGET_IMPRESSION_SHARE",
+   "TARGET_OUTRANK_SHARE",
+   "TARGET_ROAS",
+   "TARGET_SPEND",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.brand_guidelines_enabled": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.campaign_group": {
+  "type": "RESOURCE_NAME",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.commission.commission_rate_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.contains_eu_political_advertising": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "CONTAINS_EU_POLITICAL_ADVERTISING",
+   "DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.dynamic_search_ads_setting.domain_name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.dynamic_search_ads_setting.language_code": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.dynamic_search_ads_setting.use_supplied_urls_only": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.end_date_time": {
+  "type": "DATE",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.excluded_parent_asset_field_types": {
+  "type": "ENUM",
+  "repeated": true,
+  "selectable": true,
+  "enum": [
+   "AD_IMAGE",
+   "BOOK_ON_GOOGLE",
+   "BUSINESS_LOGO",
+   "BUSINESS_MESSAGE",
+   "BUSINESS_NAME",
+   "CALL",
+   "CALLOUT",
+   "CALL_TO_ACTION",
+   "CALL_TO_ACTION_SELECTION",
+   "CLASSIC_DISPLAY_IMAGE",
+   "DEMAND_GEN_CAROUSEL_CARD",
+   "DESCRIPTION",
+   "HEADLINE",
+   "HOTEL_CALLOUT",
+   "HOTEL_PROPERTY",
+   "LANDING_PAGE_PREVIEW",
+   "LANDSCAPE_LOGO",
+   "LEAD_FORM",
+   "LOGO",
+   "LONG_DESCRIPTION",
+   "LONG_HEADLINE",
+   "MANDATORY_AD_TEXT",
+   "MARKETING_IMAGE",
+   "MEDIA_BUNDLE",
+   "MOBILE_APP",
+   "PORTRAIT_MARKETING_IMAGE",
+   "PRICE",
+   "PROMOTION",
+   "RELATED_YOUTUBE_VIDEOS",
+   "SITELINK",
+   "SQUARE_MARKETING_IMAGE",
+   "STRUCTURED_SNIPPET",
+   "TALL_PORTRAIT_MARKETING_IMAGE",
+   "TEXT_DISCLAIMER",
+   "UNKNOWN",
+   "UNSPECIFIED",
+   "VIDEO",
+   "YOUTUBE_VIDEO"
+  ]
+ },
+ "campaign.experiment_type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "BASE",
+   "DRAFT",
+   "EXPERIMENT",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.final_url_suffix": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.frequency_caps": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "campaign.geo_target_type_setting.negative_geo_target_type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "PRESENCE",
+   "PRESENCE_OR_INTEREST",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.geo_target_type_setting.positive_geo_target_type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "PRESENCE",
+   "PRESENCE_OR_INTEREST",
+   "SEARCH_INTEREST",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.hotel_setting.hotel_center_id": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.id": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.keyword_match_type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "BROAD",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.labels": {
+  "type": "RESOURCE_NAME",
+  "repeated": true,
+  "selectable": true
+ },
+ "campaign.listing_type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "UNKNOWN",
+   "UNSPECIFIED",
+   "VEHICLES"
+  ]
+ },
+ "campaign.local_campaign_setting.location_source_type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "AFFILIATE",
+   "GOOGLE_MY_BUSINESS",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.manual_cpc.enhanced_cpc_enabled": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.maximize_conversion_value.target_roas": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.maximize_conversions.target_cpa_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.network_settings.target_content_network": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.network_settings.target_google_search": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.network_settings.target_google_tv_network": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.network_settings.target_partner_search_network": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.network_settings.target_search_network": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.network_settings.target_youtube": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.optimization_goal_setting.optimization_goal_types": {
+  "type": "ENUM",
+  "repeated": true,
+  "selectable": true,
+  "enum": [
+   "APP_PRE_REGISTRATION",
+   "CALL_CLICKS",
+   "DRIVING_DIRECTIONS",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.optimization_score": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.payment_mode": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "CLICKS",
+   "CONVERSIONS",
+   "CONVERSION_VALUE",
+   "GUEST_STAY",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.percent_cpc.cpc_bid_ceiling_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.primary_status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ELIGIBLE",
+   "ENDED",
+   "LEARNING",
+   "LIMITED",
+   "MISCONFIGURED",
+   "NOT_ELIGIBLE",
+   "PAUSED",
+   "PENDING",
+   "REMOVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.primary_status_reasons": {
+  "type": "ENUM",
+  "repeated": true,
+  "selectable": true,
+  "enum": [
+   "AD_GROUPS_PAUSED",
+   "AD_GROUP_ADS_PAUSED",
+   "APP_NOT_RELEASED",
+   "APP_PARTIALLY_RELEASED",
+   "ASSET_GROUPS_PAUSED",
+   "BIDDING_STRATEGY_CONSTRAINED",
+   "BIDDING_STRATEGY_LEARNING",
+   "BIDDING_STRATEGY_LIMITED",
+   "BIDDING_STRATEGY_MISCONFIGURED",
+   "BOOKING_CANCELLED",
+   "BOOKING_HOLD_EXPIRED",
+   "BOOKING_HOLD_EXPIRING",
+   "BUDGET_CONSTRAINED",
+   "BUDGET_MISCONFIGURED",
+   "CALL_EXTENSION_DISAPPROVED",
+   "CALL_EXTENSION_UNDER_REVIEW",
+   "CAMPAIGN_DRAFT",
+   "CAMPAIGN_ENDED",
+   "CAMPAIGN_GROUP_ALL_GROUP_BUDGETS_ENDED",
+   "CAMPAIGN_GROUP_PAUSED",
+   "CAMPAIGN_NOT_BOOKED",
+   "CAMPAIGN_PAUSED",
+   "CAMPAIGN_PENDING",
+   "CAMPAIGN_REMOVED",
+   "HAS_ADS_DISAPPROVED",
+   "HAS_ADS_LIMITED_BY_POLICY",
+   "HAS_ASSET_GROUPS_DISAPPROVED",
+   "HAS_ASSET_GROUPS_LIMITED_BY_POLICY",
+   "KEYWORDS_PAUSED",
+   "LEAD_FORM_EXTENSION_DISAPPROVED",
+   "LEAD_FORM_EXTENSION_UNDER_REVIEW",
+   "MISSING_CALL_EXTENSION",
+   "MISSING_LEAD_FORM_EXTENSION",
+   "MISSING_LOCATION_TARGETING",
+   "MOST_ADS_UNDER_REVIEW",
+   "MOST_ASSET_GROUPS_UNDER_REVIEW",
+   "NO_AD_GROUPS",
+   "NO_AD_GROUP_ADS",
+   "NO_ASSET_GROUPS",
+   "NO_KEYWORDS",
+   "NO_MOBILE_APPLICATION_AD_GROUP_CRITERIA",
+   "SEARCH_VOLUME_LIMITED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.real_time_bidding_setting.opt_in": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.resource_name": {
+  "type": "RESOURCE_NAME",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.selective_optimization.conversion_actions": {
+  "type": "RESOURCE_NAME",
+  "repeated": true,
+  "selectable": true
+ },
+ "campaign.serving_status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ENDED",
+   "NONE",
+   "PENDING",
+   "SERVING",
+   "SUSPENDED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.shopping_setting.campaign_priority": {
+  "type": "INT32",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.shopping_setting.enable_local": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.shopping_setting.feed_label": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.shopping_setting.merchant_id": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.start_date_time": {
+  "type": "DATE",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ENABLED",
+   "PAUSED",
+   "REMOVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.target_cpa.cpc_bid_ceiling_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.target_cpa.cpc_bid_floor_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.target_cpa.target_cpa_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.target_cpc.target_cpc_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.target_impression_share.cpc_bid_ceiling_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.target_impression_share.location": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ABSOLUTE_TOP_OF_PAGE",
+   "ANYWHERE_ON_PAGE",
+   "TOP_OF_PAGE",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign.target_impression_share.location_fraction_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.target_roas.cpc_bid_ceiling_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.target_roas.cpc_bid_floor_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.target_roas.target_roas": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.target_spend.cpc_bid_ceiling_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.targeting_setting.target_restrictions": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "campaign.tracking_setting.tracking_url": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.tracking_url_template": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.travel_campaign_settings.travel_account_id": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign.url_custom_parameters": {
+  "type": "MESSAGE",
+  "repeated": true,
+  "selectable": true
+ },
+ "campaign.view_through_conversion_optimization_enabled": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign_budget.amount_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign_budget.delivery_method": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ACCELERATED",
+   "STANDARD",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign_budget.explicitly_shared": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign_budget.has_recommended_budget": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign_budget.id": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign_budget.name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign_budget.period": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "CUSTOM_PERIOD",
+   "DAILY",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign_budget.recommended_budget_amount_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign_budget.reference_count": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign_budget.status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "ENABLED",
+   "REMOVED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "campaign_budget.total_amount_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "campaign_budget.type": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "FIXED_CPA",
+   "LOCAL_SERVICES",
+   "SMART_CAMPAIGN",
+   "STANDARD",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "customer.currency_code": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "customer.descriptive_name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "customer.id": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "customer.time_zone": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "customer_client.currency_code": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "customer_client.descriptive_name": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "customer_client.hidden": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "customer_client.id": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "customer_client.level": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "customer_client.manager": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "customer_client.status": {
+  "type": "ENUM",
+  "repeated": false,
+  "selectable": true,
+  "enum": [
+   "CANCELED",
+   "CLOSED",
+   "ENABLED",
+   "SUSPENDED",
+   "UNKNOWN",
+   "UNSPECIFIED"
+  ]
+ },
+ "customer_client.test_account": {
+  "type": "BOOLEAN",
+  "repeated": false,
+  "selectable": true
+ },
+ "customer_client.time_zone": {
+  "type": "STRING",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.absolute_top_impression_percentage": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.all_conversions": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.all_conversions_value": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.average_cost": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.average_cpc": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.average_cpm": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.clicks": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.conversions": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.conversions_from_interactions_rate": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.conversions_value": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.cost_micros": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.cost_per_conversion": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.ctr": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.engagement_rate": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.engagements": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.impressions": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.interaction_rate": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.interactions": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.invalid_clicks": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.phone_calls": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.search_absolute_top_impression_share": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.search_impression_share": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.search_top_impression_share": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.top_impression_percentage": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.value_per_conversion": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.video_trueview_view_rate": {
+  "type": "DOUBLE",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.video_trueview_views": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ },
+ "metrics.view_through_conversions": {
+  "type": "INT64",
+  "repeated": false,
+  "selectable": true
+ }
+}
