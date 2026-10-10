@@ -137,6 +137,8 @@ for operation_id, (table, filters) in ENTITY_OPS.items():
     ops[operation_id] = {
         "resource": t["resource"],
         "key": f"{t['resource']}.resource_name",
+        # resource_name can't be used in ORDER BY; the Google ID can.
+        "order": f"{t['resource']}.{'ad.id' if t['resource'] == 'ad_group_ad' else 'id'}",
         "status": f"{t['resource']}.status",
         "filters": filters,
         "columns": script_columns(t["columns"]),
