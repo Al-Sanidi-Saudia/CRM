@@ -1,6 +1,6 @@
 # Google Ads integration: plan (AlSanidi-UAT)
 
-Status: **approved** (2026-10-10). Step 1 (connector in repo) done; every step that changes UAT still needs approval.
+Status: **live in AlSanidi-UAT** (2026-10-10). Steps 1-7 done; first sync: 78 campaigns, 88 ad groups, 117 ads.
 
 Decisions:
 - **Legacy items are left untouched**: the `sanidi_google_*` tables and the daily "Google Ads Sync" flow.
