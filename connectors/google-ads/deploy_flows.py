@@ -376,15 +376,27 @@ def main(apply, update_existing=False, only=None):
             print(f"{name}: exists, left unchanged")
         elif existing:
             # Keep the connection references picked in the designer; replace only the definition.
+            # The designer may rename the reference keys, so point every action at the existing key
+            # for the same connector.
             current = json.loads(existing["clientdata"])
-            clientdata["properties"]["connectionReferences"] = current["properties"]["connectionReferences"]
+            refs = current["properties"]["connectionReferences"]
+            key_for_api = {v["api"]["name"]: k for k, v in refs.items()}
+            text = json.dumps(clientdata["properties"]["definition"])
+            for key, api in ((GADS_CONN, GADS_API), (DV_API, DV_API)):
+                if api in key_for_api:
+                    text = text.replace(f'"connectionName": "{key}"', f'"connectionName": "{key_for_api[api]}"')
+            clientdata["properties"]["definition"] = json.loads(text)
+            clientdata["properties"]["connectionReferences"] = refs
             body["clientdata"] = json.dumps(clientdata)
             wid, was_on = existing["workflowid"], existing["statecode"] == 1
             if was_on:
                 dv.request("PATCH", f"workflows({wid})", {"statecode": 0, "statuscode": 1})
-            dv.request("PATCH", f"workflows({wid})", body, solution=SOLUTION)
-            if was_on:
-                dv.request("PATCH", f"workflows({wid})", {"statecode": 1, "statuscode": 2})
+            try:
+                dv.request("PATCH", f"workflows({wid})", body, solution=SOLUTION)
+            finally:
+                # Never leave a flow switched off: turn it back on even when the save failed.
+                if was_on:
+                    dv.request("PATCH", f"workflows({wid})", {"statecode": 1, "statuscode": 2})
             print(f"updated {name} ({wid}){', turned back on' if was_on else ''}")
         else:
             wid = str(uuid.uuid5(NS, name))
