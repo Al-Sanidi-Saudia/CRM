@@ -23,6 +23,13 @@ Sync Control page ──creates──▶ Integration Sync Request (row)
   the latest run of every flow listed for the platform, plus the latest sync request.
 - **Data** = the campaigns flow and the flows that run automatically after it. **Insights** = the insights flow.
 - After a button press the part shows *Running* with the new date. The result appears on **Refresh**.
+- While one of a platform's syncs runs, its other button is disabled (a Data and an Insights sync on the same
+  campaigns at the same time made Meta Insights fail).
+- **Last success** badge: time since the last successful run (flow run history or a succeeded request), measured
+  when the page loads. Grey up to 12 hours, yellow over 12 hours, red over 1 day.
+- **Notifications**: when a sync started from the page finishes, the dispatcher flow sends an in-app notification
+  (the app's bell, with a pop-up) to the person who pressed the button, with the error message when it failed.
+  In-app notifications are switched on for the app by the app setting `sanidi_AlSanidiMarketing_InAppNotification`.
 
 ## Components
 
@@ -30,7 +37,8 @@ Sync Control page ──creates──▶ Integration Sync Request (row)
 |---|---|
 | Table | `sanidi_integrationplatform` (Integration Platform): one row per platform, with its flows |
 | Table | `sanidi_integrationsyncrequest` (Integration Sync Request): one row per button press, with status and error |
-| Flow | **Sync Control - Run Sync Request**: runs the matching flow, writes Running / Succeeded / Failed back |
+| Flow | **Sync Control - Run Sync Request**: runs the matching flow (no retries), writes Running / Succeeded / Failed back, notifies the requester |
+| App setting | In-app notifications on for AlSanidi \| Marketing |
 | Generative page | **Sync Control** (`sync-control.tsx`) |
 
 The six manual flows (Get Meta/Snap/Google Ads Campaigns and Insights) end with a
@@ -60,6 +68,8 @@ Integration Platform, Integration Sync Request and Flow Run, and access to the a
 
 - `page/`: page source (`sync-control.tsx`) and the generated `RuntimeTypes.ts`.
   Redeploy with `pac model genpage upload --page-id fbb9c7b0-bb45-4583-997d-6b32b0e5d29b ...`.
+- `scripts/update_dispatcher.py`: the current dispatcher flow definition. After updating the flow this way,
+  turn it off and on in Power Automate (by someone who can use its Dataverse connection) so its trigger re-registers.
 - `scripts/`: the scripts used to create the tables, the platform rows and the dispatcher flow
   through the Dataverse Web API (`DATAVERSE_*` environment variables, same as `scripts/dataverse-mcp.sh`).
   Flows keep their IDs when the solution is imported, so the IDs work in other environments too.

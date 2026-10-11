@@ -1,1 +1,1 @@
-Fixes from the first end-to-end test: run history lagged more than ten minutes behind a finished sync, and requests made while the dispatcher flow was off stayed at Requested and kept the buttons disabled.
+Version 2 of Sync Control from the approved design: last-success age badges, mutual button disabling per platform, and fixes for requests not matching their platform after a refresh. Completion notifications come from the app's built-in in-app notifications, created by the dispatcher flow.

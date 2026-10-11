@@ -14,6 +14,7 @@ import {
     Spinner,
     Text,
     makeStyles,
+    shorthands,
     tokens,
 } from "@fluentui/react-components";
 import {
@@ -21,6 +22,7 @@ import {
     ArrowSyncRegular,
     CheckmarkCircleFilled,
     CircleRegular,
+    ClockRegular,
     DismissCircleFilled,
     ErrorCircleRegular,
 } from "@fluentui/react-icons";
@@ -66,15 +68,21 @@ interface RequestInfo {
     type: SyncKind;
     status: number;
     startedOn: Date | null;
+    completedOn: Date | null;
     error: string | null;
 }
 
 interface Snapshot {
     platforms: Platform[];
     runs: Record<string, RunInfo | null>;
+    // Start of the latest successful run of each flow a button starts (campaigns and insights flows).
+    lastSuccess: Record<string, Date | null>;
     requests: RequestInfo[];
     loadedAt: Date;
 }
+
+type AgeLevel = "ok" | "warn" | "late";
+interface AgeView { text: string; level: AgeLevel; }
 
 interface StepView { name: string; kind: Kind; time: string; }
 
@@ -130,12 +138,7 @@ const useStyles = makeStyles({
     },
     card: {
         backgroundColor: tokens.colorNeutralBackground1,
-        borderTopWidth: "1px",
-        borderRightWidth: "1px",
-        borderBottomWidth: "1px",
-        borderLeftWidth: "1px",
-        borderStyle: "solid",
-        borderColor: tokens.colorNeutralStroke2,
+        ...shorthands.border("1px", "solid", tokens.colorNeutralStroke2),
         borderRadius: tokens.borderRadiusLarge,
         boxShadow: tokens.shadow2,
         display: "flex",
@@ -185,6 +188,50 @@ const useStyles = makeStyles({
         columnGap: tokens.spacingHorizontalS,
     },
     muted: { color: tokens.colorNeutralForeground3, fontSize: tokens.fontSizeBase200 },
+    lastRunRow: { display: "flex", flexWrap: "wrap", alignItems: "center", columnGap: tokens.spacingHorizontalS, rowGap: tokens.spacingVerticalXXS },
+    age: {
+        display: "inline-flex",
+        alignItems: "center",
+        columnGap: tokens.spacingHorizontalXXS,
+        paddingTop: "1px",
+        paddingBottom: "1px",
+        paddingLeft: tokens.spacingHorizontalS,
+        paddingRight: tokens.spacingHorizontalS,
+        borderRadius: tokens.borderRadiusCircular,
+        borderTopWidth: "1px",
+        borderRightWidth: "1px",
+        borderBottomWidth: "1px",
+        borderLeftWidth: "1px",
+        borderTopStyle: "solid",
+        borderRightStyle: "solid",
+        borderBottomStyle: "solid",
+        borderLeftStyle: "solid",
+        fontSize: tokens.fontSizeBase200,
+        fontWeight: tokens.fontWeightSemibold,
+        whiteSpace: "nowrap",
+    },
+    legend: {
+        display: "flex",
+        flexWrap: "wrap",
+        columnGap: tokens.spacingHorizontalL,
+        rowGap: tokens.spacingVerticalXS,
+        color: tokens.colorNeutralForeground3,
+        fontSize: tokens.fontSizeBase200,
+    },
+    legendItem: { display: "inline-flex", alignItems: "center", columnGap: tokens.spacingHorizontalXS },
+    legendSwatch: {
+        width: "10px",
+        height: "10px",
+        borderRadius: tokens.borderRadiusCircular,
+        borderTopWidth: "1px",
+        borderRightWidth: "1px",
+        borderBottomWidth: "1px",
+        borderLeftWidth: "1px",
+        borderTopStyle: "solid",
+        borderRightStyle: "solid",
+        borderBottomStyle: "solid",
+        borderLeftStyle: "solid",
+    },
     steps: {
         listStyleType: "none",
         marginTop: 0,
@@ -285,6 +332,12 @@ function readFlowError(raw: unknown): string | null {
     return raw;
 }
 
+// A lookup can come back as a bare id or as "/table(id)": keep only the id.
+function readGuid(raw: unknown): string {
+    const m = String(raw ?? "").match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+    return m ? m[0].toLowerCase() : "";
+}
+
 function parseFlows(raw: unknown): FlowRef[] {
     if (typeof raw !== "string" || !raw.trim()) return [];
     try {
@@ -353,22 +406,46 @@ async function loadSnapshot(dataApi: GeneratedComponentProps["dataApi"]): Promis
     const runs: Record<string, RunInfo | null> = {};
     runEntries.forEach(([id, info]) => { runs[id] = info; });
 
+    // Flows a button starts: the first data flow and the insights flow of each platform.
+    const leadIds = new Set<string>();
+    platforms.filter((p) => p.configured).forEach((p) => {
+        if (p.dataFlows[0]) leadIds.add(p.dataFlows[0].id);
+        if (p.insightsFlowId) leadIds.add(p.insightsFlowId);
+    });
+    const successEntries = await Promise.all(Array.from(leadIds).map(async (id) => {
+        try {
+            const res = await dataApi.queryTable("flowrun", {
+                select: ["starttime"],
+                filter: `_workflow_value eq ${id} and status eq 'Succeeded'`,
+                orderBy: "starttime desc",
+                pageSize: 1,
+            });
+            const row: any = res.rows[0];
+            return [id, row ? toDate(row.starttime) : null] as const;
+        } catch {
+            return [id, null] as const;
+        }
+    }));
+    const lastSuccess: Record<string, Date | null> = {};
+    successEntries.forEach(([id, d]) => { lastSuccess[id] = d; });
+
     const requestResult = await dataApi.queryTable("sanidi_integrationsyncrequest", {
-        select: ["sanidi_status", "sanidi_synctype", "_sanidi_platform_value", "sanidi_startedon", "sanidi_errormessage"],
+        select: ["sanidi_status", "sanidi_synctype", "_sanidi_platform_value", "sanidi_startedon", "sanidi_completedon", "sanidi_errormessage"],
         filter: "statecode eq 0",
         orderBy: "sanidi_startedon desc",
         pageSize: 100,
     });
     const requests: RequestInfo[] = requestResult.rows.map((r: any) => ({
         id: String(r.sanidi_integrationsyncrequestid),
-        platformId: String(r._sanidi_platform_value || "").toLowerCase(),
+        platformId: readGuid(r._sanidi_platform_value),
         type: Number(r.sanidi_synctype) === SYNC_TYPE_INSIGHTS ? "insights" : "data",
         status: Number(r.sanidi_status),
         startedOn: toDate(r.sanidi_startedon),
+        completedOn: toDate(r.sanidi_completedon),
         error: typeof r.sanidi_errormessage === "string" ? r.sanidi_errormessage : null,
     }));
 
-    return { platforms, runs, requests, loadedAt: new Date() };
+    return { platforms, runs, lastSuccess, requests, loadedAt: new Date() };
 }
 
 function isNotStarted(req: RequestInfo | undefined): boolean {
@@ -392,6 +469,43 @@ function requestOutcome(req: RequestInfo | undefined, runStart: Date | null): { 
     if (req.status === REQ_FAILED) return { kind: "failed", error: req.error };
     if (req.status === REQ_SUCCEEDED) return { kind: "succeeded", error: null };
     return null;
+}
+
+// Time since the last successful run, measured when the page loaded (it doesn't tick).
+function lastSuccessAge(p: Platform, snap: Snapshot, type: SyncKind): AgeView {
+    const flowId = type === "data" ? p.dataFlows[0]?.id : p.insightsFlowId;
+    let last = flowId ? snap.lastSuccess[flowId] ?? null : null;
+    snap.requests
+        .filter((r) => r.platformId === p.id.toLowerCase() && r.type === type && r.status === REQ_SUCCEEDED)
+        .forEach((r) => { last = newer(last, r.completedOn ?? r.startedOn); });
+    if (!last) return { text: "No successful run yet", level: "late" };
+    const hours = Math.max(0, (snap.loadedAt.getTime() - last.getTime()) / 3600000);
+    let text: string;
+    if (hours < 1) text = "Less than an hour ago";
+    else if (hours < 24) { const h = Math.round(hours); text = `${h} ${h === 1 ? "hour" : "hours"} ago`; }
+    else { const d = Math.round(hours / 24); text = `${d} ${d === 1 ? "day" : "days"} ago`; }
+    return { text, level: hours > 24 ? "late" : hours > 12 ? "warn" : "ok" };
+}
+
+const AGE_COLORS: Record<AgeLevel, { bg: string; fg: string; border: string }> = {
+    ok: { bg: tokens.colorNeutralBackground3, fg: tokens.colorNeutralForeground2, border: tokens.colorNeutralStroke2 },
+    warn: { bg: "#FFF4CE", fg: "#7A4D00", border: "#E6C35C" },
+    late: { bg: "#FDE7E9", fg: "#A4262C", border: "#EEACB2" },
+};
+
+function AgeBadge(props: { age: AgeView }) {
+    const styles = useStyles();
+    const c = AGE_COLORS[props.age.level];
+    return (
+        <span
+            className={styles.age}
+            style={{ backgroundColor: c.bg, color: c.fg, borderColor: c.border }}
+            title="Time since the last successful run, as of the last refresh"
+        >
+            <ClockRegular aria-hidden="true" />
+            Last success: {props.age.text}
+        </span>
+    );
 }
 
 function latestRequest(requests: RequestInfo[], platformId: string, type: SyncKind): RequestInfo | undefined {
@@ -487,9 +601,12 @@ function StepLabel(props: { kind: Kind }) {
 function SyncSection(props: {
     title: string;
     view: SectionView;
+    age: AgeView;
     subtitle: string;
     canSync: boolean;
     busy: boolean;
+    // The platform's other sync is running.
+    blockedBy: string | null;
     buttonLabel: string;
     divider: boolean;
     onSync: () => void;
@@ -503,7 +620,10 @@ function SyncSection(props: {
                 <Text id={titleId} weight="semibold">{props.title}</Text>
                 <StatusBadge kind={view.kind} />
             </div>
-            <Text className={styles.muted}>Last run {view.lastRun}{props.subtitle ? ` · ${props.subtitle}` : ""}</Text>
+            <div className={styles.lastRunRow}>
+                <Text className={styles.muted}>Last run {view.lastRun}{props.subtitle ? ` · ${props.subtitle}` : ""}</Text>
+                <AgeBadge age={props.age} />
+            </div>
             {view.steps.length > 0 && (
                 <ul className={styles.steps} aria-label={`${props.title} flows`}>
                     {view.steps.map((s) => (
@@ -529,7 +649,8 @@ function SyncSection(props: {
                 <Button
                     appearance="primary"
                     icon={<ArrowSyncRegular />}
-                    disabled={view.active || props.busy}
+                    disabled={view.active || props.busy || !!props.blockedBy}
+                    title={!view.active && props.blockedBy ? `Waiting for the ${props.blockedBy} sync to finish` : undefined}
                     onClick={props.onSync}
                 >
                     {view.active ? "Running…" : props.buttonLabel}
@@ -550,6 +671,8 @@ function PlatformCard(props: {
     const { platform, snap } = props;
     const mark = MARKS[platform.key] ?? { letter: platform.name.charAt(0).toUpperCase(), bg: tokens.colorNeutralBackground5, fg: tokens.colorNeutralForeground1 };
     const headingId = `platform-${platform.id}`;
+    const dataView = platform.configured ? buildDataSection(platform, snap) : null;
+    const insightsView = platform.configured ? buildInsightsSection(platform, snap) : null;
     return (
         <article className={styles.card} aria-labelledby={headingId}>
             <div className={styles.cardHeader}>
@@ -561,9 +684,11 @@ function PlatformCard(props: {
                     <SyncSection
                         title="Data"
                         subtitle=""
-                        view={buildDataSection(platform, snap)}
+                        view={dataView as SectionView}
+                        age={lastSuccessAge(platform, snap, "data")}
                         canSync={props.canSync}
                         busy={props.busy}
+                        blockedBy={insightsView?.active ? `${platform.name} insights` : null}
                         buttonLabel="Sync Data"
                         divider={true}
                         onSync={() => props.onSync(platform, "data")}
@@ -571,9 +696,11 @@ function PlatformCard(props: {
                     <SyncSection
                         title="Insights"
                         subtitle={platform.insightsFlowName}
-                        view={buildInsightsSection(platform, snap)}
+                        view={insightsView as SectionView}
+                        age={lastSuccessAge(platform, snap, "insights")}
                         canSync={props.canSync}
                         busy={props.busy}
+                        blockedBy={dataView?.active ? `${platform.name} data` : null}
                         buttonLabel="Sync Insights"
                         divider={false}
                         onSync={() => props.onSync(platform, "insights")}
@@ -654,7 +781,7 @@ const GeneratedComponent = (props: GeneratedComponentProps) => {
                 sanidi_startedon: now,
             } as any);
             const request: RequestInfo = {
-                id: String(newId), platformId: platform.id.toLowerCase(), type, status: REQ_REQUESTED, startedOn: now, error: null,
+                id: String(newId), platformId: platform.id.toLowerCase(), type, status: REQ_REQUESTED, startedOn: now, completedOn: null, error: null,
             };
             const next: Snapshot = { ...snap, requests: [request, ...snap.requests] };
             winAny[CACHE_KEY] = next;
@@ -718,11 +845,22 @@ const GeneratedComponent = (props: GeneratedComponentProps) => {
                 </div>
             ) : null}
 
+            {snap && (
+                <div className={styles.legend} aria-label="Last success colours">
+                    <span className={styles.legendItem}><span className={styles.legendSwatch} style={{ backgroundColor: AGE_COLORS.ok.bg, borderColor: AGE_COLORS.ok.border }} />Successful run in the last 12 hours</span>
+                    <span className={styles.legendItem}><span className={styles.legendSwatch} style={{ backgroundColor: AGE_COLORS.warn.bg, borderColor: AGE_COLORS.warn.border }} />More than 12 hours ago</span>
+                    <span className={styles.legendItem}><span className={styles.legendSwatch} style={{ backgroundColor: AGE_COLORS.late.bg, borderColor: AGE_COLORS.late.border }} />More than 1 day ago</span>
+                </div>
+            )}
+
             <Dialog open={!!pending} onOpenChange={(_, d) => { if (!d.open) setPending(null); }} modalType="non-modal">
                 <DialogSurface mountNode={mountNode}>
                     <DialogBody>
                         <DialogTitle>{pendingTitle}</DialogTitle>
-                        <DialogContent>{pendingBody}</DialogContent>
+                        <DialogContent>
+                            <Text as="p" block>{pendingBody}</Text>
+                            <Text as="p" block className={styles.muted}>You'll get a notification when it finishes.</Text>
+                        </DialogContent>
                         <DialogActions>
                             <Button appearance="secondary" onClick={() => setPending(null)}>Cancel</Button>
                             <Button appearance="primary" onClick={startSync}>Start sync</Button>
