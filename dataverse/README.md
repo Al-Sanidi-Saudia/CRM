@@ -10,8 +10,25 @@ it doesn't touch anything else in the solution, and IDs are deterministic so re-
 | `snap-adsquad/` | Snap Ad Squad (`sanidi_SnapAdSquad`, lookup to Snap Campaign) | Get Snap Ad Squads (when a Snap Campaign is added or modified) |
 | `snap-advertisement/` | Snap Advertisement (`sanidi_SnapAdvertisement`, lookup to Snap Ad Squad) | Get Snap Advertisements (when a Snap Ad Squad is added or modified) |
 
-`table_builder.py` holds the shared table logic (columns, choices, lookups, keys, form, views) and
-`flow_builder.py` the shared "sync a parent's children from Snap" flow logic.
+`table_builder.py` holds the shared table logic (columns, choices, lookups, keys, form, views),
+`flow_builder.py` the shared "sync a parent's children from Snap" flow logic, and `snap_insights.py` the
+all-time insight columns and stats actions shared by all three tables and flows.
+
+## Insights
+
+Each Snap table carries the same all-time (Snap `LIFETIME`) stats on an **Insights** tab, written by its sync
+flow in the same Update/Add step as the entity's own columns (one `Get ... stats` call per row, no breakdowns):
+
+- **Delivery:** Impressions, Reach (`uniques`), Frequency, Swipes, Spend
+- **Engagement:** Video Views, Engaged Views, Screen Time (sec), Video 25/50/75%, Video Completions,
+  Landing Page Views, Place Opens, Place Actions
+- **Conversions:** Purchases, Purchase Value, Add to Cart, Start Checkout, View Content, Page Views (Pixel), Sign Ups
+- **Calculated in the flow:** Swipe Rate (%), CPM, Cost per Swipe, Cost per Purchase, ROAS (empty when the
+  denominator is 0)
+- **Sync:** Stats Finalized Through (Snap finalizes lifetime stats 48-72 h later) and Stats Last Synced (empty
+  when the stats call failed; the entity columns are still written)
+
+Money values are Snap micro-currency / 1,000,000; conversions use Snap's default attribution windows.
 
 ## Template export
 

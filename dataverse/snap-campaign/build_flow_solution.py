@@ -30,6 +30,7 @@ FLOW_ID = str(uuid.uuid5(uuid.NAMESPACE_URL, "alsanidi/flows/get-snap-campaigns"
 TABLE_SET = "sanidi_snapcampaigns"
 SNAP_API = "shared_sanidi-5fsnap-5f43b530b23a0dc933"
 from flow_builder import SNAP_CONNREF  # noqa: E402  (shared with the other Snap flows)
+from snap_insights import INSIGHT_NAMES, stats_actions, stats_columns  # noqa: E402
 DATAVERSE_API = "shared_commondataserviceforapps"
 DATAVERSE_CONNREF = "sanidi_sharedcommondataserviceforapps_79822"
 
@@ -72,7 +73,8 @@ SOURCE = {
     "sanidi_restricteddeliverysignals": ["regulations", "restricted_delivery_signals"],
     "sanidi_candidateballotinformation": ["regulations", "candidate_ballot_information"],
 }
-assert set(SOURCE) == {f[0] for f in FIELDS}, "every table column needs a source"
+ENTITY_FIELDS = [f for f in FIELDS if f[0] not in INSIGHT_NAMES]
+assert set(SOURCE) == {f[0] for f in ENTITY_FIELDS}, "every table column needs a source"
 
 # Snap's docs spell this value both ways; accept either.
 EXTRA_LABELS = {"sanidi_sharedadsquadbidstrategy": {"AUTOBID": 1}}
@@ -119,11 +121,13 @@ def snap(operation, params):
 
 
 def definition():
-    columns = {f"item/{f[0]}": value_expr(f) for f in FIELDS}
+    columns = {f"item/{f[0]}": value_expr(f) for f in ENTITY_FIELDS}
+    columns.update(stats_columns())
     campaign_actions = {
         "Campaign": {"type": "Compose", "inputs": "@items('For_each_campaign')?['campaign']", "runAfter": {}},
+        **stats_actions(SNAP_API, "GetCampaignStats", "campaign_id", f"@{src(['id'])}", {"Campaign": ["Succeeded"]}),
         "Delivery_status_values": {
-            "type": "Select", "runAfter": {"Campaign": ["Succeeded"]},
+            "type": "Select", "runAfter": {"Lifetime_stats": ["Succeeded"]},
             "inputs": {"from": f"@coalesce({src(['delivery_status'])}, json('[]'))",
                        "select": "@outputs('Choice_maps')?['sanidi_deliverystatus']?[item()]"}},
         "Known_delivery_status": {

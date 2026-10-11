@@ -242,20 +242,28 @@ def form_xml(spec, t):
     by_name = {f[0]: f for f in spec.fields}
     tabs = []
     for tab_name, tab_label, sections in spec.form:
-        width = f"{100 // len(sections)}%"
+        # A tab holds at most 3 columns: sections 1 and 2 get their own column, the rest share the third.
+        n_cols = min(len(sections), 3)
+        width = f"{100 // n_cols}%"
+        grouped = [[] for _ in range(n_cols)]
+        for i, section in enumerate(sections):
+            grouped[min(i, n_cols - 1)].append(section)
         cols = []
-        for sec_name, sec_label, fields in sections:
-            rows = []
-            for f in fields:
-                kind = "owner" if f == "ownerid" else by_name[f][2]
-                label = "Owner" if f == "ownerid" else by_name[f][1]
-                rows.append(f'<row><cell id="{spec.gid("cell/" + f)}"><labels><label description="{escape(label)}" '
-                            f'languagecode="1033" /></labels><control id="{f}" classid="{CLASSIDS[kind]}" '
-                            f'datafieldname="{f}" /></cell></row>')
-            cols.append(f'<column width="{width}"><sections><section name="{sec_name}" showlabel="true" '
-                        f'showbar="false" IsUserDefined="0" id="{spec.gid("section/" + sec_name)}" columns="1" '
-                        f'labelwidth="200"><labels><label description="{escape(sec_label)}" languagecode="1033" />'
-                        f'</labels><rows>{"".join(rows)}</rows></section></sections></column>')
+        for column in grouped:
+            section_xml = []
+            for sec_name, sec_label, fields in column:
+                rows = []
+                for f in fields:
+                    kind = "owner" if f == "ownerid" else by_name[f][2]
+                    label = "Owner" if f == "ownerid" else by_name[f][1]
+                    rows.append(f'<row><cell id="{spec.gid("cell/" + f)}"><labels><label description="{escape(label)}" '
+                                f'languagecode="1033" /></labels><control id="{f}" classid="{CLASSIDS[kind]}" '
+                                f'datafieldname="{f}" /></cell></row>')
+                section_xml.append(f'<section name="{sec_name}" showlabel="true" showbar="false" IsUserDefined="0" '
+                                   f'id="{spec.gid("section/" + sec_name)}" columns="1" labelwidth="200"><labels>'
+                                   f'<label description="{escape(sec_label)}" languagecode="1033" /></labels>'
+                                   f'<rows>{"".join(rows)}</rows></section>')
+            cols.append(f'<column width="{width}"><sections>{"".join(section_xml)}</sections></column>')
         tabs.append(f'<tab name="{tab_name}" verticallayout="true" id="{spec.gid("tab/" + tab_name)}" '
                     f'IsUserDefined="1" expanded="true" showlabel="true"><labels><label '
                     f'description="{escape(tab_label)}" languagecode="1033" /></labels><columns>{"".join(cols)}'

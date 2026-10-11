@@ -19,6 +19,7 @@ import uuid
 import zipfile
 from dataclasses import dataclass, field
 
+from snap_insights import INSIGHT_NAMES, stats_actions, stats_columns
 from table_builder import solution_xml
 
 SNAP_API = "shared_sanidi-5fsnap-5f43b530b23a0dc933"
@@ -53,6 +54,8 @@ class ChildSyncFlow:
     list_parameter: str         # e.g. "campaign_id"
     list_key: str               # response array, e.g. "adsquads"
     item_key: str               # object inside each array item, e.g. "adsquad"
+    stats_operation: str = ""   # Snap stats operation for the child, e.g. "GetAdSquadStats"
+    stats_parameter: str = ""   # e.g. "ad_squad_id"
     extra_labels: dict = field(default_factory=dict)   # column -> {alternative Snap label: option value}
     overrides: dict = field(default_factory=dict)      # column -> f(snap_expr) returning a flow expression
 
@@ -97,15 +100,22 @@ class ChildSyncFlow:
         return f"@{s}"
 
     def definition(self):
-        assert set(self.source) | {self.lookup} == {f[0] for f in self.fields}, "every column needs a source"
+        entity_fields = [f for f in self.fields if f[0] not in INSIGHT_NAMES]
+        assert set(self.source) | {self.lookup} == {f[0] for f in entity_fields}, "every column needs a source"
         loop = f"For_each_{self.noun}"
         find, cond = f"Find_existing_{self.noun}", f"If_{self.noun}_exists"
-        columns = {f"item/{f[0]}": self.value_expr(f) for f in self.fields if f[0] != self.lookup}
+        columns = {f"item/{f[0]}": self.value_expr(f) for f in entity_fields if f[0] != self.lookup}
+        if self.stats_operation:
+            columns.update(stats_columns())
         columns[f"item/{self.lookup}@odata.bind"] = \
             f"/{self.parent_set}(@{{triggerOutputs()?['body/{self.parent_pk}']}})"
 
         actions = {self.item: {"type": "Compose", "inputs": f"@items('{loop}')?['{self.item_key}']", "runAfter": {}}}
         previous = self.item
+        if self.stats_operation:
+            actions.update(stats_actions(SNAP_API, self.stats_operation, self.stats_parameter,
+                                         f"@{self.src(['id'])}", {self.item: ["Succeeded"]}))
+            previous = "Lifetime_stats"
         for name, _, kind, _, _ in self.fields:
             if kind != "multichoice":
                 continue

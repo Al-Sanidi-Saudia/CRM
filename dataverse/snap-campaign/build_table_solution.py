@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from snap_insights import INSIGHT_FIELDS, INSIGHT_TAB  # noqa: E402
 from table_builder import RelatedGrid, TableSpec, build_package, view_id_for  # noqa: E402
 
 DELIVERY_OPTIONSET = "sanidi_snapcampaigndeliverystatus"
@@ -87,6 +88,8 @@ FIELDS = [
 F = {f[0]: f for f in FIELDS}
 
 # Main form: tab -> [(section name, label, [fields])]; "ownerid" sits in General like Meta Campaign.
+FIELDS += INSIGHT_FIELDS   # all-time Snap stats, see ../snap_insights.py
+
 FORM = [
     ("general", "General", [
         ("general", "General", ["sanidi_campaignname", "ownerid", "sanidi_campaignid", "sanidi_adaccountid",
@@ -109,6 +112,7 @@ FORM = [
                                                  "sanidi_mobileappid", "sanidi_catalogid"]),
         ("compliance", "Compliance", ["sanidi_restricteddeliverysignals", "sanidi_candidateballotinformation"]),
     ]),
+    INSIGHT_TAB,
 ]
 
 ACTIVE_VIEW_FIRST = ["sanidi_campaignname", "sanidi_status", "sanidi_deliverystatus", "sanidi_objective",

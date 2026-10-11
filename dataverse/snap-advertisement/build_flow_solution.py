@@ -48,6 +48,7 @@ FLOW = ChildSyncFlow(
     lookup="sanidi_snapadsquad",
     parent_entity="sanidi_snapadsquad", parent_label="Snap_Ad_Squad", parent_set="sanidi_snapadsquads",
     parent_pk="sanidi_snapadsquadid", parent_snap_id="sanidi_adsquadid",
+    stats_operation="GetAdStats", stats_parameter="ad_id",
     list_operation="ListAdsByAdSquad", list_parameter="ad_squad_id", list_key="ads", item_key="ad",
     # Rejection reasons: one per line.
     overrides={"sanidi_reviewstatusreasons": lambda s: (

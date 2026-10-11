@@ -80,6 +80,7 @@ FLOW = ChildSyncFlow(
     lookup="sanidi_snapcampaign",
     parent_entity="sanidi_snapcampaign", parent_label="Snap_Campaign", parent_set="sanidi_snapcampaigns",
     parent_pk="sanidi_snapcampaignid", parent_snap_id="sanidi_campaignid",
+    stats_operation="GetAdSquadStats", stats_parameter="ad_squad_id",
     list_operation="ListAdSquadsByCampaign", list_parameter="campaign_id", list_key="adsquads", item_key="adsquad",
     # Snap's docs spell this value with a space.
     extra_labels={"sanidi_deliverystatus": {"LEARNING PHASE": 26}},

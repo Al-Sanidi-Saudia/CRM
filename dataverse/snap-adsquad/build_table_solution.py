@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from snap_insights import INSIGHT_FIELDS, INSIGHT_TAB  # noqa: E402
 from table_builder import RelatedGrid, TableSpec, build_package, view_id_for  # noqa: E402
 
 DELIVERY_OPTIONSET = "sanidi_snapadsquaddeliverystatus"
@@ -118,6 +119,8 @@ FIELDS = [
     ("sanidi_createdbyuser", "Created By User", "text", 200, "Snap: created_by_user"),
 ]
 
+FIELDS += INSIGHT_FIELDS   # all-time Snap stats, see ../snap_insights.py
+
 FORM = [
     ("general", "General", [
         ("general", "General", ["sanidi_adsquadname", "ownerid", "sanidi_adsquadid", "sanidi_snapcampaign",
@@ -148,6 +151,7 @@ FORM = [
                                         "sanidi_enableskoverlay"]),
         ("origin", "Origin", ["sanidi_createdbyappid", "sanidi_createdbyuser"]),
     ]),
+    INSIGHT_TAB,
 ]
 
 ACTIVE_VIEW_FIRST = ["sanidi_adsquadname", "sanidi_status", "sanidi_deliverystatus", "sanidi_snapcampaign",

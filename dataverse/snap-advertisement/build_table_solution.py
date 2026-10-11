@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from snap_insights import INSIGHT_FIELDS, INSIGHT_TAB  # noqa: E402
 from table_builder import TableSpec, build_package  # noqa: E402
 
 DELIVERY_OPTIONSET = "sanidi_snapaddeliverystatus"
@@ -59,6 +60,8 @@ FIELDS = [
      "Snap: third_party_paid_impression_tracking_urls (JSON)"),
 ]
 
+FIELDS += INSIGHT_FIELDS   # all-time Snap stats, see ../snap_insights.py
+
 FORM = [
     ("general", "General", [
         ("general", "General", ["sanidi_adname", "ownerid", "sanidi_adid", "sanidi_snapadsquad", "sanidi_adsquadid",
@@ -71,6 +74,7 @@ FORM = [
         ("review", "Review", ["sanidi_reviewstatus", "sanidi_reviewstatusreasons"]),
         ("tracking", "Tracking", ["sanidi_swipetrackingurls", "sanidi_impressiontrackingurls"]),
     ]),
+    INSIGHT_TAB,
 ]
 
 ACTIVE_VIEW_FIRST = ["sanidi_adname", "sanidi_status", "sanidi_deliverystatus", "sanidi_reviewstatus", "sanidi_type",
