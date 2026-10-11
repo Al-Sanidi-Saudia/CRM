@@ -1,1 +1,1 @@
-Built the Sync Control page from the design the user approved. Reads sanidi_integrationplatform, flowrun and sanidi_integrationsyncrequest; creates sanidi_integrationsyncrequest rows from the Sync Data and Sync Insights buttons, which are shown only to the System Administrator role.
+Fixes from the first end-to-end test: run history lagged more than ten minutes behind a finished sync, and requests made while the dispatcher flow was off stayed at Requested and kept the buttons disabled.

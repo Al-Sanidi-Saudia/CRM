@@ -33,7 +33,12 @@ const SYNC_TYPE_DATA = 100000000;
 const SYNC_TYPE_INSIGHTS = 100000001;
 const REQ_REQUESTED = 100000000;
 const REQ_RUNNING = 100000001;
+const REQ_SUCCEEDED = 100000002;
 const REQ_FAILED = 100000003;
+
+// The dispatcher flow picks a request up within seconds. One still waiting after this long was never
+// picked up (for example the flow was off), so it must not keep the button disabled.
+const NOT_STARTED_AFTER_MS = 15 * 60 * 1000;
 
 const CACHE_KEY = "__ppSyncControl_dataCache";
 const INFLIGHT_KEY = "__ppSyncControl_dataInflight";
@@ -366,8 +371,27 @@ async function loadSnapshot(dataApi: GeneratedComponentProps["dataApi"]): Promis
     return { platforms, runs, requests, loadedAt: new Date() };
 }
 
+function isNotStarted(req: RequestInfo | undefined): boolean {
+    return !!req && req.status === REQ_REQUESTED
+        && (!req.startedOn || Date.now() - req.startedOn.getTime() > NOT_STARTED_AFTER_MS);
+}
+
 function isActive(req: RequestInfo | undefined): boolean {
-    return !!req && (req.status === REQ_REQUESTED || req.status === REQ_RUNNING);
+    if (!req || isNotStarted(req)) return false;
+    return req.status === REQ_REQUESTED || req.status === REQ_RUNNING;
+}
+
+const NOT_STARTED_MESSAGE = "The sync didn't start. Check that the Sync Control - Run Sync Request flow is on, then try again.";
+
+// A finished request that is newer than the run history decides the status: run history can take
+// several minutes to show a run.
+function requestOutcome(req: RequestInfo | undefined, runStart: Date | null): { kind: Kind; error: string | null } | null {
+    if (!req?.startedOn) return null;
+    if (runStart && req.startedOn.getTime() <= runStart.getTime()) return null;
+    if (isNotStarted(req)) return { kind: "failed", error: NOT_STARTED_MESSAGE };
+    if (req.status === REQ_FAILED) return { kind: "failed", error: req.error };
+    if (req.status === REQ_SUCCEEDED) return { kind: "succeeded", error: null };
+    return null;
 }
 
 function latestRequest(requests: RequestInfo[], platformId: string, type: SyncKind): RequestInfo | undefined {
@@ -395,9 +419,14 @@ function buildDataSection(p: Platform, snap: Snapshot): SectionView {
     if (isActive(req)) {
         return { ...base, kind: "running", failedName: null, error: null, active: true };
     }
-    const reqIsNewer = !!req?.startedOn && (!firstStart || req.startedOn.getTime() > firstStart.getTime());
-    if (req && reqIsNewer && req.status === REQ_FAILED) {
-        return { ...base, kind: "failed", failedName: steps[0]?.name ?? null, error: req.error, active: false };
+    const outcome = requestOutcome(req, firstStart);
+    if (outcome?.kind === "failed") {
+        const failedName = isNotStarted(req) ? null : steps[0]?.name ?? null;
+        return { ...base, kind: "failed", failedName, error: outcome.error, active: false };
+    }
+    if (outcome?.kind === "succeeded") {
+        // The campaigns flow finished; the flows after it may still be running or not yet in the run history.
+        return { ...base, kind: "succeeded", failedName: null, error: null, active: false };
     }
     const failed = steps.find((s) => s.run?.kind === "failed");
     if (failed) {
@@ -422,10 +451,8 @@ function buildInsightsSection(p: Platform, snap: Snapshot): SectionView {
     const base = { lastRun, steps: [] as StepView[], failedName: null };
 
     if (isActive(req)) return { ...base, kind: "running", error: null, active: true };
-    const reqIsNewer = !!req?.startedOn && (!run?.start || req.startedOn.getTime() > run.start.getTime());
-    if (req && reqIsNewer && req.status === REQ_FAILED) {
-        return { ...base, kind: "failed", error: req.error, active: false };
-    }
+    const outcome = requestOutcome(req, run?.start ?? null);
+    if (outcome) return { ...base, kind: outcome.kind, error: outcome.error, active: false };
     if (run) return { ...base, kind: run.kind, error: run.kind === "failed" ? run.error : null, active: false };
     return { ...base, kind: "none", error: null, active: false };
 }
