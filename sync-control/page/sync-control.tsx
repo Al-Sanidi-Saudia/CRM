@@ -44,6 +44,12 @@ const NOT_STARTED_AFTER_MS = 15 * 60 * 1000;
 
 // While a sync is running, check its request this often and refresh the page once it finishes.
 const POLL_MS = 5000;
+// After a data sync finishes, run history can take a few minutes to show its runs: check this often,
+// for up to this long, then refresh once more.
+const CATCH_UP_POLL_MS = 15000;
+const CATCH_UP_MAX_MS = 10 * 60 * 1000;
+// A flow run counts as part of a sync if it started no earlier than this before the sync's start time.
+const RUN_MATCH_SLACK_MS = 60 * 1000;
 
 const CACHE_KEY = "__ppSyncControl_dataCache";
 const INFLIGHT_KEY = "__ppSyncControl_dataInflight";
@@ -89,7 +95,8 @@ interface Snapshot {
 type AgeLevel = "ok" | "warn" | "late";
 interface AgeView { text: string; level: AgeLevel; }
 
-interface StepView { name: string; kind: Kind; time: string; }
+type StepKind = Kind | "updating";
+interface StepView { name: string; kind: StepKind; time: string; }
 
 interface SectionView {
     kind: Kind;
@@ -99,6 +106,11 @@ interface SectionView {
     error: string | null;
     active: boolean;
     startedAt?: string;
+    // Flows of a finished sync that run history doesn't show yet.
+    catchingUp?: boolean;
+    waitingFlowIds?: string[];
+    waitingSince?: Date;
+    waitingUntil?: Date;
 }
 
 interface PendingSync { platform: Platform; type: SyncKind; }
@@ -533,6 +545,16 @@ function formatTime(d: Date | null): string {
     return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
 }
 
+// Data syncs that finished but whose later flows aren't in run history yet.
+function catchUpTargets(snap: Snapshot | null): { flowIds: string[]; since: Date; until: Date }[] {
+    if (!snap) return [];
+    return snap.platforms
+        .filter((p) => p.configured)
+        .map((p) => buildDataSection(p, snap))
+        .filter((v) => v.catchingUp && v.waitingFlowIds && v.waitingSince && v.waitingUntil)
+        .map((v) => ({ flowIds: v.waitingFlowIds as string[], since: v.waitingSince as Date, until: v.waitingUntil as Date }));
+}
+
 // Ids of the requests still running (or just requested), the ones the page waits on.
 function activeRequestIds(snap: Snapshot | null): string[] {
     if (!snap) return [];
@@ -582,12 +604,31 @@ function buildDataSection(p: Platform, snap: Snapshot): SectionView {
     const req = latestRequest(snap.requests, p.id, "data");
     const firstStart = steps[0]?.run?.start ?? null;
     const lastRun = formatDateTime(newer(firstStart, req?.startedOn ?? null));
-    const stepViews: StepView[] = steps.map((s) => ({
-        name: s.name,
-        kind: s.run ? s.run.kind : "none",
-        time: s.run ? formatShort(s.run.start) : "No runs yet",
-    }));
-    const base = { lastRun, steps: stepViews };
+    // Once the sync request has finished, it is the source of truth for the flow the button started; the
+    // flows after it show "Updating…" until run history has their runs from this sync.
+    const reqDone = !!req && !!req.startedOn && !isActive(req) && !isNotStarted(req)
+        && (req.status === REQ_SUCCEEDED || req.status === REQ_FAILED);
+    const since = reqDone ? (req!.startedOn as Date).getTime() - RUN_MATCH_SLACK_MS : 0;
+    const doneAt = reqDone ? (req!.completedOn ?? req!.startedOn as Date) : null;
+    const recent = !!doneAt && snap.loadedAt.getTime() - doneAt.getTime() < CATCH_UP_MAX_MS;
+    const waitingFlowIds: string[] = [];
+    const stepViews: StepView[] = steps.map((s, i) => {
+        const recorded = !!s.run?.start && s.run.start.getTime() >= since;
+        if (reqDone && !recorded) {
+            if (i === 0) {
+                return { name: s.name, kind: req!.status === REQ_SUCCEEDED ? "succeeded" : "failed", time: formatShort(req!.startedOn) };
+            }
+            if (recent && req!.status === REQ_SUCCEEDED) {
+                waitingFlowIds.push(p.dataFlows[i].id);
+                return { name: s.name, kind: "updating", time: "" };
+            }
+        }
+        return { name: s.name, kind: s.run ? s.run.kind : "none", time: s.run ? formatShort(s.run.start) : "No runs yet" };
+    });
+    const catchUp = waitingFlowIds.length > 0 && doneAt
+        ? { catchingUp: true, waitingFlowIds, waitingSince: new Date(since), waitingUntil: new Date(doneAt.getTime() + CATCH_UP_MAX_MS) }
+        : {};
+    const base = { lastRun, steps: stepViews, ...catchUp };
 
     if (isActive(req)) {
         return { ...base, kind: "running", failedName: null, error: null, active: true, startedAt: formatTime(req?.startedOn ?? null) };
@@ -597,9 +638,16 @@ function buildDataSection(p: Platform, snap: Snapshot): SectionView {
         const failedName = isNotStarted(req) ? null : steps[0]?.name ?? null;
         return { ...base, kind: "failed", failedName, error: outcome.error, active: false };
     }
-    if (outcome?.kind === "succeeded") {
-        // The campaigns flow finished; the flows after it may still be running or not yet in the run history.
-        return { ...base, kind: "succeeded", failedName: null, error: null, active: false };
+    if (outcome?.kind === "succeeded" || (reqDone && req!.status === REQ_SUCCEEDED)) {
+        // The campaigns flow finished. A later flow of this same sync that run history shows as failed wins.
+        const laterFailed = steps.find((st, i) => i > 0 && stepViews[i].kind === "failed"
+            && !!st.run?.start && st.run.start.getTime() >= since);
+        if (laterFailed) {
+            return { ...base, kind: "failed", failedName: laterFailed.name, error: laterFailed.run?.error ?? null, active: false };
+        }
+        if (outcome?.kind === "succeeded") {
+            return { ...base, kind: "succeeded", failedName: null, error: null, active: false };
+        }
     }
     const failed = steps.find((s) => s.run?.kind === "failed");
     if (failed) {
@@ -642,7 +690,8 @@ function StatusBadge(props: { kind: Kind }) {
     return <Badge appearance="tint" color={m.color} shape="rounded">{m.label}</Badge>;
 }
 
-function StepIcon(props: { kind: Kind }) {
+function StepIcon(props: { kind: StepKind }) {
+    if (props.kind === "updating") return <ArrowClockwiseRegular aria-hidden="true" style={{ color: tokens.colorNeutralForeground3 }} />;
     if (props.kind === "succeeded") return <CheckmarkCircleFilled aria-hidden="true" style={{ color: tokens.colorStatusSuccessForeground1 }} />;
     if (props.kind === "failed") return <DismissCircleFilled aria-hidden="true" style={{ color: tokens.colorStatusDangerForeground1 }} />;
     if (props.kind === "running") return <ArrowSyncRegular aria-hidden="true" style={{ color: tokens.colorBrandForeground1 }} />;
@@ -650,9 +699,9 @@ function StepIcon(props: { kind: Kind }) {
     return <CircleRegular aria-hidden="true" style={{ color: tokens.colorNeutralForeground3 }} />;
 }
 
-function StepLabel(props: { kind: Kind }) {
-    const labels: Record<Kind, string> = {
-        succeeded: "Succeeded", failed: "Failed", running: "Running", cancelled: "Cancelled", none: "",
+function StepLabel(props: { kind: StepKind }) {
+    const labels: Record<StepKind, string> = {
+        succeeded: "Succeeded", failed: "Failed", running: "Running", cancelled: "Cancelled", none: "", updating: "Updating…",
     };
     return <span>{labels[props.kind]}</span>;
 }
@@ -705,6 +754,11 @@ function SyncSection(props: {
                         </li>
                     ))}
                 </ul>
+            )}
+            {view.catchingUp && (
+                <Text className={styles.muted} role="status">
+                    <ArrowClockwiseRegular aria-hidden="true" className={styles.inlineIcon} /> The latest runs can take a few minutes to appear in run history. This page checks again automatically.
+                </Text>
             )}
             {view.kind === "failed" && (
                 <div className={styles.errorBox} role="alert">
@@ -877,6 +931,46 @@ const GeneratedComponent = (props: GeneratedComponentProps) => {
         return () => { stopped = true; window.clearInterval(timer); };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataReady, watchKey]);
+
+    // After a data sync finishes, check run history every 15 seconds until it shows this sync's runs of
+    // the later flows (or 10 minutes have passed), then refresh once more.
+    const catchUp = catchUpTargets(snap);
+    const catchUpKey = catchUp.map((t) => `${t.flowIds.join("+")}@${t.since.getTime()}`).join(",");
+    useEffect(() => {
+        if (!dataReady || !catchUpKey) return;
+        const targets = catchUp;
+        let checking = false;
+        let stopped = false;
+        const timer = window.setInterval(async () => {
+            if (checking || stopped || loadingRef.current) return;
+            checking = true;
+            try {
+                let allRecorded = true;
+                for (const t of targets) {
+                    if (Date.now() > t.until.getTime()) continue;
+                    for (const id of t.flowIds) {
+                        const res = await dataApiRef.current.queryTable("flowrun", {
+                            select: ["starttime"],
+                            filter: `_workflow_value eq ${id} and starttime ge ${t.since.toISOString()}`,
+                            pageSize: 1,
+                        });
+                        if (!res.rows.length) { allRecorded = false; break; }
+                    }
+                    if (!allRecorded) break;
+                }
+                if (!stopped && allRecorded) {
+                    stopped = true;
+                    refreshRef.current();
+                }
+            } catch {
+                // Try again on the next tick.
+            } finally {
+                checking = false;
+            }
+        }, CATCH_UP_POLL_MS);
+        return () => { stopped = true; window.clearInterval(timer); };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dataReady, catchUpKey]);
 
     const startSync = async () => {
         if (!pending || !snap) return;

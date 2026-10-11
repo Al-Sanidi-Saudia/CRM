@@ -1,1 +1,1 @@
-Version 3 of Sync Control from the approved design: usual durations and automatic refresh when a running sync finishes (5-second checks, only while a sync is running).
+Version 4 of Sync Control from the approved design: run history recorded Get Meta Campaigns about four minutes after it finished, so the flow rows now use the sync request first and fill in automatically once run history catches up.

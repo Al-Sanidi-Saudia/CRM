@@ -24,6 +24,10 @@ Sync Control page ──creates──▶ Integration Sync Request (row)
 - **Data** = the campaigns flow and the flows that run automatically after it. **Insights** = the insights flow.
 - After a button press the part shows *Running* with the new date. While any sync is running, the page checks
   its request every 5 seconds and, once it has finished, refreshes itself exactly as **Refresh** does.
+- **Run history lag**: run history can record a run several minutes after it finishes. Once a data sync's request
+  has finished, the flow the button started shows the request's result straight away and the later flows show
+  "Updating…"; the page checks run history every 15 seconds (up to 10 minutes) and refreshes once more when it
+  has this sync's runs. A later flow that failed in the same sync turns the section to Failed with its error.
 - **Usual duration**: the median duration of the last 5 successful runs of the flow the button starts, shown on the
   card and in the confirmation.
 - While one of a platform's syncs runs, its other button is disabled (a Data and an Insights sync on the same
