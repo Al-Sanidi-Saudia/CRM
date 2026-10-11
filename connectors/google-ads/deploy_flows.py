@@ -5,6 +5,7 @@ in the AlSanidi | Marketing solution.
   Get Google Ads Ad Groups       when a Google Ads Campaign is added or modified -> ad groups -> upsert
   Get Google Ads Advertisements  when a Google Ads Ad Group is added or modified -> ads -> upsert
   Get Google Ads Asset Groups    when a Performance Max Google Ads Campaign is added or modified -> asset groups
+  Get Google Ads Insights        instant (manual): all-time insights for all four tables, insight columns only
 
   python3 deploy_flows.py              # write flows/*.json for review
   python3 deploy_flows.py --apply      # create flows that don't exist yet (turned off)
@@ -242,6 +243,88 @@ def flow_children(table, parent, list_op, filter_param, filter_col, loop, row_na
     return definition(triggers, actions)
 
 
+# Insights flow: level -> (table, row id key in Get performance rows, metrics level in spec.metrics)
+INSIGHT_LEVELS = [
+    ("campaign", "googleadscampaign", "Campaigns", "campaign"),
+    ("ad_group", "googleadsadgroup", "AdGroups", "ad_group"),
+    ("ad", "googleadsadvertisement", "Ads", "ad_group_ad"),
+    ("asset_group", "googleadsassetgroup", "AssetGroups", "asset_group"),
+]
+
+
+def flow_insights():
+    """Instant: all-time insights for every Google Ads record, written to the insight columns only."""
+    t = tokens()
+    actions = {"Get_access_token": get_token({})}
+    prev = "Get_access_token"
+    for _, _, name, _ in INSIGHT_LEVELS:
+        actions[f"Init_{name}_insights"] = {
+            "type": "InitializeVariable", "runAfter": {prev: ["Succeeded"]},
+            "inputs": {"variables": [{"name": f"{name}Insights", "type": "array", "value": []}]}}
+        prev = f"Init_{name}_insights"
+    actions["Init_merge"] = {"type": "InitializeVariable", "runAfter": {prev: ["Succeeded"]},
+                             "inputs": {"variables": [{"name": "Merge", "type": "array", "value": []}]}}
+    actions["List_client_accounts"] = gads("ListClientAccounts", {
+        "customer_id": f"@replace({p('customer_id')}, '-', '')", **t}, {"Init_merge": ["Succeeded"]})
+    # One Get performance call per level and account (all time, no date breakdown).
+    per_account, prev = {}, None
+    for level, _, name, _ in INSIGHT_LEVELS:
+        get = f"Get_{name}_insights"
+        per_account[get] = gads("GetPerformance", {
+            "customer_id": "@items('For_each_account')?['customer_id']", **t, "level": level,
+            "date_range": "ALL_TIME", "granularity": "TOTAL", "breakdown": "NONE"},
+            {prev: ["Succeeded"]} if prev else {})
+        per_account[f"Merge_{name}"] = {
+            "type": "SetVariable", "runAfter": {get: ["Succeeded"]},
+            "inputs": {"name": "Merge", "value": f"@union(variables('{name}Insights'), "
+                                                f"coalesce(outputs('{get}')?['body/rows'], json('[]')))"}}
+        per_account[f"Store_{name}"] = {
+            "type": "SetVariable", "runAfter": {f"Merge_{name}": ["Succeeded"]},
+            "inputs": {"name": f"{name}Insights", "value": "@variables('Merge')"}}
+        prev = f"Store_{name}"
+    actions["For_each_account"] = {
+        "type": "Foreach", "runAfter": {"List_client_accounts": ["Succeeded"]},
+        "foreach": "@outputs('List_client_accounts')?['body/rows']", "actions": per_account,
+        "runtimeConfiguration": {"concurrency": {"repetitions": 1}}}
+    prev = "For_each_account"
+    # Like Get Meta Insights: list the records, then update each one's insight columns.
+    for level, table, name, metrics_level in INSIGHT_LEVELS:
+        tbl = spec.TABLES[table]
+        entity_set = spec.PREFIX + table + "s"
+        gid = tbl["googleid"]
+        pk = f"{spec.PREFIX}{table}id"
+        select = [pk, spec.PREFIX + gid] + ([spec.PREFIX + "adgroupid"] if level == "ad" else [])
+        lst, loop, flt = f"List_Google_Ads_{name}", f"For_each_{name}", f"Insights_{name}"
+        actions[lst] = dataverse("ListRecords", {
+            "entityName": entity_set, "$select": ",".join(select),
+            "$filter": f"{spec.PREFIX}{gid} ne null and statecode eq 0"}, {prev: ["Succeeded"]})
+        rec = f"items('{loop}')"
+        where = f"@equals(item()?['{gid}'], {rec}?['{spec.PREFIX}{gid}'])"
+        if level == "ad":  # ad IDs are matched together with their ad group
+            where = (f"@and(equals(item()?['adid'], {rec}?['{spec.PREFIX}adid']), "
+                     f"equals(item()?['adgroupid'], {rec}?['{spec.PREFIX}adgroupid']))")
+        columns = [c[0] for c in spec.metrics(metrics_level)]
+        params = {"entityName": entity_set, "recordId": f"@{rec}?['{pk}']",
+                  **{f"item/{spec.PREFIX}{c}": f"@first(body('{flt}'))?['{c}']" for c in columns}}
+        actions[loop] = {
+            "type": "Foreach", "runAfter": {lst: ["Succeeded"]},
+            "foreach": f"@outputs('{lst}')?['body/value']",
+            "runtimeConfiguration": {"concurrency": {"repetitions": 10}},
+            "actions": {
+                flt: {"type": "Query", "runAfter": {},
+                      "inputs": {"from": f"@variables('{name}Insights')", "where": where}},
+                f"If_{name}_has_insights": {
+                    "type": "If", "runAfter": {flt: ["Succeeded"]},
+                    "expression": {"and": [{"greater": [f"@length(body('{flt}'))", 0]}]},
+                    "actions": {f"Update_{name}_insights": dataverse("UpdateOnlyRecord", params)},
+                    "else": {"actions": {}}},
+            }}
+        prev = loop
+    triggers = {"manual": {"type": "Request", "kind": "Button",
+                           "inputs": {"schema": {"type": "object", "properties": {}, "required": []}}}}
+    return definition(triggers, actions)
+
+
 FLOWS = {
     "Get Google Ads Campaigns": (flow_campaigns, "Instant: syncs all Google Ads campaigns (all client accounts of "
                                  "the Google Ads Customer ID) into Google Ads Campaign records."),
@@ -258,6 +341,9 @@ FLOWS = {
         "For_each_asset_group", "asset_group", only_channel="PERFORMANCE_MAX"),
         "When a Performance Max Google Ads Campaign is added or modified: syncs its asset groups into "
         "Google Ads Asset Group records."),
+    "Get Google Ads Insights": (flow_insights,
+        "Manual: refreshes all-time Google Ads insights (no date breakdown) for every active Google Ads "
+        "Campaign, Ad Group, Advertisement and Asset Group and writes the insight columns only."),
 }
 
 

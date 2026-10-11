@@ -82,6 +82,9 @@ def metrics(level):
         cols.append(("invalidclicks", "Invalid Clicks", "performance", "int", "metrics.invalid_clicks"))
     if level == "asset_group":
         cols = [c for c in cols if c[0] not in ASSET_GROUP_UNSUPPORTED]
+    if level == "ad_group_ad":
+        # Google Ads rejects metrics.phone_calls on ad_group_ad (checked live).
+        cols = [c for c in cols if c[0] != "phonecalls"]
     return cols
 
 

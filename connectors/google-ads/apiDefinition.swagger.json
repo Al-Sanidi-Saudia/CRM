@@ -652,7 +652,7 @@
       "get": {
         "operationId": "GetPerformance",
         "summary": "Get performance",
-        "description": "Performance metrics per campaign, ad group or ad for a date range, optionally per day/week/month.",
+        "description": "Performance metrics per campaign, ad group, ad or asset group for a date range (or all time), optionally per day/week/month.",
         "parameters": [
           {
             "name": "customer_id",
@@ -700,7 +700,8 @@
             "enum": [
               "campaign",
               "ad_group",
-              "ad"
+              "ad",
+              "asset_group"
             ],
             "default": "campaign",
             "x-ms-visibility": "important"
@@ -798,6 +799,15 @@
             "x-ms-summary": "Ad group ID",
             "description": "Only return items of this ad group.",
             "x-ms-visibility": "important"
+          },
+          {
+            "name": "asset_group_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Asset group ID",
+            "description": "Only this asset group (level asset_group).",
+            "x-ms-visibility": "advanced"
           },
           {
             "name": "max_rows",
@@ -2485,12 +2495,6 @@
           "x-ms-summary": "View-through Conversions",
           "description": "Source: metrics.view_through_conversions."
         },
-        "phonecalls": {
-          "type": "integer",
-          "format": "int64",
-          "x-ms-summary": "Phone Calls",
-          "description": "Source: metrics.phone_calls."
-        },
         "videoviews": {
           "type": "integer",
           "format": "int64",
@@ -3052,6 +3056,16 @@
           "type": "string",
           "x-ms-summary": "Ad Name",
           "description": "Source: ad_group_ad.ad.name."
+        },
+        "assetgroupid": {
+          "type": "string",
+          "x-ms-summary": "Asset Group ID",
+          "description": "Source: asset_group.id."
+        },
+        "assetgroupname": {
+          "type": "string",
+          "x-ms-summary": "Asset Group Name",
+          "description": "Source: asset_group.name."
         },
         "date": {
           "type": "string",

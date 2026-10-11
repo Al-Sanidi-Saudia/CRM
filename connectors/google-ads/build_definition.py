@@ -178,8 +178,17 @@ PERF_IDENTITY = {
            ("adname", "Ad Name", "", "str", "ad_group_ad.ad.name"),
            ("adgroupid", "Ad Group ID", "", "id", "ad_group.id"),
            ("campaignid", "Campaign ID", "", "id", "campaign.id")],
+    "asset_group": [("assetgroupid", "Asset Group ID", "", "id", "asset_group.id"),
+                    ("assetgroupname", "Asset Group Name", "", "str", "asset_group.name"),
+                    ("campaignid", "Campaign ID", "", "id", "campaign.id")],
 }
-PERF_RESOURCE = {"campaign": "campaign", "ad_group": "ad_group", "ad": "ad_group_ad"}
+PERF_RESOURCE = {"campaign": "campaign", "ad_group": "ad_group", "ad": "ad_group_ad", "asset_group": "asset_group"}
+PERF_FILTERS = {
+    "campaign": {"campaign_id": "campaign.id"},
+    "ad_group": {"campaign_id": "campaign.id", "ad_group_id": "ad_group.id"},
+    "ad": {"campaign_id": "campaign.id", "ad_group_id": "ad_group.id"},
+    "asset_group": {"campaign_id": "campaign.id", "asset_group_id": "asset_group.id"},
+}
 PERF_COLUMNS = {
     level: [("customerid", "Customer ID", "", "id", "customer.id")] + PERF_IDENTITY[level]
     + spec.metrics(PERF_RESOURCE[level])
@@ -188,8 +197,7 @@ PERF_COLUMNS = {
 ops["$performance"] = {
     level: {
         "resource": PERF_RESOURCE[level],
-        "filters": {"campaign_id": "campaign.id"} if level == "campaign"
-        else {"campaign_id": "campaign.id", "ad_group_id": "ad_group.id"},
+        "filters": PERF_FILTERS[level],
         "columns": script_columns(PERF_COLUMNS[level]),
     }
     for level in PERF_RESOURCE
@@ -249,9 +257,11 @@ paths = {
         "AssetGroupsResponse"),
     "/customers/{customer_id}/performance": op(
         "get", "GetPerformance", "Get performance",
-        "Performance metrics per campaign, ad group or ad for a date range, optionally per day/week/month.",
+        "Performance metrics per campaign, ad group, ad or asset group for a date range (or all time), "
+        "optionally per day/week/month.",
         [CUSTOMER_ID, ACCESS_TOKEN, DEVELOPER_TOKEN, LOGIN_CUSTOMER_ID,
-         query("level", "Level", "Level to report on.", enum=["campaign", "ad_group", "ad"], default="campaign",
+         query("level", "Level", "Level to report on.", enum=["campaign", "ad_group", "ad", "asset_group"],
+               default="campaign",
                required=True, visibility="important"),
          query("date_range", "Date range", "Predefined range. Ignored when start and end dates are set.",
                enum=["ALL_TIME", "TODAY", "YESTERDAY", "LAST_7_DAYS", "LAST_14_DAYS", "LAST_30_DAYS",
@@ -264,7 +274,9 @@ paths = {
                enum=["TOTAL", "DAILY", "WEEKLY", "MONTHLY"], default="TOTAL", visibility="important"),
          query("breakdown", "Breakdown", "Split rows by device or network.",
                enum=["NONE", "DEVICE", "AD_NETWORK_TYPE"], default="NONE"),
-         CAMPAIGN_FILTER, AD_GROUP_FILTER, MAX_ROWS],
+         CAMPAIGN_FILTER, AD_GROUP_FILTER,
+         query("asset_group_id", "Asset group ID", "Only this asset group (level asset_group).", visibility="advanced"),
+         MAX_ROWS],
         "PerformanceResponse"),
     "/customers/{customer_id}/query": op(
         "post", "RunQuery", "Run GAQL query",
