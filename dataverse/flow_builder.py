@@ -184,15 +184,21 @@ class ChildSyncFlow:
             "schemaVersion": "1.0.0.0"}
 
     def build(self, template_zip, out):
-        src_zip = zipfile.ZipFile(template_zip)
-        c = src_zip.read("customizations.xml").decode("utf-8-sig")
-        root_open = re.match(r".*?<ImportExportXml[^>]*>", c, re.S).group(0)
-        json_file = f"/Workflows/{re.sub(r'[^A-Za-z0-9]', '', self.name)}-{self.flow_id.upper()}.json"
-        customizations = f"""{root_open}
+        package_flow(self.name, self.flow_id, self.flow_json(), template_zip, out)
+        print(f"Wrote {out}: flow {self.name} {self.flow_id}, {len(self.fields)} mapped columns")
+
+
+def package_flow(name, flow_id, flow, template_zip, out):
+    """Writes an unmanaged AlSanidi | Marketing solution package holding one cloud flow."""
+    src_zip = zipfile.ZipFile(template_zip)
+    c = src_zip.read("customizations.xml").decode("utf-8-sig")
+    root_open = re.match(r".*?<ImportExportXml[^>]*>", c, re.S).group(0)
+    json_file = f"/Workflows/{re.sub(r'[^A-Za-z0-9]', '', name)}-{flow_id.upper()}.json"
+    customizations = f"""{root_open}
   <Entities />
   <Roles />
   <Workflows>
-    <Workflow WorkflowId="{{{self.flow_id}}}" Name="{self.name}">
+    <Workflow WorkflowId="{{{flow_id}}}" Name="{name}">
       <JsonFileName>{json_file}</JsonFileName>
       <Type>1</Type>
       <Subprocess>0</Subprocess>
@@ -215,7 +221,7 @@ class ChildSyncFlow:
       <ModernFlowType>0</ModernFlowType>
       <PrimaryEntity>none</PrimaryEntity>
       <LocalizedNames>
-        <LocalizedName languagecode="1033" description="{self.name}" />
+        <LocalizedName languagecode="1033" description="{name}" />
       </LocalizedNames>
     </Workflow>
   </Workflows>
@@ -232,14 +238,13 @@ class ChildSyncFlow:
   </Languages>
 </ImportExportXml>
 """
-        solution = solution_xml(src_zip.read("solution.xml").decode("utf-8-sig"),
-                                [f'<RootComponent type="29" id="{{{self.flow_id}}}" behavior="0" />'])
-        with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
-            z.writestr("[Content_Types].xml", CONTENT_TYPES)
-            z.writestr("solution.xml", solution)
-            z.writestr("customizations.xml", customizations)
-            z.writestr(json_file.lstrip("/"), json.dumps(self.flow_json(), indent=2))
-        print(f"Wrote {out}: flow {self.name} {self.flow_id}, {len(self.fields)} mapped columns")
+    solution = solution_xml(src_zip.read("solution.xml").decode("utf-8-sig"),
+                            [f'<RootComponent type="29" id="{{{flow_id}}}" behavior="0" />'])
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("[Content_Types].xml", CONTENT_TYPES)
+        z.writestr("solution.xml", solution)
+        z.writestr("customizations.xml", customizations)
+        z.writestr(json_file.lstrip("/"), json.dumps(flow, indent=2))
 
 
 def dataverse(operation, params):

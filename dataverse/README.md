@@ -9,6 +9,7 @@ it doesn't touch anything else in the solution, and IDs are deterministic so re-
 | `snap-campaign/` | Snap Campaign (`sanidi_SnapCampaign`) | Get Snap Campaigns (manual) |
 | `snap-adsquad/` | Snap Ad Squad (`sanidi_SnapAdSquad`, lookup to Snap Campaign) | Get Snap Ad Squads (when a Snap Campaign is added or modified) |
 | `snap-advertisement/` | Snap Advertisement (`sanidi_SnapAdvertisement`, lookup to Snap Ad Squad) | Get Snap Advertisements (when a Snap Ad Squad is added or modified) |
+| `snap-insights/` | – | Get Snap Insights (manual): refreshes only the insight columns on all three tables |
 
 `table_builder.py` holds the shared table logic (columns, choices, lookups, keys, form, views),
 `flow_builder.py` the shared "sync a parent's children from Snap" flow logic, and `snap_insights.py` the
@@ -29,6 +30,10 @@ flow in the same Update/Add step as the entity's own columns (one `Get ... stats
   when the stats call failed; the entity columns are still written)
 
 Money values are Snap micro-currency / 1,000,000; conversions use Snap's default attribution windows.
+
+**Get Snap Insights** (manual, modeled on Get Meta Insights) refreshes just these columns without the full
+sync cascade: it lists active Snap Campaigns, then Ad Squads, then Advertisements that have a Snap ID, fetches each
+row's LIFETIME stats (10 at a time) and updates only the insight columns.
 
 ## Template export
 
@@ -62,6 +67,7 @@ python3 snap-campaign/build_table_solution.py      --template Template.zip --out
 python3 snap-campaign/build_flow_solution.py       --template Template.zip --out GetSnapCampaignsFlow.zip
 python3 snap-adsquad/build_flow_solution.py        --template Template.zip --out GetSnapAdSquadsFlow.zip
 python3 snap-advertisement/build_flow_solution.py  --template Template.zip --out GetSnapAdvertisementsFlow.zip
+python3 snap-insights/build_flow_solution.py       --template Template.zip --out GetSnapInsightsFlow.zip
 
 pac solution import --path SnapAdvertisementTable.zip --publish-changes
 pac solution import --path SnapAdSquadTable.zip       --publish-changes
@@ -69,6 +75,7 @@ pac solution import --path SnapCampaignTable.zip      --publish-changes
 pac solution import --path GetSnapCampaignsFlow.zip
 pac solution import --path GetSnapAdSquadsFlow.zip
 pac solution import --path GetSnapAdvertisementsFlow.zip
+pac solution import --path GetSnapInsightsFlow.zip
 ```
 
 Only one import can run in an environment at a time; if `pac` reports another import running, wait and retry.

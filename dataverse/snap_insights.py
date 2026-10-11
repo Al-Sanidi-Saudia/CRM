@@ -7,6 +7,7 @@ into its Update/Add row parameters. Stats are fetched with granularity=LIFETIME 
 breakdown. If the stats call fails, the row is still written with empty stats and an
 empty "Stats Last Synced", so one failing call doesn't block the entity sync.
 """
+import json
 
 # Snap metric for each stored column ("" = computed in the flow).
 METRICS = {
@@ -102,8 +103,21 @@ def _ratio(numerator, denominator):
     return f"if(greater(coalesce({_m(denominator)}, 0), 0), div({numerator}, {_num(denominator)}), null)"
 
 
-def stats_actions(snap_api, operation, parameter, id_expr, run_after):
+def _suffixed(obj, suffix):
+    """Rename the Get_stats / Lifetime_stats actions (and references to them) to <name><suffix>,
+    so several stats lookups can live in one flow."""
+    if not suffix:
+        return obj
+    text = json.dumps(obj).replace("Get_stats", f"Get_stats{suffix}").replace("Lifetime_stats", f"Lifetime_stats{suffix}")
+    return json.loads(text)
+
+
+def stats_actions(snap_api, operation, parameter, id_expr, run_after, suffix=""):
     """Get_stats (LIFETIME) plus Lifetime_stats, which runs even if Get_stats fails."""
+    return _suffixed(_stats_actions(snap_api, operation, parameter, id_expr, run_after), suffix)
+
+
+def _stats_actions(snap_api, operation, parameter, id_expr, run_after):
     return {
         "Get_stats": {
             "type": "OpenApiConnection", "runAfter": run_after,
@@ -118,7 +132,12 @@ def stats_actions(snap_api, operation, parameter, id_expr, run_after):
     }
 
 
-def stats_columns():
+def stats_columns(suffix=""):
+    """Update/Add row parameters for every insight column."""
+    return _suffixed(_stats_columns(), suffix)
+
+
+def _stats_columns():
     spend = f"div({_num('spend')}, 1000000)"
     cols = {}
     for name, _, kind, _, _ in INSIGHT_FIELDS:
