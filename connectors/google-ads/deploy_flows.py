@@ -8,7 +8,9 @@ in the AlSanidi | Marketing solution.
 
   python3 deploy_flows.py              # write flows/*.json for review
   python3 deploy_flows.py --apply      # create flows that don't exist yet (turned off)
-  python3 deploy_flows.py --apply --update-existing   # also overwrite existing flows (resets designer edits)
+  python3 deploy_flows.py --apply --update-existing   # also replace existing flows' definitions
+  python3 deploy_flows.py --apply --update-existing "--only=Get Google Ads Asset Groups"   # one flow
+  (an update keeps the flow's connection references and its on/off state)
 
 Every flow starts with the connector's "Get access token" (client ID / secret / refresh token from
 environment variables) and passes the token and the developer token to the Google Ads actions.
@@ -259,7 +261,7 @@ FLOWS = {
 }
 
 
-def main(apply, update_existing=False):
+def main(apply, update_existing=False, only=None):
     out = HERE / "flows"
     out.mkdir(exist_ok=True)
     built = {}
@@ -280,13 +282,24 @@ def main(apply, update_existing=False):
             "connectorid": f"/providers/Microsoft.PowerApps/apis/{GADS_API}"}, solution=SOLUTION)
         print(f"created connection reference {GADS_REF}")
     for name, (clientdata, description) in built.items():
-        existing = dv.first(f"workflows?$select=workflowid,statecode&$filter=name eq '{name}' and category eq 5")
+        if only and name not in only:
+            continue
+        existing = dv.first(f"workflows?$select=workflowid,statecode,clientdata&$filter=name eq '{name}' and category eq 5")
         body = {"name": name, "description": description, "clientdata": json.dumps(clientdata)}
         if existing and not update_existing:
             print(f"{name}: exists, left unchanged")
         elif existing:
-            dv.request("PATCH", f"workflows({existing['workflowid']})", body, solution=SOLUTION)
-            print(f"updated {name} ({existing['workflowid']})")
+            # Keep the connection references picked in the designer; replace only the definition.
+            current = json.loads(existing["clientdata"])
+            clientdata["properties"]["connectionReferences"] = current["properties"]["connectionReferences"]
+            body["clientdata"] = json.dumps(clientdata)
+            wid, was_on = existing["workflowid"], existing["statecode"] == 1
+            if was_on:
+                dv.request("PATCH", f"workflows({wid})", {"statecode": 0, "statuscode": 1})
+            dv.request("PATCH", f"workflows({wid})", body, solution=SOLUTION)
+            if was_on:
+                dv.request("PATCH", f"workflows({wid})", {"statecode": 1, "statuscode": 2})
+            print(f"updated {name} ({wid}){', turned back on' if was_on else ''}")
         else:
             wid = str(uuid.uuid5(NS, name))
             dv.request("POST", "workflows", {"workflowid": wid, "category": 5, "type": 1, "primaryentity": "none",
@@ -295,4 +308,5 @@ def main(apply, update_existing=False):
 
 
 if __name__ == "__main__":
-    main("--apply" in sys.argv, "--update-existing" in sys.argv)
+    only = [a.split("=", 1)[1] for a in sys.argv if a.startswith("--only=")]
+    main("--apply" in sys.argv, "--update-existing" in sys.argv, only or None)

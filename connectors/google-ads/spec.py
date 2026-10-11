@@ -32,6 +32,11 @@ PREFIX = "sanidi_"
 CATALOG = json.loads((HERE / "fields_v25.json").read_text())
 
 
+# Metrics Google Ads rejects on asset groups (PROHIBITED_METRIC_IN_SELECT_OR_WHERE_CLAUSE, checked live).
+ASSET_GROUP_UNSUPPORTED = {"averagecpm", "phonecalls", "videoviews", "videoviewrate", "topimpressionpct",
+                           "absolutetopimpressionpct"}
+
+
 def metrics(level):
     """All-time performance columns. Impression share needs a search level (not ads)."""
     cols = [
@@ -75,6 +80,8 @@ def metrics(level):
         ]
     if level == "campaign":
         cols.append(("invalidclicks", "Invalid Clicks", "performance", "int", "metrics.invalid_clicks"))
+    if level == "asset_group":
+        cols = [c for c in cols if c[0] not in ASSET_GROUP_UNSUPPORTED]
     return cols
 
 
@@ -383,7 +390,7 @@ ASSET_GROUP = [
     ("trackingurltemplate", "Tracking URL Template", "urls", "str", G + "tracking_url_template"),
     ("finalurlsuffix", "Final URL Suffix", "urls", "str", G + "final_url_suffix"),
     ("urlcustomparameters", "URL Custom Parameters", "urls", "json", G + "url_custom_parameters"),
-] + metrics("ad_group_ad") + SYNC
+] + metrics("asset_group") + SYNC
 
 # assetfield column -> asset_group_asset.field_type values it collects
 ASSET_FIELDS = {
@@ -393,6 +400,14 @@ ASSET_FIELDS = {
     "portraitmarketingimages": ["PORTRAIT_MARKETING_IMAGE", "TALL_PORTRAIT_MARKETING_IMAGE"],
     "logos": ["LOGO", "BUSINESS_LOGO"], "landscapelogos": ["LANDSCAPE_LOGO"], "videos": ["YOUTUBE_VIDEO", "VIDEO"],
 }
+# Brand assets Performance Max often keeps on the campaign (campaign_asset), not the asset group:
+# used for these columns when the asset group has none of its own.
+CAMPAIGN_ASSET_FALLBACK = {"businessname": ["BUSINESS_NAME"], "logos": ["LOGO", "BUSINESS_LOGO"],
+                           "landscapelogos": ["LANDSCAPE_LOGO"]}
+CAMPAIGN_ASSET_QUERY_FIELDS = [
+    "campaign.id", "campaign_asset.field_type", "asset.name", "asset.type", "asset.text_asset.text",
+    "asset.image_asset.full_size.url",
+]
 # assetcount column -> which linked assets it counts
 ASSET_COUNTS = {"totalassets": "ALL", "disapprovedassets": "DISAPPROVED", "assetsunderreview": "UNDER_REVIEW"}
 # Read per linked asset (asset_group_asset is filtered like the asset groups themselves).
@@ -497,8 +512,7 @@ FORMS = {
         ("General", [("identity", "Identity"), ("status", "Status")]),
         ("Creative", [("text", "Text"), ("media", "Images & Videos")]),
         ("Asset Health & URLs", [("health", "Asset Health"), ("urls", "URLs & Tracking")]),
-        ("Performance", [("performance", "Delivery (all time)"), ("conversions", "Conversions (all time)"),
-                         ("video", "Video & Top Impressions (all time)")]),
+        ("Performance", [("performance", "Delivery (all time)"), ("conversions", "Conversions (all time)")]),
         ("Sync", [("sync", "Sync")]),
     ],
     "googleadsadvertisement": [

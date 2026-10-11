@@ -2751,11 +2751,6 @@
           "x-ms-summary": "Avg. CPC",
           "description": "In account currency (converted from micros). Source: metrics.average_cpc."
         },
-        "averagecpm": {
-          "type": "number",
-          "x-ms-summary": "Avg. CPM",
-          "description": "In account currency (converted from micros). Source: metrics.average_cpm."
-        },
         "averagecost": {
           "type": "number",
           "x-ms-summary": "Avg. Cost",
@@ -2828,33 +2823,6 @@
           "format": "int64",
           "x-ms-summary": "View-through Conversions",
           "description": "Source: metrics.view_through_conversions."
-        },
-        "phonecalls": {
-          "type": "integer",
-          "format": "int64",
-          "x-ms-summary": "Phone Calls",
-          "description": "Source: metrics.phone_calls."
-        },
-        "videoviews": {
-          "type": "integer",
-          "format": "int64",
-          "x-ms-summary": "Video Views",
-          "description": "Source: metrics.video_trueview_views."
-        },
-        "videoviewrate": {
-          "type": "number",
-          "x-ms-summary": "Video View Rate (%)",
-          "description": "Percent (0-100). Source: metrics.video_trueview_view_rate."
-        },
-        "topimpressionpct": {
-          "type": "number",
-          "x-ms-summary": "Top Impression (%)",
-          "description": "Percent (0-100). Source: metrics.top_impression_percentage."
-        },
-        "absolutetopimpressionpct": {
-          "type": "number",
-          "x-ms-summary": "Absolute Top Impression (%)",
-          "description": "Percent (0-100). Source: metrics.absolute_top_impression_percentage."
         },
         "lastsyncedon": {
           "type": "string",

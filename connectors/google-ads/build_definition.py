@@ -162,7 +162,11 @@ for operation_id, (table, filters) in ENTITY_OPS.items():
     if any(c[3] in ("assetfield", "assetcount") for c in t["columns"]):
         ops[operation_id]["assets"] = {
             "resource": "asset_group_asset", "link": spec.ASSET_QUERY_FIELDS[0], "fields": spec.ASSET_QUERY_FIELDS,
-            "exclude": "asset_group_asset.status != 'REMOVED'"}
+            "exclude": "asset_group_asset.status != 'REMOVED'",
+            "campaign_fallback": {
+                "fields": spec.CAMPAIGN_ASSET_QUERY_FIELDS,
+                "types": sorted({f for v in spec.CAMPAIGN_ASSET_FALLBACK.values() for f in v}),
+                "columns": spec.CAMPAIGN_ASSET_FALLBACK}}
 
 PERF_IDENTITY = {
     "campaign": [("campaignid", "Campaign ID", "", "id", "campaign.id"),

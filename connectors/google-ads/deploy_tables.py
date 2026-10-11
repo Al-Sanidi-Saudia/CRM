@@ -140,5 +140,27 @@ def main(apply):
         print("published")
 
 
+def remove_columns(table, columns, apply):
+    """Deletes columns that were dropped from spec.py. Only names passed explicitly, never inferred."""
+    dv = Dataverse()
+    logical = spec.PREFIX + table
+    in_spec = {spec.PREFIX + c[0] for c in spec.TABLES[table]["columns"]}
+    for column in columns:
+        name = spec.PREFIX + column
+        if name in in_spec:
+            raise SystemExit(f"{name} is still in spec.py; remove it there first")
+        exists = dv.first(f"EntityDefinitions(LogicalName='{logical}')/Attributes?$select=LogicalName"
+                          f"&$filter=LogicalName eq '{name}'")
+        print(f"{logical}.{name}: {'delete' if exists else 'not found'}")
+        if apply and exists:
+            dv.request("DELETE", f"EntityDefinitions(LogicalName='{logical}')/Attributes(LogicalName='{name}')")
+
+
 if __name__ == "__main__":
-    main("--apply" in sys.argv)
+    # python3 deploy_tables.py --remove=<table>:<col>,<col> [--apply]
+    remove = [a.split("=", 1)[1] for a in sys.argv if a.startswith("--remove=")]
+    if remove:
+        table, cols = remove[0].split(":", 1)
+        remove_columns(table, cols.split(","), "--apply" in sys.argv)
+    else:
+        main("--apply" in sys.argv)
