@@ -22,7 +22,10 @@ Sync Control page ──creates──▶ Integration Sync Request (row)
 - **Status** on the page comes from the built-in flow run history (`flowrun` table, kept 28 days):
   the latest run of every flow listed for the platform, plus the latest sync request.
 - **Data** = the campaigns flow and the flows that run automatically after it. **Insights** = the insights flow.
-- After a button press the part shows *Running* with the new date. The result appears on **Refresh**.
+- After a button press the part shows *Running* with the new date. While any sync is running, the page checks
+  its request every 5 seconds and, once it has finished, refreshes itself exactly as **Refresh** does.
+- **Usual duration**: the median duration of the last 5 successful runs of the flow the button starts, shown on the
+  card and in the confirmation.
 - While one of a platform's syncs runs, its other button is disabled (a Data and an Insights sync on the same
   campaigns at the same time made Meta Insights fail).
 - **Last success** badge: time since the last successful run (flow run history or a succeeded request), measured

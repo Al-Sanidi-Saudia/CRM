@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { GeneratedComponentProps } from "./RuntimeTypes";
 import {
     Badge,
@@ -42,6 +42,9 @@ const REQ_FAILED = 100000003;
 // picked up (for example the flow was off), so it must not keep the button disabled.
 const NOT_STARTED_AFTER_MS = 15 * 60 * 1000;
 
+// While a sync is running, check its request this often and refresh the page once it finishes.
+const POLL_MS = 5000;
+
 const CACHE_KEY = "__ppSyncControl_dataCache";
 const INFLIGHT_KEY = "__ppSyncControl_dataInflight";
 
@@ -77,6 +80,8 @@ interface Snapshot {
     runs: Record<string, RunInfo | null>;
     // Start of the latest successful run of each flow a button starts (campaigns and insights flows).
     lastSuccess: Record<string, Date | null>;
+    // Median duration in minutes of the last successful runs of the same flows.
+    usualMinutes: Record<string, number | null>;
     requests: RequestInfo[];
     loadedAt: Date;
 }
@@ -93,6 +98,7 @@ interface SectionView {
     failedName: string | null;
     error: string | null;
     active: boolean;
+    startedAt?: string;
 }
 
 interface PendingSync { platform: Platform; type: SyncKind; }
@@ -188,6 +194,17 @@ const useStyles = makeStyles({
         columnGap: tokens.spacingHorizontalS,
     },
     muted: { color: tokens.colorNeutralForeground3, fontSize: tokens.fontSizeBase200 },
+    inlineIcon: { verticalAlign: "middle" },
+    runningNote: {
+        paddingTop: tokens.spacingVerticalS,
+        paddingBottom: tokens.spacingVerticalS,
+        paddingLeft: tokens.spacingHorizontalM,
+        paddingRight: tokens.spacingHorizontalM,
+        borderRadius: tokens.borderRadiusMedium,
+        backgroundColor: tokens.colorBrandBackground2,
+        color: tokens.colorBrandForeground2,
+        fontSize: tokens.fontSizeBase200,
+    },
     lastRunRow: { display: "flex", flexWrap: "wrap", alignItems: "center", columnGap: tokens.spacingHorizontalS, rowGap: tokens.spacingVerticalXXS },
     age: {
         display: "inline-flex",
@@ -415,19 +432,32 @@ async function loadSnapshot(dataApi: GeneratedComponentProps["dataApi"]): Promis
     const successEntries = await Promise.all(Array.from(leadIds).map(async (id) => {
         try {
             const res = await dataApi.queryTable("flowrun", {
-                select: ["starttime"],
+                select: ["starttime", "endtime", "duration"],
                 filter: `_workflow_value eq ${id} and status eq 'Succeeded'`,
                 orderBy: "starttime desc",
-                pageSize: 1,
+                pageSize: 5,
             });
-            const row: any = res.rows[0];
-            return [id, row ? toDate(row.starttime) : null] as const;
+            const rows: any[] = res.rows.slice(0, 5);
+            const durations = rows
+                .map((r) => {
+                    const ms = Number(r.duration);
+                    if (Number.isFinite(ms) && ms > 0) return ms;
+                    const a = toDate(r.starttime);
+                    const b = toDate(r.endtime);
+                    return a && b ? b.getTime() - a.getTime() : NaN;
+                })
+                .filter((ms) => Number.isFinite(ms) && ms > 0)
+                .sort((a, b) => a - b);
+            const median = durations.length ? durations[Math.floor((durations.length - 1) / 2)] : null;
+            const usual = median === null ? null : Math.max(1, Math.round(median / 60000));
+            return [id, rows[0] ? toDate(rows[0].starttime) : null, usual] as const;
         } catch {
-            return [id, null] as const;
+            return [id, null, null] as const;
         }
     }));
     const lastSuccess: Record<string, Date | null> = {};
-    successEntries.forEach(([id, d]) => { lastSuccess[id] = d; });
+    const usualMinutes: Record<string, number | null> = {};
+    successEntries.forEach(([id, d, u]) => { lastSuccess[id] = d; usualMinutes[id] = u; });
 
     const requestResult = await dataApi.queryTable("sanidi_integrationsyncrequest", {
         select: ["sanidi_status", "sanidi_synctype", "_sanidi_platform_value", "sanidi_startedon", "sanidi_completedon", "sanidi_errormessage"],
@@ -436,7 +466,7 @@ async function loadSnapshot(dataApi: GeneratedComponentProps["dataApi"]): Promis
         pageSize: 100,
     });
     const requests: RequestInfo[] = requestResult.rows.map((r: any) => ({
-        id: String(r.sanidi_integrationsyncrequestid),
+        id: readGuid(r.sanidi_integrationsyncrequestid),
         platformId: readGuid(r._sanidi_platform_value),
         type: Number(r.sanidi_synctype) === SYNC_TYPE_INSIGHTS ? "insights" : "data",
         status: Number(r.sanidi_status),
@@ -445,7 +475,7 @@ async function loadSnapshot(dataApi: GeneratedComponentProps["dataApi"]): Promis
         error: typeof r.sanidi_errormessage === "string" ? r.sanidi_errormessage : null,
     }));
 
-    return { platforms, runs, lastSuccess, requests, loadedAt: new Date() };
+    return { platforms, runs, lastSuccess, usualMinutes, requests, loadedAt: new Date() };
 }
 
 function isNotStarted(req: RequestInfo | undefined): boolean {
@@ -485,6 +515,35 @@ function lastSuccessAge(p: Platform, snap: Snapshot, type: SyncKind): AgeView {
     else if (hours < 24) { const h = Math.round(hours); text = `${h} ${h === 1 ? "hour" : "hours"} ago`; }
     else { const d = Math.round(hours / 24); text = `${d} ${d === 1 ? "day" : "days"} ago`; }
     return { text, level: hours > 24 ? "late" : hours > 12 ? "warn" : "ok" };
+}
+
+function usualText(minutes: number | null | undefined, sentence: boolean): string {
+    if (!minutes) return "";
+    const unit = minutes === 1 ? "minute" : "minutes";
+    return sentence ? `It usually takes about ${minutes} ${unit}.` : `Usually takes about ${minutes} ${unit}`;
+}
+
+function usualMinutesFor(p: Platform, snap: Snapshot, type: SyncKind): number | null {
+    const flowId = type === "data" ? p.dataFlows[0]?.id : p.insightsFlowId;
+    return flowId ? snap.usualMinutes?.[flowId] ?? null : null;
+}
+
+function formatTime(d: Date | null): string {
+    if (!d) return "";
+    return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+}
+
+// Ids of the requests still running (or just requested), the ones the page waits on.
+function activeRequestIds(snap: Snapshot | null): string[] {
+    if (!snap) return [];
+    const ids = new Set<string>();
+    snap.platforms.filter((p) => p.configured).forEach((p) => {
+        (["data", "insights"] as SyncKind[]).forEach((t) => {
+            const req = latestRequest(snap.requests, p.id, t);
+            if (req && req.id && isActive(req)) ids.add(req.id);
+        });
+    });
+    return Array.from(ids).sort();
 }
 
 const AGE_COLORS: Record<AgeLevel, { bg: string; fg: string; border: string }> = {
@@ -531,7 +590,7 @@ function buildDataSection(p: Platform, snap: Snapshot): SectionView {
     const base = { lastRun, steps: stepViews };
 
     if (isActive(req)) {
-        return { ...base, kind: "running", failedName: null, error: null, active: true };
+        return { ...base, kind: "running", failedName: null, error: null, active: true, startedAt: formatTime(req?.startedOn ?? null) };
     }
     const outcome = requestOutcome(req, firstStart);
     if (outcome?.kind === "failed") {
@@ -564,7 +623,7 @@ function buildInsightsSection(p: Platform, snap: Snapshot): SectionView {
     const lastRun = formatDateTime(newer(run?.start ?? null, req?.startedOn ?? null));
     const base = { lastRun, steps: [] as StepView[], failedName: null };
 
-    if (isActive(req)) return { ...base, kind: "running", error: null, active: true };
+    if (isActive(req)) return { ...base, kind: "running", error: null, active: true, startedAt: formatTime(req?.startedOn ?? null) };
     const outcome = requestOutcome(req, run?.start ?? null);
     if (outcome) return { ...base, kind: outcome.kind, error: outcome.error, active: false };
     if (run) return { ...base, kind: run.kind, error: run.kind === "failed" ? run.error : null, active: false };
@@ -602,6 +661,7 @@ function SyncSection(props: {
     title: string;
     view: SectionView;
     age: AgeView;
+    usual: string;
     subtitle: string;
     canSync: boolean;
     busy: boolean;
@@ -624,6 +684,16 @@ function SyncSection(props: {
                 <Text className={styles.muted}>Last run {view.lastRun}{props.subtitle ? ` · ${props.subtitle}` : ""}</Text>
                 <AgeBadge age={props.age} />
             </div>
+            {props.usual && (
+                <Text className={styles.muted}>
+                    <ClockRegular aria-hidden="true" className={styles.inlineIcon} /> {props.usual}
+                </Text>
+            )}
+            {view.active && (
+                <div className={styles.runningNote} role="status">
+                    {view.startedAt ? `Started at ${view.startedAt}. ` : ""}This page updates itself when it finishes.
+                </div>
+            )}
             {view.steps.length > 0 && (
                 <ul className={styles.steps} aria-label={`${props.title} flows`}>
                     {view.steps.map((s) => (
@@ -686,6 +756,7 @@ function PlatformCard(props: {
                         subtitle=""
                         view={dataView as SectionView}
                         age={lastSuccessAge(platform, snap, "data")}
+                        usual={usualText(usualMinutesFor(platform, snap, "data"), false)}
                         canSync={props.canSync}
                         busy={props.busy}
                         blockedBy={insightsView?.active ? `${platform.name} insights` : null}
@@ -698,6 +769,7 @@ function PlatformCard(props: {
                         subtitle={platform.insightsFlowName}
                         view={insightsView as SectionView}
                         age={lastSuccessAge(platform, snap, "insights")}
+                        usual={usualText(usualMinutesFor(platform, snap, "insights"), false)}
                         canSync={props.canSync}
                         busy={props.busy}
                         blockedBy={dataView?.active ? `${platform.name} data` : null}
@@ -734,6 +806,13 @@ const GeneratedComponent = (props: GeneratedComponentProps) => {
     const [pending, setPending] = useState<PendingSync | null>(null);
     const [{ busy, actionError }, setAction] = useState<{ busy: boolean; actionError: string | null }>({ busy: false, actionError: null });
 
+    // The host hands a new dataApi every render; the poll reads the latest one through this ref.
+    const dataApiRef = useRef(dataApi);
+    dataApiRef.current = dataApi;
+    const loadingRef = useRef(loading);
+    loadingRef.current = loading;
+    const watchKey = activeRequestIds(snap).join(",");
+
     useEffect(() => {
         if (!dataReady) return;
         const cached = winAny[CACHE_KEY] as Snapshot | undefined;
@@ -765,6 +844,39 @@ const GeneratedComponent = (props: GeneratedComponentProps) => {
         setData({ snap, loading: true, error: null });
         setReloadKey((k) => k + 1);
     };
+    const refreshRef = useRef(refresh);
+    refreshRef.current = refresh;
+
+    // While any sync is running, check its request every few seconds; once it has finished
+    // (succeeded or failed), refresh the page exactly as the Refresh button does.
+    useEffect(() => {
+        if (!dataReady || !watchKey) return;
+        const watched = watchKey.split(",");
+        let checking = false;
+        let stopped = false;
+        const timer = window.setInterval(async () => {
+            if (checking || stopped || loadingRef.current) return;
+            checking = true;
+            try {
+                const res = await dataApiRef.current.queryTable("sanidi_integrationsyncrequest", {
+                    select: ["sanidi_status"],
+                    filter: `statecode eq 0 and (sanidi_status eq ${REQ_REQUESTED} or sanidi_status eq ${REQ_RUNNING})`,
+                    pageSize: 50,
+                });
+                const stillActive = new Set(res.rows.map((r: any) => readGuid(r.sanidi_integrationsyncrequestid)));
+                if (!stopped && watched.some((id) => !stillActive.has(id))) {
+                    stopped = true;
+                    refreshRef.current();
+                }
+            } catch {
+                // Try again on the next tick.
+            } finally {
+                checking = false;
+            }
+        }, POLL_MS);
+        return () => { stopped = true; window.clearInterval(timer); };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dataReady, watchKey]);
 
     const startSync = async () => {
         if (!pending || !snap) return;
@@ -781,7 +893,7 @@ const GeneratedComponent = (props: GeneratedComponentProps) => {
                 sanidi_startedon: now,
             } as any);
             const request: RequestInfo = {
-                id: String(newId), platformId: platform.id.toLowerCase(), type, status: REQ_REQUESTED, startedOn: now, completedOn: null, error: null,
+                id: readGuid(typeof newId === "string" ? newId : JSON.stringify(newId)), platformId: platform.id.toLowerCase(), type, status: REQ_REQUESTED, startedOn: now, completedOn: null, error: null,
             };
             const next: Snapshot = { ...snap, requests: [request, ...snap.requests] };
             winAny[CACHE_KEY] = next;
@@ -859,7 +971,10 @@ const GeneratedComponent = (props: GeneratedComponentProps) => {
                         <DialogTitle>{pendingTitle}</DialogTitle>
                         <DialogContent>
                             <Text as="p" block>{pendingBody}</Text>
-                            <Text as="p" block className={styles.muted}>You'll get a notification when it finishes.</Text>
+                            {pending && usualMinutesFor(pending.platform, snap as Snapshot, pending.type) ? (
+                                <Text as="p" block weight="semibold">{usualText(usualMinutesFor(pending.platform, snap as Snapshot, pending.type), true)}</Text>
+                            ) : null}
+                            <Text as="p" block className={styles.muted}>The page updates itself and you'll get a notification when it finishes.</Text>
                         </DialogContent>
                         <DialogActions>
                             <Button appearance="secondary" onClick={() => setPending(null)}>Cancel</Button>
