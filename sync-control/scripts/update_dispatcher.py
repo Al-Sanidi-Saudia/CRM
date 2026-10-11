@@ -48,8 +48,10 @@ CASES = {
     "google-100000001": ("Run_Get_Google_Ads_Insights", "59399b2c-080a-50b0-afcf-b803145237cf"),
 }
 
-FAILED_MSG = ("@{variables('FlowName')} failed: "
-              "@{coalesce(first(body('Failed_steps'))?['error']?['message'], 'see the flow run history in Power Automate for details.')}")
+NO_FLOW_MSG = "No flow is set up for this platform and sync type."
+FAILED_MSG = ("@{if(empty(variables('NoFlowMessage')), concat(variables('FlowName'), ' failed: ', "
+              "coalesce(first(body('Failed_steps'))?['error']?['message'], 'see the flow run history in Power Automate for details.')), "
+              "variables('NoFlowMessage'))}")
 
 definition = {
     "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
@@ -76,8 +78,12 @@ definition = {
             "inputs": {"variables": [{"name": "FlowName", "type": "string",
                 "value": "@{if(equals(triggerOutputs()?['body/sanidi_synctype'], 100000000), coalesce(first(json(coalesce(outputs('Get_platform')?['body/sanidi_dataflows'], '[]')))?['name'], 'The data flow'), coalesce(outputs('Get_platform')?['body/sanidi_insightsflowname'], 'The insights flow'))}"}]}
         },
+        "No_flow_message": {
+            "type": "InitializeVariable", "runAfter": {"Flow_name": ["Succeeded"]},
+            "inputs": {"variables": [{"name": "NoFlowMessage", "type": "string", "value": ""}]}
+        },
         "Mark_running": update_request({"sanidi_status": 100000001, "sanidi_startedon": "@utcNow()"},
-                                       {"Flow_name": ["Succeeded"]}),
+                                       {"No_flow_message": ["Succeeded"]}),
         "Try": {
             "type": "Scope", "runAfter": {"Mark_running": ["Succeeded"]},
             "actions": {
@@ -88,10 +94,13 @@ definition = {
                         "Case_" + key.replace("-", "_"): {"case": key, "actions": {name: child(fid)}}
                         for key, (name, fid) in CASES.items()
                     },
+                    # Record why, then fail this block on purpose (a Terminate would end the run before
+                    # the request is marked failed and the requester notified).
                     "default": {"actions": {
-                        "No_flow_set_up": {"type": "Terminate", "runAfter": {},
-                            "inputs": {"runStatus": "Failed", "runError": {"code": "NoFlowSetUp",
-                                "message": "No flow is set up for this platform and sync type."}}}}}
+                        "Set_no_flow_message": {"type": "SetVariable", "runAfter": {},
+                            "inputs": {"name": "NoFlowMessage", "value": NO_FLOW_MSG}},
+                        "No_flow_set_up": {"type": "Compose", "runAfter": {"Set_no_flow_message": ["Succeeded"]},
+                            "inputs": "@int('no-flow-set-up')"}}}
                 }
             }
         },
