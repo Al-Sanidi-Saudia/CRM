@@ -1,0 +1,1 @@
+After a data sync finishes, show the flow the button started with the sync request's result straight away, show the later flows as "Updating…" with a note until run history has this sync's runs, check run history every 15 seconds for up to 10 minutes and refresh once more when it catches up, and show Failed if a later flow of the same sync failed.
