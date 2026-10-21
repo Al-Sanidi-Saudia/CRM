@@ -7,10 +7,15 @@ from dict2 import D as D2
 from dict3 import D as D3
 from dict_caps import D as DC
 from dict4 import D as D4
+from dict_tiktok_caps import D as DTC
+from dict_tiktok import D as DT
 
 DICT = {}
-for d in (DC, D1, D2, D3, D4):  # later wins
+for d in (DC, D1, D2, D3, D4, DTC, DT):  # later wins
     DICT.update(d)
+# Texts first added for TikTok: on other components they never replace Arabic that is already there.
+TIKTOK_ONLY = (set(DTC) | set(DT)) - set().union(DC, D1, D2, D3, D4)
+TIKTOK_ENTITY = re.compile(r'^sanidi_tiktok')
 LOWER = {k.lower(): v for k, v in DICT.items()}
 
 SKIP = re.compile(r'^sanidi_(meta|snap|google)_')
@@ -58,6 +63,7 @@ def T(en, existing=None):
 
 def resolve(entity, col, en, ar):
     if entity == 'product' and en in PRODUCT_CUSTOM: return PRODUCT_CUSTOM[en]
+    if en.strip() in TIKTOK_ONLY and ar.strip() and not TIKTOK_ENTITY.match(entity): return None
     if entity in KEEP_MS and ar.strip(): return None
     if (entity, col, en) in CONTEXT: return CONTEXT[(entity, col, en)]
     if col == 'LocalizedName' and en in ENTITY_SINGULAR: return ENTITY_SINGULAR[en]

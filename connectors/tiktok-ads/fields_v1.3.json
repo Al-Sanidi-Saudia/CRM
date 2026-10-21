@@ -1,0 +1,3249 @@
+{
+ "campaign": {
+  "advertiser_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Advertiser ID."
+  },
+  "campaign_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Campaign ID."
+  },
+  "campaign_system_origin": {
+   "type": "string",
+   "enum": [
+    "PROMOTE"
+   ],
+   "description": "Returned for Promote campaigns only. Not returned for non-Promote campaigns. The origin (source) of the campaign. Enum values: `PROMOTE`: The campaign is a Promote campaign created through the TikTok mobile App. Only the following settings can be retrieved for a Promote campaign (`campaign_system_origin` is `PROMOTE`): `advertiser_id` `campaign_id` `create_time` `campaign_name` `operation_status` `secondary_status`"
+  },
+  "create_time": {
+   "type": "string",
+   "enum": [],
+   "description": "Time at which the campaign was created."
+  },
+  "modify_time": {
+   "type": "string",
+   "enum": [],
+   "description": "Time at which the campaign was modified."
+  },
+  "objective_type": {
+   "type": "string",
+   "enum": [
+    "APP_PROMOTION",
+    "WEB_CONVERSIONS",
+    "REACH",
+    "BRAND_CONSIDERATION",
+    "TRAFFIC",
+    "VIDEO_VIEWS",
+    "PRODUCT_SALES",
+    "ENGAGEMENT",
+    "LEAD_GENERATION",
+    "TOPVIEW_REACH"
+   ],
+   "description": "Advertising objective. For enum values, see [Enumeration-Advertising Objectives](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)."
+  },
+  "app_promotion_type": {
+   "type": "string",
+   "enum": [
+    "APP_INSTALL",
+    "APP_RETARGETING",
+    "APP_PREREGISTRATION",
+    "APP_POSTS_PROMOTION"
+   ],
+   "description": "App promotion type. Enum values: `APP_INSTALL`: App install. Get new users to install your app. `APP_RETARGETING`: App retargeting. Re-engage existing users to take action in your app. `APP_PREREGISTRATION`: App pre-registration. Get new users to pre-register before your app launches. `APP_POSTS_PROMOTION`: App posts promotion. Promote TikTok posts to increase app awareness and measure conversions. Note : Currently, creating App posts promotion campaigns via API is not supported. You can only update or retrieve such campaigns via API."
+  },
+  "virtual_objective_type": {
+   "type": "string",
+   "enum": [
+    "SALES"
+   ],
+   "description": "The new objective type. Enum value: `SALES`. Use this field to create a campaign with the Sales objective, the combined objective for Website Conversions and Product Sales objectives. Learn more about [the Sales objective](https://business-api.tiktok.com/portal/docs?id=)."
+  },
+  "sales_destination": {
+   "type": "string",
+   "enum": [
+    "TIKTOK_SHOP",
+    "WEBSITE",
+    "APP",
+    "WEB_AND_APP"
+   ],
+   "description": "Sales destination, the destination where you want to drive your sales. Enum values: `TIKTOK_SHOP`: TikTok Shop. Drive sales on your TikTok Shop. `WEBSITE`: Website. Drive sales on your website. `APP`: App. Drive sales on your app (product catalog required). `WEB_AND_APP`: Website and app. Drive sales on both your website and your app."
+  },
+  "is_search_campaign": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether the campaign is a Search Ads Campaign. With Search Ads Campaigns, you can select keywords and serve ads within TikTok's search result page. Supported values: `true`, `false`."
+  },
+  "campaign_automation_type": {
+   "type": "string",
+   "enum": [
+    "MANUAL",
+    "SMART_PLUS",
+    "UPGRADED_SMART_PLUS"
+   ],
+   "description": "Campaign automation type. Enum values: `MANUAL`: Manual Campaigns. `SMART_PLUS`: Smart+ Campaigns. `UPGRADED_SMART_PLUS`: Upgraded Smart+ Campaigns, a new automated campaign type. To learn more about Upgraded Smart+ Campaigns, see [Upgraded Smart+ Campaign](https://business-api.tiktok.com/portal/docs?id=1853452461203458)."
+  },
+  "is_smart_performance_campaign": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether the campaign is an automated campaign type. Supported values: `true`: The campaign is a legacy Smart+ Campaign. `false`: The campaign is a Manual Campaign or an Upgraded Smart+ Campaign. To determine whether a campaign is a Manual Campaign or an Upgraded Smart+ Campaign, check the returned `campaign_automation_type`. When `campaign_automation_type` is `MANUAL`, the campaign is a Manual Campaign. When `campaign_automation_type` is `UPGRADED_SMART_PLUS`, the campaign is an Upgraded Smart+ Campaign."
+  },
+  "campaign_type": {
+   "type": "string",
+   "enum": [
+    "REGULAR_CAMPAIGN",
+    "IOS14_CAMPAIGN"
+   ],
+   "description": "Campaign Type, indicates the campaign is a regular campaign or iOS 14 campaign. Enum values: `REGULAR_CAMPAIGN`, `IOS14_CAMPAIGN`."
+  },
+  "app_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The Application ID of the promoted app. You can get `app_id` by using the [/app/list/](https://ads.tiktok.com/marketing_api/docs?id=1740859313270786) endpoint."
+  },
+  "is_advanced_dedicated_campaign": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether the campaign is an Advanced Dedicated Campaign. Advanced Dedicated Campaigns leverage advanced delivery models that benefit from real-time signals. Enum values: `true`, `false`."
+  },
+  "disable_skan_campaign": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to disable SKAN (SKAdNetwork) attribution, Apple's conversion attribution solution for iOS campaigns. Enum values: `true`: To disable SKAN attribution. The campaign will not be bound by [Dedicated Campaign quota limits](https://business-api.tiktok.com/portal/docs?id=1752256248260610) and you will be able to retrieve [Self Attribution Network (SAN) metrics](https://business-api.tiktok.com/portal/docs?id=1751443967255553#item-link-SAN%20metrics) for the campaign. However, you cannot retrieve [SKAN reporting metrics](https://business-api.tiktok.com/portal/docs?id=1751443967255553#item-link-SKAN%20metrics) for the campaign. Learn more about [SAN integration](https://ads.tiktok.com/help/article/about-self-attribution-transition). `false`: To enable SKAN attribution. The campaign will be bound by [Dedicated Campaign quota limits](https://business-api.tiktok.com/portal/docs?id=1752256248260610) and you will be able to retrieve [SKAN metrics](https://business-api.tiktok.com/portal/docs?id=1751443967255553#item-link-SKAN%20metrics) for the campaign."
+  },
+  "bid_align_type": {
+   "type": "string",
+   "enum": [
+    "SAN",
+    "SKAN"
+   ],
+   "description": "The attribution type for the Dedicated Campaign. The type determines which attribution network the target CPA (`conversion_bid_price`) or ROAS (`roas_bid`) at the ad group level is based on. Enum values: `SAN`: SAN. `SKAN`: SKAN."
+  },
+  "campaign_app_profile_page_state": {
+   "type": "string",
+   "enum": [
+    "INVALID",
+    "UNSET",
+    "ON",
+    "OFF"
+   ],
+   "description": "Indicates the status of App Profile Page. Enum values: `INVALID`, `UNSET`, `ON`, `OFF`."
+  },
+  "rf_campaign_type": {
+   "type": "string",
+   "enum": [
+    "STANDARD",
+    "PULSE",
+    "TOPVIEW"
+   ],
+   "description": "When `objective_type` is specified as `RF_REACH`, this field specifies the specific Reservation campaign type. Enum values: `STANDARD`: Reach & Frequency campaign. `PULSE`: TikTok Pulse campaign. `TOPVIEW`: TopView campaign."
+  },
+  "campaign_product_source": {
+   "type": "string",
+   "enum": [
+    "CATALOG",
+    "STORE"
+   ],
+   "description": "Returned only when `objective_type` for the campaign is `PRODUCT_SALES` and the product source is configured for the campaign. Product source of the campaign. Enum values: `CATALOG` : Catalog. `STORE`: TikTok Shop, or TikTok Showcase."
+  },
+  "catalog_enabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to use your catalog to automatically advertise relevant products or services to people based on their unique interests, intent and actions."
+  },
+  "campaign_name": {
+   "type": "string",
+   "enum": [],
+   "description": "Campaign name."
+  },
+  "special_industries": {
+   "type": "string[]",
+   "enum": [
+    "HOUSING",
+    "EMPLOYMENT",
+    "CREDIT"
+   ],
+   "description": "Special ad categories. Enum values: `HOUSING`: Ads for real estate listings, homeowners insurance, mortgage loans or other related opportunities. `EMPLOYMENT`: Ads for job offers, internship, professional certification programs or other related opportunities. `CREDIT`: Ads for credit card offers, auto loans, long-term financing or other related opportunities. Note : Using special ad categories in Shopping Ads with campaign product source as Catalog and in Shopping Ads with campaign product source as non-Catalog are currently separate allowlist-only features. If you would like to access them, please contact your TikTok representative. This field is generally available to advertisers registered in America or Canada. Advertisers who are not registered in America or Canada but want to target these countries with special ad categories need to apply for an additional allowlist."
+  },
+  "budget_optimize_on": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Returned only for campaigns with Campaign Budget Optimization (CBO) enabled. Whether CBO is enabled. Enum values: `true` (enabled). For details about CBO, see [Campaign Budget Optimization](https://ads.tiktok.com/marketing_api/docs?id=1739381757818881). Note : For Smart+ Campaigns or Smart Performance Web Campaigns, the value of this field will be `true` because CBO is enabled by default for these campaigns."
+  },
+  "bid_type": {
+   "type": "string",
+   "enum": [
+    "BID_TYPE_CUSTOM",
+    "BID_TYPE_NO_BID"
+   ],
+   "description": "Bidding strategy on the campaign level."
+  },
+  "deep_bid_type": {
+   "type": "string",
+   "enum": [
+    "DEFAULT",
+    "MIN",
+    "PACING",
+    "VO_MIN_ROAS",
+    "VO_HIGHEST_VALUE",
+    "AEO"
+   ],
+   "description": "Bidding strategy for in-app events. For enum values and their descriptions, see [Enumeration - Deep-level Bidding Strategy](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)."
+  },
+  "roas_bid": {
+   "type": "float",
+   "enum": [],
+   "description": "ROAS goal for Value Optimization."
+  },
+  "optimization_goal": {
+   "type": "string",
+   "enum": [
+    "CLICK",
+    "CONVERT",
+    "INSTALL",
+    "IN_APP_EVENT",
+    "SHOW",
+    "REACH",
+    "LEAD_GENERATION",
+    "LEADS",
+    "WEBSITE_ENGAGEMENT",
+    "CONVERSATION",
+    "FOLLOWERS",
+    "PAGE_VISIT",
+    "VALUE",
+    "AUTOMATIC_VALUE_OPTIMIZATION",
+    "GMV",
+    "PURCHASES",
+    "INITIATE_CHECKOUTS",
+    "MT_LIVE_ROOM",
+    "PRODUCT_CLICK_IN_LIVE",
+    "ENGAGED_VIEW",
+    "ENGAGED_VIEW_FIFTEEN",
+    "TRAFFIC_LANDING_PAGE_VIEW",
+    "DESTINATION_VISIT",
+    "PREFERRED_LEAD"
+   ],
+   "description": "Optimization goal."
+  },
+  "budget_mode": {
+   "type": "string",
+   "enum": [
+    "BUDGET_MODE_DAY",
+    "BUDGET_MODE_TOTAL",
+    "BUDGET_MODE_INFINITE",
+    "BUDGET_MODE_DYNAMIC_DAILY_BUDGET"
+   ],
+   "description": "Budget mode. Enum values: `BUDGET_MODE_INFINITE`: Unlimited budget. `BUDGET_MODE_TOTAL`: Lifetime budget. `BUDGET_MODE_DAY` : Daily budget. `BUDGET_MODE_DYNAMIC_DAILY_BUDGET`: Dynamic daily budget. It is the average daily budget over a week. Daily costs will not exceed 125% of the average daily budget. Weekly costs will not exceed the average daily budget * 7."
+  },
+  "budget": {
+   "type": "float",
+   "enum": [],
+   "description": "Campaign budget"
+  },
+  "rta_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Realtime API (RTA) ID, the RTA strategy identifier."
+  },
+  "rta_bid_enabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to use RTA bid. Supported values: `true`: enabled. `false`: not enabled."
+  },
+  "rta_product_selection_enabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to use RTA to automatically select products. Enum values: `true`: enabled. `false`: not enabled."
+  },
+  "operation_status": {
+   "type": "string",
+   "enum": [
+    "ENABLE",
+    "DISABLE"
+   ],
+   "description": "Operation status. Enum values: `ENABLE` : The campaign is enabled (in 'ON' status). `DISABLE`: The campaign is disabled (in 'OFF' status)."
+  },
+  "secondary_status": {
+   "type": "string",
+   "enum": [
+    "CAMPAIGN_STATUS_DELETE",
+    "ADVERTISER_CONTRACT_PENDING",
+    "ADVERTISER_ACCOUNT_PUNISH",
+    "CAMPAIGN_STATUS_BUDGET_EXCEED",
+    "CAMPAIGN_STATUS_DISABLE",
+    "CAMPAIGN_STATUS_AWAITING_RELEASE",
+    "CAMPAIGN_STATUS_IDENTITY_USED_BY_GMV_MAX_AD",
+    "CAMPAIGN_STATUS_ENABLE",
+    "CAMPAIGN_STATUS_ALL",
+    "CAMPAIGN_STATUS_NOT_DELETE",
+    "CAMPAIGN_STATUS_TTS_TT_ASSET_UNAVAILABLE",
+    "CAMPAIGN_STATUS_TTS_TT_IDENTITY_UNAVAILABLE",
+    "CAMPAIGN_STATUS_TIKTOK_SHOP_UNAVAILABLE",
+    "CAMPAIGN_STATUS_REVIEW_DISAPPROVED",
+    "CAMPAIGN_STATUS_AD_UNAVAILABLE",
+    "CAMPAIGN_STATUS_PRODUCT_UNAVAILABLE",
+    "CAMPAIGN_STATUS_LIVE_GMV_MAX_AUTHORIZATION_CANCEL",
+    "CAMPAIGN_STATUS_PRODUCT_GMV_MAX_AUTHORIZATION_CANCEL",
+    "CAMPAIGN_STATUS_IDENTITY_USED_BY_LIVE_GMV_MAX",
+    "CAMPAIGN_STATUS_PRODUCT_USED_BY_PRODUCT_GMV_MAX"
+   ],
+   "description": "Campaign status (Secondary status). For enum values, see [Enumeration- Campaign Status - Secondary Status](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138). Note : This field is not returned in the sandbox environment because the campaign is not actually delivered."
+  },
+  "postback_window_mode": {
+   "type": "string",
+   "enum": [
+    "POSTBACK_WINDOW_MODE1",
+    "POSTBACK_WINDOW_MODE2",
+    "POSTBACK_WINDOW_MODE3"
+   ],
+   "description": "The mode that determines which SKAN 4.0 postback you want to secure. Enum values: `POSTBACK_WINDOW_MODE1`: This option secures the first postback, which corresponds to the 0-2 day attribution window. The data can take up to 4 days to return, and the campaign will wait for 4 days to release the campaign quota. `POSTBACK_WINDOW_MODE2`: This mode secures the first two postbacks, which correspond to the 3-7 day attribution window. The data can take up to 13 days to return, and the campaign will wait for 13 days to release the campaign quota. `POSTBACK_WINDOW_MODE3`: This mode secures all three postbacks, which correspond to the 8-35 day attribution window. The data can take up to 41 days to return, and the campaign will wait for 41 days to release the campaign quota. Note : If you have set up Mobile Measurement Partner (MMP) Tracking with Adjust , Airbridge , Appsflyer , Branch , Kochava , or Singular for your App and your MMP SDK version is updated to a SKAN 4.0 supported SDK, you can transition your App to SKAN 4.0 on Events Manager. To learn about how to set up MMP tracking for your App, see [How to Set Up App Attribution in TikTok Ads Manager](https://ads.tiktok.com/help/article/set-up-app-attribution-tiktok-ads-manager?lang=en). To learn more about how to transition your App to SKAN 4.0, see [About SKAN 4.0 and TikTok](https://ads.tiktok.com/help/article/about-skan-4-0-and-tiktok?lang=en) and [How to transition to SKAN 4.0](https://ads.tiktok.com/help/article/how-to-transition-to-skan-4-0)."
+  },
+  "is_new_structure": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether the campaign is a new structure (for the same campaign, the structure of campaign, ad groups and ads are the same)."
+  },
+  "objective": {
+   "type": "string",
+   "enum": [
+    "APP",
+    "LANDING_PAGE"
+   ],
+   "description": "Campaign type (application or landing page). Enum values: `APP`(application), `LANDING_PAGE`(Landing page)."
+  },
+  "po_number": {
+   "type": "string",
+   "enum": [],
+   "description": "PO (purchase order) number. PO numbers are useful for invoice tracking and reconciliation. [Learn more about PO numbers on monthly invoices](https://ads.tiktok.com/help/article/update-po-number-on-monthly-invoices)."
+  }
+ },
+ "adgroup": {
+  "advertiser_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Advertiser ID"
+  },
+  "campaign_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Campaign ID"
+  },
+  "campaign_name": {
+   "type": "string",
+   "enum": [],
+   "description": "The name of the campaign that the ad group belongs to."
+  },
+  "campaign_system_origin": {
+   "type": "string",
+   "enum": [
+    "PROMOTE"
+   ],
+   "description": "Returned for Promote ad groups only. Not returned for non-Promote ad groups. The origin (source) of the campaign that the ad group belongs to. Enum values: `PROMOTE`: The campaign is a Promote campaign created through the TikTok mobile App. Only the following settings can be retrieved for a Promote ad group (`campaign_system_origin` is `PROMOTE` at the campaign level): `advertiser_id` `campaign_id` `campaign_name` `adgroup_id` `adgroup_name` `create_time` `budget` `schedule_type` `schedule_start_time` `schedule_end_time` `operation_status` `secondary_status`"
+  },
+  "campaign_automation_type": {
+   "type": "string",
+   "enum": [
+    "MANUAL",
+    "SMART_PLUS",
+    "UPGRADED_SMART_PLUS"
+   ],
+   "description": "Campaign automation type. Enum values: `MANUAL`: Manual Campaigns. `SMART_PLUS`: Smart+ Campaigns. `UPGRADED_SMART_PLUS`: Upgraded Smart+ Campaigns, a new automated campaign type. To learn more about Upgraded Smart+ Campaigns, see [Upgraded Smart+ Campaign](https://business-api.tiktok.com/portal/docs?id=1853452461203458)."
+  },
+  "is_smart_performance_campaign": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether the campaign is an automated campaign type. Supported values: `true`: The campaign is a legacy Smart+ Campaign. `false`: The campaign is a Manual Campaign or an Upgraded Smart+ Campaign. To determine whether a campaign is a Manual Campaign or an Upgraded Smart+ Campaign, check the returned `campaign_automation_type`. When `campaign_automation_type` is `MANUAL`, the campaign is a Manual Campaign. When `campaign_automation_type` is `UPGRADED_SMART_PLUS`, the campaign is an Upgraded Smart+ Campaign ."
+  },
+  "adgroup_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Ad group ID"
+  },
+  "adgroup_name": {
+   "type": "string",
+   "enum": [],
+   "description": "Ad group name"
+  },
+  "create_time": {
+   "type": "string",
+   "enum": [],
+   "description": "The time at which the ad group was created, in the format of `\"YYYY-MM-DD HH:MM:SS\"`. Example: `\"2023-01-01 00:00:01\"`."
+  },
+  "modify_time": {
+   "type": "string",
+   "enum": [],
+   "description": "The time at which the ad group was modified, in the format of `\"YYYY-MM-DD HH:MM:SS\"`. Example: `\"2023-01-01 00:00:01\"`."
+  },
+  "shopping_ads_type": {
+   "type": "string",
+   "enum": [
+    "VIDEO",
+    "LIVE",
+    "PRODUCT_SHOPPING_ADS",
+    "CATALOG_LISTING_ADS",
+    "UNSET"
+   ],
+   "description": "Returned when `objective_type` at the campaign level is `PRODUCT_SALES`. Shopping ads type. Enum values: `VIDEO`: Video Shopping Ads. `LIVE`: Live Shopping Ads. `PRODUCT_SHOPPING_ADS`: Product Shopping Ads. `CATALOG_LISTING_ADS`: Catalog Listing Ads. `UNSET`: Unset."
+  },
+  "identity_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned when `shopping_ads_type` is `VIDEO` and `product_source` is `SHOWCASE` or `shopping_ads_type` is `LIVE`. Identity ID."
+  },
+  "identity_type": {
+   "type": "string",
+   "enum": [
+    "AUTH_CODE",
+    "TT_USER",
+    "BC_AUTH_TT"
+   ],
+   "description": "Returned when `shopping_ads_type` is `VIDEO` and `product_source` is `SHOWCASE` or `shopping_ads_type` is `LIVE`. Identity type. Enum values: `AUTH_CODE` (Authorized Post User), `TT_USER` (TikTok Business Account User), `BC_AUTH_TT`(the TikTok account that a Business Center is authorized to access). Returned when `objective_type` is `PRODUCT_SALES`. See [Identities](https://ads.tiktok.com/marketing_api/docs?id=1738958351620097) for details."
+  },
+  "identity_authorized_bc_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned when `identity_type` is `BC_AUTH_TT`. ID of the Business Center that a TikTok Account User in Business Center identity is associated with."
+  },
+  "product_source": {
+   "type": "string",
+   "enum": [
+    "UNSET",
+    "CATALOG",
+    "STORE",
+    "SHOWCASE"
+   ],
+   "description": "Returned for Video Shopping Ads and Product Shopping Ads. Product source where you want to get products for promotion. Enum values: `UNSET` ,`CATALOG`(Catalog), `STORE` (TikTok Shop) ,`SHOWCASE`(TikTok Showcase)."
+  },
+  "catalog_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned in any of the following scenarios: `product_source` is `CATALOG` or `STORE`. `shopping_ads_type` is `LIVE` and this field is specified in the request. Catalog ID. Note : Starting June 30th, 2024, `catalog_id` will no longer be returned for newly created Shopping Ads where `product_source` is `STORE` because the specified `catalog_id` will be ignored. Existing Shopping Ads where `product_source` is `STORE` will not be affected unless you update them. If you update the existing ad groups, the existing `catalog_id`, if present for the ad groups, will no longer be returned."
+  },
+  "catalog_authorized_bc_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned in any of the following scenarios: `shopping_ads_type` is `VIDEO` and `product_source` is `CATALOG` or `STORE`. `shopping_ads_type` is `LIVE` and this field is specified in the request. For catalogs in Business Center, this field returns the ID of the Business Center that a catalog belongs to. Note : Starting June 30th, 2024, `catalog_authorized_bc_id` will no longer be returned for newly created Shopping Ads where `product_source` is `STORE` because the specified `catalog_authorized_bc_id` will be ignored. Existing Shopping Ads where `product_source` is `STORE` will not be affected unless you update them. If you update the existing ad groups, the existing `catalog_authorized_bc_id`, if present for the ad groups, will no longer be returned."
+  },
+  "store_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned in any of the following scenarios: `shopping_ads_type` is `VIDEO` and `product_source` is `STORE`. `shopping_ads_type` is `PRODUCT_SHOPPING_ADS` and `product_source` is `STORE`. `shopping_ads_type` is `LIVE` and this field is specified in the request. ID of the TikTok Shop."
+  },
+  "store_authorized_bc_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned when `store_id` is passed. ID of the Business Center that is authorized to access the store (`store_id`)."
+  },
+  "promotion_type": {
+   "type": "string",
+   "enum": [
+    "APP_ANDROID",
+    "APP_IOS",
+    "MINI_APP",
+    "MINI_GAME",
+    "GAME",
+    "WEBSITE",
+    "LEAD_GENERATION",
+    "LEAD_GEN_CLICK_TO_TT_DIRECT_MESSAGE",
+    "LEAD_GEN_CLICK_TO_SOCIAL_MEDIA_APP_MESSAGE",
+    "LEAD_GEN_CLICK_TO_CALL",
+    "WEBSITE_OR_DISPLAY",
+    "TIKTOK_SHOP",
+    "VIDEO_SHOPPING",
+    "LIVE_SHOPPING",
+    "PSA_PRODUCT"
+   ],
+   "description": "Promotion type (Optimization location). You can decide where you'd like to promote your products using this field. For value definitions, see [Enumeration - Promotion Type](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)."
+  },
+  "promotion_target_type": {
+   "type": "string",
+   "enum": [
+    "INSTANT_PAGE",
+    "EXTERNAL_WEBSITE",
+    "UNSET"
+   ],
+   "description": "The promotion type for Lead Generation objective. Enum values: `INSTANT_PAGE`：Instant Form. To create a fast-loading in-app TikTok Instant Form to collect more leads. `EXTERNAL_WEBSITE`：Website Form. To use a landing page that has the Website Form or the TikTok Instant Page that redirects to the website with the Website Form to collect more leads. `UNSET`."
+  },
+  "messaging_app_type": {
+   "type": "string",
+   "enum": [
+    "MESSENGER",
+    "WHATSAPP",
+    "ZALO",
+    "LINE",
+    "IM_URL"
+   ],
+   "description": "The type of instant messaging app or customized URL to use in the Instant Messaging Ad Group. Enum values: `MESSENGER`: Messenger. `WHATSAPP`: WhatsApp. `ZALO`: Zalo. `LINE`: Line. `IM_URL`: Instant Messaging URL."
+  },
+  "messaging_app_account_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The ID of the instant messaging app account. When `messaging_app_type` is `MESSENGER`, this field represents the Facebook Page ID. When `messaging_app_type` is `LINE`, this field represents the LINE Business ID. When `messaging_app_type` is `WHATSAPP`, this field represents the WhatsApp phone number automatically populated based on the specified `phone_region_code`, `phone_region_calling_code`, and `phone_number`."
+  },
+  "phone_region_code": {
+   "type": "string",
+   "enum": [],
+   "description": "The region code for the WhatsApp or Zalo phone number. Example: `US`."
+  },
+  "phone_region_calling_code": {
+   "type": "string",
+   "enum": [],
+   "description": "The region calling code for the WhatsApp or Zalo phone number. Example: `+1`."
+  },
+  "phone_number": {
+   "type": "string",
+   "enum": [],
+   "description": "The WhatsApp or Zalo phone number."
+  },
+  "promotion_website_type": {
+   "type": "string",
+   "enum": [
+    "UNSET",
+    "TIKTOK_NATIVE_PAGE"
+   ],
+   "description": "TikTok Instant Page type in the ad group. Enum values: `UNSET`: To not use TikTok Instant Page. `TIKTOK_NATIVE_PAGE`: To use TikTok Instant Page."
+  },
+  "app_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The App ID of the app to promote.You can get `app_id` by using the [/app/list/](https://ads.tiktok.com/marketing_api/docs?id=1740859313270786) endpoint."
+  },
+  "app_type": {
+   "type": "string",
+   "enum": [
+    "APP_ANDROID",
+    "APP_IOS"
+   ],
+   "description": "The type of the promoted app. Enum values: `APP_ANDROID` (Android), `APP_IOS` (iOS)."
+  },
+  "app_download_url": {
+   "type": "string",
+   "enum": [],
+   "description": "App download link"
+  },
+  "pixel_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Pixel ID. Only applicable for landing pages."
+  },
+  "optimization_event": {
+   "type": "string",
+   "enum": [],
+   "description": "Conversion event for the ad group. See [Conversion events](https://ads.tiktok.com/marketing_api/docs?id=1739361474981889) for more."
+  },
+  "custom_conversion_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The ID of the Custom Conversion used in the ad group."
+  },
+  "app_config": {
+   "type": "object[]",
+   "enum": [],
+   "description": "Returned when `sales_destination` is `WEB_AND_APP` at the campaign level. Details of the app or apps to promote."
+  },
+  "app_config.app_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The App ID of the app to promote."
+  },
+  "deep_funnel_optimization_status": {
+   "type": "string",
+   "enum": [
+    "ON",
+    "OFF"
+   ],
+   "description": "The status of deep funnel optimization. With deep funnel optimization, you can select a secondary event alongside the primary optimization event, which can help improve campaign effectiveness. Enum values: `ON`: enabled. `OFF`: disabled."
+  },
+  "deep_funnel_event_source": {
+   "type": "string",
+   "enum": [
+    "PIXEL",
+    "OFFLINE",
+    "CRM"
+   ],
+   "description": "Returned when `deep_funnel_optimization_status` is `ON`. The event source type. Enum values: `PIXEL`: Pixel. `OFFLINE`: Offline Event Set. `CRM`: CRM Event Set."
+  },
+  "deep_funnel_event_source_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned when `deep_funnel_optimization_status` is `ON`. Event Source ID. When `deep_funnel_event_source` is `PIXEL` , this field represents a Pixel ID. When `deep_funnel_event_source` is `OFFLINE`, this field represents an Offline Event Set ID. When `deep_funnel_event_source` is `CRM`, this field represents a CRM Event Set ID."
+  },
+  "deep_funnel_optimization_event": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned when `deep_funnel_optimization_status` is `ON`. Deep funnel optimization event. Example: `SHOPPING`."
+  },
+  "placement_type": {
+   "type": "string",
+   "enum": [
+    "PLACEMENT_TYPE_AUTOMATIC",
+    "PLACEMENT_TYPE_NORMAL"
+   ],
+   "description": "The placement strategy that decides where your ads will be shown. Enum values: `PLACEMENT_TYPE_AUTOMATIC` (Automatic placement), `PLACEMENT_TYPE_NORMAL` (Select placement)."
+  },
+  "placements": {
+   "type": "string[]",
+   "enum": [
+    "PLACEMENT_TIKTOK",
+    "PLACEMENT_PANGLE",
+    "PLACEMENT_GLOBAL_APP_BUNDLE"
+   ],
+   "description": "The apps where you want to deliver your ads. For enum values, see [Enumeration - Placement](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138). Note : If `placement_type` of the ad group is `PLACEMENT_TYPE_AUTOMATIC` (Automatic placement), the placements supported for your advertising objective will be returned for this field. For instance, if the actual supported placement is TikTok only, the returned value for this field will be `PLACEMENT_TIKTOK`. However, if `PLACEMENT_GLOBAL_APP_BUNDLE` is supported for your objective, but you are not allowlisted for the Global App Bundle placement feature, `PLACEMENT_GLOBAL_APP_BUNDLE` will not be included in the returned value for this field. If `placement_type` of the ad group is `PLACEMENT_TYPE_NORMAL` (Select placement), the placements you specified through `placements` in the request will usually be returned for this field. The only exception is that if `PLACEMENT_GLOBAL_APP_BUNDLE` is specified through `placements` in the request, but you are not allowlisted for the Global App Bundle placement feature, `PLACEMENT_GLOBAL_APP_BUNDLE` will be filtered out from the returned value for this field. For instance, if you specify placements as `[\"PLACEMENT_TIKTOK\", \"PLACEMENT_GLOBAL_APP_BUNDLE\"]` in the request, but you are not allowlisted for Global App Bundle, the returned value for this field will be `[\"PLACEMENT_TIKTOK\"]`."
+  },
+  "tiktok_subplacements": {
+   "type": "string[]",
+   "enum": [
+    "IN_FEED",
+    "SEARCH_FEED",
+    "TIKTOK_LITE",
+    "LEMON8"
+   ],
+   "description": "The subplacements within TikTok for your ads, allowing you to choose where your ads will appear. Enum value: `IN_FEED`: In-feed. Ads will be placed in the For You feed and might also be placed in Profile Page and Following feeds. `SEARCH_FEED`: Search feed. `TIKTOK_LITE`: TikTok Lite, a streamlined version of TikTok that features a smaller app size and faster video loading speed. The TikTok Lite subplacement is currently available for Japan or South Korea as targeting locations. `LEMON8`: Lemon8, a community app for lifestyle content, focusing on real-life experiences, tips, guides, and product reviews. By including Lemon8 as a subplacement, your ads will appear in its For You feed, Search feed, and Immersive Video feed. [Learn more about Lemon8](https://ads.tiktok.com/help/article/about-lemon8-in-tiktok-ads-manager) . Note : If `tiktok_subplacements` is not specified when you create the ad group, the value of this field will be an empty list (`[]`)."
+  },
+  "search_result_enabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to include your ads in Search Ads, namely to show your ads to users when they search for your business on TikTok."
+  },
+  "automated_keywords_enabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to enable automated keywords and let the system automatically generate keywords after you add ads. This expands high-quality traffic to improve performance. View high-performing automated keywords in reporting. Supported values: `true`, `false`."
+  },
+  "search_keywords": {
+   "type": "object[]",
+   "enum": [],
+   "description": "Returned only for Search Ads Campaigns. A list of search keywords, that is, words or phrases that are used to match your ads with the terms people are searching for."
+  },
+  "search_keywords.keyword": {
+   "type": "string",
+   "enum": [],
+   "description": "The search keyword."
+  },
+  "search_keywords.match_type": {
+   "type": "string",
+   "enum": [
+    "PRECISE_WORD",
+    "PHRASE_WORD",
+    "BROAD_WORD"
+   ],
+   "description": "The match type for the search keyword. Enum values: `PRECISE_WORD`: exact match. Your ads will only show for user search queries that exactly match these keywords. `PHRASE_WORD`: phrase match. Your ads will only show for these specific keywords if users search these keywords in the same order. `BROAD_WORD`: broad match. Your ads will show for user search queries for any of the words you have included, even if the words are in a different order."
+  },
+  "search_keywords.keyword_bid_type": {
+   "type": "string",
+   "enum": [
+    "FOLLOW_ADGROUP",
+    "CUSTOM"
+   ],
+   "description": "The bid type for the keyword and match type combination. Enum values: `FOLLOW_ADGROUP`: To use the ad group level bid (`bid_price`) as the `keyword_bid`. `CUSTOM`: To customize the bid via `keyword_bid`."
+  },
+  "search_keywords.keyword_bid": {
+   "type": "float",
+   "enum": [],
+   "description": "The bid price for the keyword and match type combination."
+  },
+  "search_keywords.audit_status": {
+   "type": "string",
+   "enum": [
+    "AUDITING",
+    "PASS",
+    "REJECTED"
+   ],
+   "description": "The review status of the search keyword. Enum values: `AUDITING`: The keyword is under review. `PASS`: The keyword has passed review and can be delivered. `REJECTED`: The keyword failed to pass the review and cannot be delivered."
+  },
+  "search_keywords.reject_info": {
+   "type": "object[]",
+   "enum": [],
+   "description": "Returned only when `audit_status` is `REJECTED`. Details about the rejection."
+  },
+  "search_keywords.reject_info.forbidden_location": {
+   "type": "string",
+   "enum": [],
+   "description": "The targeted region that failed the review. For enum values, see [Appendix - Location codes](https://business-api.tiktok.com/portal/docs?id=1737585867307010)."
+  },
+  "search_keywords.reject_info.reject_reasons": {
+   "type": "object[]",
+   "enum": [],
+   "description": "List of rejection reasons."
+  },
+  "search_keywords.reject_info.reject_reasons.reason": {
+   "type": "string",
+   "enum": [],
+   "description": "The rejection reason."
+  },
+  "comment_disabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to disable comments on ads in the ad group. Supported values: `true`, `false`."
+  },
+  "video_download_disabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to disable downloading videos from ads in the ad group. Supported values: `true`, `false`."
+  },
+  "share_disabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to disable sharing of ads in the ad group to third-party platforms. Supported values: `true`, `false`."
+  },
+  "blocked_pangle_app_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "Pangle app block list ID."
+  },
+  "audience_type": {
+   "type": "string",
+   "enum": [
+    "CUSTOM_AUDIENCE",
+    "EXCLUDE_INTERACT_USERS",
+    "INCLUDE_INTERACT_USERS",
+    "INCLUDE_SPECIFIC_EVENTS",
+    "EXCLUDE_SPECIFIC_EVENTS",
+    "NEW_CUSTOM_AUDIENCE"
+   ],
+   "description": "App retargeting audience type. For enum values, see [Enumeration - App Retargeting Audience Type](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)."
+  },
+  "audience_rule": {
+   "type": "object",
+   "enum": [],
+   "description": "Rules that specify your audience."
+  },
+  "auto_targeting_enabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to enable automated targeting. Note : Starting June, 2024, you can no longer enable Automatic targeting or Targeting expansion for your ad groups. To ensure a smooth API integration, we recommend you migrate to [Smart Targeting](https://business-api.tiktok.com/portal/docs?id=1783164662979586)."
+  },
+  "shopping_ads_retargeting_type": {
+   "type": "string",
+   "enum": [
+    "LAB1",
+    "LAB2",
+    "LAB3",
+    "OFF"
+   ],
+   "description": "Returned when `shopping_ads_type` is `VIDEO` and `product_source` is `CATALOG`. The retargeting type of shopping ads. Enum values: `LAB1`: Retargeting audiences who viewed products or added products to cart but didn't purchase products. `LAB2`: Retargeting audiences who added products to cart but didn't purchase products. `LAB3`: Retargeting audiences using custom combination. `OFF`: No retargeting."
+  },
+  "shopping_ads_retargeting_actions_days": {
+   "type": "number",
+   "enum": [],
+   "description": "The valid time range for the specified audience action. Audiences who have completed the specified action within the time range will be retargeted by the shopping ads. Value range: 1, 2, 3, 7, 14, 30, 60, 90, 180."
+  },
+  "included_custom_actions": {
+   "type": "object[]",
+   "enum": [],
+   "description": "The custom action that you want to use as \"Include\" conditions for filtering the shopping ads audiences to be retargeted."
+  },
+  "included_custom_actions.code": {
+   "type": "string",
+   "enum": [
+    "VIEW_PRODUCT",
+    "ADD_TO_CART",
+    "PURCHASE"
+   ],
+   "description": "The custom action used to filter the audiences to be retargeted. Enum values: `VIEW_PRODUCT`: The audience viewed the product. `ADD_TO_CART`: The audience added the product to the cart. `PURCHASE`: The audience purchased the product."
+  },
+  "included_custom_actions.days": {
+   "type": "integer",
+   "enum": [],
+   "description": "The time range used to filter the audiences that completed the specified action. Value range: [1,180]."
+  },
+  "excluded_custom_actions": {
+   "type": "object[]",
+   "enum": [],
+   "description": "The custom action that you want to use as \"Exclude\" conditions for filtering the shopping ads audiences to be retargeted."
+  },
+  "excluded_custom_actions.code": {
+   "type": "string",
+   "enum": [
+    "VIEW_PRODUCT",
+    "ADD_TO_CART",
+    "PURCHASE"
+   ],
+   "description": "The custom action used to filter the audiences to be retargeted. Enum values: `VIEW_PRODUCT`: The audience viewed the product. `ADD_TO_CART`: The audience added the product to the cart. `PURCHASE`: The audience purchased the product."
+  },
+  "excluded_custom_actions.days": {
+   "type": "integer",
+   "enum": [],
+   "description": "The time range used to filter the audiences that didn't complete the specified action. Value range: [1,180]."
+  },
+  "shopping_ads_retargeting_custom_audience_relation": {
+   "type": "string",
+   "enum": [
+    "OR",
+    "AND"
+   ],
+   "description": "The logical relation between the Video Shopping Ads (VSA) retargeting audience specified by `shopping_ads_retargeting_type` and the custom audience specified by `audience_ids`. Enum values: `OR`: To combine the VSA retargeting audience and the custom audience to create the targeted audience. The targeted audience will consist of individuals who belong to either the VSA retargeting audience or the custom audience. `AND`: To intersect between the VSA retargeting audience and the custom audience to create the targeted audience. The targeted audience will consist of individuals who belong to both the VSA retargeting audience and the custom audience."
+  },
+  "location_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "IDs of the targeted locations."
+  },
+  "zipcode_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "Zip code IDs or postal code IDs of the targeted locations. Note : Zip code targeting is currently only supported for the US and postal code targeting is currently only supported for Canada, Brazil, Indonesia, Thailand, and Vietnam. To get information about zip code IDs or postal code IDs, you can only use [/tool/targeting/info/](https://ads.tiktok.com/marketing_api/docs?id=1761237001980929)."
+  },
+  "languages": {
+   "type": "string[]",
+   "enum": [],
+   "description": "Codes of the languages that you want to target. For the list of languages codes supported, see [Enumeration - Language Code](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)."
+  },
+  "gender": {
+   "type": "string",
+   "enum": [
+    "GENDER_UNLIMITED",
+    "GENDER_MALE",
+    "GENDER_FEMALE"
+   ],
+   "description": "Gender that you want to target. Enum values: `GENDER_FEMALE`,`GENDER_MALE`,`GENDER_UNLIMITED`"
+  },
+  "age_groups": {
+   "type": "string[]",
+   "enum": [
+    "AGE_13_17",
+    "AGE_18_24",
+    "AGE_25_34",
+    "AGE_35_44",
+    "AGE_45_54",
+    "AGE_55_100"
+   ],
+   "description": "Age groups you want to target. For enum values, see [Enumeration - Age Group](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)."
+  },
+  "spending_power": {
+   "type": "string",
+   "enum": [
+    "ALL",
+    "HIGH"
+   ],
+   "description": "Spending power that you want to target. Enum values: `ALL`, `HIGH`. If it is set to `HIGH`, you can target high spending users who typically spend more on purchases on TikTok ads than average users."
+  },
+  "household_income": {
+   "type": "string[]",
+   "enum": [
+    "TOP5",
+    "TOP10",
+    "TOP10_25",
+    "TOP25_50"
+   ],
+   "description": "Household income that you want to target. Enum values: `TOP5`(Top 5% of ZIP codes), `TOP10`(Top 10% of ZIP codes), `TOP10_25`(Top 10% -25% of ZIP codes), `TOP25_50`(Top 25% - 50% of ZIP codes)."
+  },
+  "audience_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "A list of audience IDs."
+  },
+  "smart_audience_enabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether Smart audience is turned on. Enum values: `true`, `false`. To learn more about Smart audience and how to turn on Smart audience, see [Smart Targeting](https://business-api.tiktok.com/portal/docs?id=1783164662979586)."
+  },
+  "excluded_audience_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "A list of excluded audience ID."
+  },
+  "interest_category_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "IDs of general interest keywords that you want to use to target audiences."
+  },
+  "interest_keyword_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "IDs of additional interest keywords that you want to use to target audiences."
+  },
+  "purchase_intention_keyword_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "IDs of purchase intention categories that you want to use to target audiences with an interest in purchases related to a content category."
+  },
+  "actions": {
+   "type": "object[]",
+   "enum": [],
+   "description": "A list of targeting behavioral category objects."
+  },
+  "actions.action_scene": {
+   "type": "string",
+   "enum": [
+    "VIDEO_RELATED",
+    "CREATOR_RELATED",
+    "HASHTAG_RELATED"
+   ],
+   "description": "The type of user behavior that you want to target. Enum values: `VIDEO_RELATED`: Video interactions. `CREATOR_RELATED`: Creator interactions. `HASHTAG_RELATED`: Hashtag interactions."
+  },
+  "actions.action_period": {
+   "type": "number",
+   "enum": [],
+   "description": "The time period to include behaviors from."
+  },
+  "actions.video_user_actions": {
+   "type": "string[]",
+   "enum": [],
+   "description": "The specific user interactions that you want to target for the user behavior type. If `action_scene` is `VIDEO_RELATED`, the allowed values are: `WATCHED_TO_END`,`LIKED`,`COMMENTED`,`SHARED`. If `action_scene` is `CREATOR_RELATED`, the allowed values are: `FOLLOWING`, `VIEW_HOMEPAGE`. If `action_scene` is `HASHTAG_RELATED`, the allowed value is `VIEW_HASHTAG`."
+  },
+  "actions.action_category_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "IDs of the video interactions categories, creator interactions categories, hashtags, or hashtag bundles that you want to use to target audiences."
+  },
+  "smart_interest_behavior_enabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether Smart interests & behaviors is turned on. Enum values: `true`, `false`. To learn more about Smart interests & behaviors and how to turn on Smart interests & behaviors, see [Smart Targeting](https://business-api.tiktok.com/portal/docs?id=1783164662979586)."
+  },
+  "included_pangle_audience_package_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "IDs of the Pangle audiences that you want to include. Valid only for Pangle placement. You can get audience IDs (`package_id`) by using the [/pangle_audience_package/get/](https://ads.tiktok.com/marketing_api/docs?id=1740040177229826) endpoint. You need to set `bind_type` to `INCLUDE`. Do not specify this field and `excluded_pangle_audience_package_ids` at the same time."
+  },
+  "excluded_pangle_audience_package_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "IDs of the Pangle audiences that you want to exclude. Valid only for Pangle placement. You can get audience IDs (`package_id`) by using the [/pangle_audience_package/get/](https://ads.tiktok.com/marketing_api/docs?id=1740040177229826) endpoint. You need to set `bind_type` to `EXCLUDE`. Do not specify this field and `included_pangle_audience_package_ids` at the same time."
+  },
+  "operating_systems": {
+   "type": "string[]",
+   "enum": [
+    "ANDROID",
+    "IOS"
+   ],
+   "description": "Device operating systems that you want to target. Only one value is allowed. Enum: `ANDROID`, `IOS`"
+  },
+  "min_android_version": {
+   "type": "string",
+   "enum": [],
+   "description": "Minimum Android version. For enum values, see [Enumeration - Minimum Android Version](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)."
+  },
+  "ios14_targeting": {
+   "type": "string",
+   "enum": [
+    "UNSET",
+    "IOS14_MINUS",
+    "IOS14_PLUS",
+    "ALL"
+   ],
+   "description": "The iOS devices that you want to target. Enum values: `UNSET`: Devices with iOS 14.4 or earlier versions. `IOS14_MINUS`: Devices with iOS 14.0 or earlier versions, which are not affected by the iOS 14 privacy update. `IOS14_PLUS`: Devices with iOS 14.5 or later versions. The iOS 14 privacy update has been enforced in this group of devices. This value is only supported for Dedicated Campaigns. `ALL`: Devices with iOS 14.5 or later versions. The iOS 14 privacy update has been enforced in this group of devices. This value is only supported for iOS App Retargeting ads and iOS retargeting Video Shopping Ads with product source as catalog and optimization location as App."
+  },
+  "min_ios_version": {
+   "type": "string",
+   "enum": [],
+   "description": "Audience minimum ios version. For enum values, see [Enumeration - Minimum iOS Version](https://ads.tiktok.com/marketing_api/docs?id=1738308662898689)."
+  },
+  "ios14_quota_type": {
+   "type": "string",
+   "enum": [
+    "OCCUPIED",
+    "UNOCCUPIED"
+   ],
+   "description": "Whether the campaign will be counted against the iOS 14 dedicated campaign quota. Enum: `OCCUPIED`, `UNOCCUPIED`. For non-R&F campaigns, when `ios14_targeting` is `IOS14_PLUS`, this field is automatically set to `OCCUPIED`."
+  },
+  "device_model_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "List of device model IDs. For more details about device models, see [Device Models](https://ads.tiktok.com/marketing_api/docs?id=1737172880570369)."
+  },
+  "network_types": {
+   "type": "string[]",
+   "enum": [
+    "WIFI",
+    "2G",
+    "3G",
+    "4G",
+    "5G"
+   ],
+   "description": "Network types that you want to target. For enum values, see [Enumeration - Connection Type](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)."
+  },
+  "carrier_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "Carriers that you want to target. A carrier is valid only when the `in_use` field for the carrier is `true`. For detailed information, see [get carriers](https://ads.tiktok.com/marketing_api/docs?id=1737168013095938)."
+  },
+  "isp_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "IDs of the targeted Internet service providers."
+  },
+  "device_price_ranges": {
+   "type": "number[]",
+   "enum": [],
+   "description": "Targeting device price range. 10000 means 1000+. The numbers must be in multiples of 50. Important : The upper limit you set will be added by 50 and the resulting new number will be used as the actual upper limit for device targeting. The actual upper limit is shown in the ad group settings in TikTok Ads Manager. If you set and get the price range of [0, 250], it actually means [0, 300]."
+  },
+  "targeting_expansion": {
+   "type": "object",
+   "enum": [],
+   "description": "Settings about targeting expansion. Note : Starting June, 2024, you can no longer enable Automatic targeting or Targeting expansion for your ad groups. To ensure a smooth API integration, we recommend you migrate to [Smart Targeting](https://business-api.tiktok.com/portal/docs?id=1783164662979586)."
+  },
+  "targeting_expansion.expansion_enabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to enable targeting expansion."
+  },
+  "targeting_expansion.expansion_types": {
+   "type": "string[]",
+   "enum": [],
+   "description": "The target audience types that you want to expand."
+  },
+  "saved_audience_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned when you have specified `saved_audience_id` when creating an ad group. Saved Audience ID."
+  },
+  "contextual_tag_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "Contextual tag IDs. See [Contextual targeting](https://ads.tiktok.com/marketing_api/docs?id=1745292519923713) to learn more about how to use contextual targeting."
+  },
+  "brand_safety_type": {
+   "type": "string",
+   "enum": [
+    "NO_BRAND_SAFETY",
+    "EXPANDED_INVENTORY",
+    "STANDARD_INVENTORY",
+    "LIMITED_INVENTORY",
+    "THIRD_PARTY"
+   ],
+   "description": "Brand safety type. Enum values: `NO_BRAND_SAFETY`: To not use any brand safety solution. Full inventory, which means your ads may appear next to some content featuring mature themes. `EXPANDED_INVENTORY`: Use TikTok's brand safety solution. Expanded inventory means that your ads will appear next to content where most inappropriate content has been removed, and that does not contain mature themes. In the next API version, `EXPANDED_INVENTORY` will replace `NO_BRAND_SAFETY` and will be the default brand safety option. `STANDARD_INVENTORY`: Use TikTok's brand safety solution. Standard inventory means that ads will appear next to content that is appropriate for most brands. `LIMITED_INVENTORY`: Use TikTok's brand safety solution. Limited inventory means that your ads will not appear next to content that contains mature themes. `THIRD_PARTY`: Use a third-party brand safety solution. To get the countries and regions that your ads can be deployed to based on your brand safety settings, use the [/tool/region/](https://ads.tiktok.com/marketing_api/docs?id=1737189539571713) endpoint. Note : Pre-bid first-party Brand Safety filtering for `APP_PROMOTION`, `WEB_CONVERSIONS`, `TRAFFIC`, `LEAD_GENERATION` and `PRODUCT_SALES` objectives in Auction ads is currently an allowlist-only feature. If you would like to access it, please contact your TikTok representative. Pre-bid third-party brand safety solutions are currently allowlist-only features. If you would like to access them, please contact your TikTok representative."
+  },
+  "brand_safety_partner": {
+   "type": "string",
+   "enum": [
+    "IAS",
+    "OPEN_SLATE"
+   ],
+   "description": "Brand safety partner. Available only when `brand_safety_type` is `THIRD_PARTY`. Enum values: `IAS`, `OPEN_SLATE`(The partner is named DoubleVerify on TikTok Ads Manager because the partner has been acquired by DoubleVerify). To get the countries and regions that your ads can be deployed to based on your brand safety settings, use the [/tool/region/](https://ads.tiktok.com/marketing_api/docs?id=1737189539571713) endpoint. You need to pass in the brand safety type and brand safety partner. Note : Pre-bid third-party brand safety solutions are currently allowlist-only features. If you would like to access them, please contact your TikTok representative."
+  },
+  "inventory_filter_enabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Inventory filtering (filtering security videos, hides unsafe videos), valid only for the `PLACEMENT_TIKTOK` placement. Optional values are: true to filter, false not to filter."
+  },
+  "category_exclusion_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "Content exclusion category IDs."
+  },
+  "vertical_sensitivity_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Vertical sensitivity category ID."
+  },
+  "budget_mode": {
+   "type": "string",
+   "enum": [
+    "BUDGET_MODE_DAY",
+    "BUDGET_MODE_TOTAL",
+    "BUDGET_MODE_INFINITE"
+   ],
+   "description": "Budget mode. If Campaign Budget Optimization is enabled, `BUDGET_MODE_INFINITE` will be returned. For more information about budget modes, see [Budget](https://ads.tiktok.com/marketing_api/docs?id=1739381246298114)."
+  },
+  "budget": {
+   "type": "float",
+   "enum": [],
+   "description": "Ad group budget. Returns 0.0 when Campaign Budget Optimization (`budget_optimize_on`) is on. For TopView ad groups, this field represents the estimated ad group budget after applying any discount."
+  },
+  "scheduled_budget": {
+   "type": "float",
+   "enum": [],
+   "description": "Scheduled ad budget for next day. A value not equal to 0 means the scheduled budget is set and the value represents the budget; a value equals to 0 means the scheduled budget is not set."
+  },
+  "schedule_type": {
+   "type": "string",
+   "enum": [
+    "SCHEDULE_FROM_NOW",
+    "SCHEDULE_START_END"
+   ],
+   "description": "The schedule type can be either `SCHEDULE_START_END` or `SCHEDULE_FROM_NOW`. If you choose `SCHEDULE_START_END`, you need to specify a start time and an end time. If you choose `SCHEDULE_FROM_NOW`, you only need to specify a start time."
+  },
+  "schedule_start_time": {
+   "type": "datetime",
+   "enum": [],
+   "description": "Ad delivery start time (UTC+0), in the format of `YYYY-MM-DD HH:MM:SS`."
+  },
+  "schedule_end_time": {
+   "type": "datetime",
+   "enum": [],
+   "description": "Ad delivery end time (UTC+0), in the format of `YYYY-MM-DD HH:MM:SS`."
+  },
+  "predict_impression": {
+   "type": "number",
+   "enum": [],
+   "description": "Returned only for TopView ads. The estimated number of impressions counted in thousands. For example, a value of `1291` represents an estimated 1,291,000 impressions."
+  },
+  "topview_reach_range": {
+   "type": "number[]",
+   "enum": [],
+   "description": "Returned only for TopView ads. The estimated range of reach counted in thousands. For example, a value of `[342, 456]` represents an estimated reach of between 342,000 and 456,000 individuals. To determine the estimated frequency range, use the following formula: frequency = impressions /reach For example, if `predict_impression` is `1291` (representing 1,291,000) and `topview_reach_range` is `[342, 456]` (representing 342,000 to 456,000), the estimated frequency range will be 2.8 to 3.8."
+  },
+  "pre_discount_cpm": {
+   "type": "number",
+   "enum": [],
+   "description": "Returned only for TopView ads. The estimated cost per mille (CPM) before applying any budget discount. Example: 11.33."
+  },
+  "cpm": {
+   "type": "number",
+   "enum": [],
+   "description": "Returned only for TopView ads. The estimated cost per mille (CPM) after applying any budget discount. Example: 0."
+  },
+  "discount_type": {
+   "type": "string",
+   "enum": [
+    "NO_DISCOUNT",
+    "BY_PERCENTAGE",
+    "BY_AMOUNT"
+   ],
+   "description": "Returned only for TopView ads. The type of discount applied to the budget. Enum values: `NO_DISCOUNT`: No discount applied. `BY_PERCENTAGE`: Discount applied as a percentage. `BY_AMOUNT`: Discount applied as a fixed amount."
+  },
+  "discount_amount": {
+   "type": "number",
+   "enum": [],
+   "description": "Returned only for TopView ads when `discount_type` is `BY_AMOUNT`. The fixed amount by which the budget is discounted. Example: 14615.8."
+  },
+  "discount_percentage": {
+   "type": "number",
+   "enum": [],
+   "description": "Returned only for TopView ads when `discount_type` is `BY_PERCENTAGE`. The percentage by which the budget is discounted."
+  },
+  "pre_discount_budget": {
+   "type": "number",
+   "enum": [],
+   "description": "Returned only for TopView ads. The budget amount before applying any discount. Example: 14616."
+  },
+  "schedule_infos": {
+   "type": "object[]",
+   "enum": [],
+   "description": "Ad delivery information of R&F ad groups."
+  },
+  "schedule_infos.schedules": {
+   "type": "object[]",
+   "enum": [],
+   "description": "The details of the scheduled delivery for the ad."
+  },
+  "schedule_infos.schedules.start_time": {
+   "type": "string",
+   "enum": [],
+   "description": "Ad delivery start time."
+  },
+  "schedule_infos.schedules.end_time": {
+   "type": "string",
+   "enum": [],
+   "description": "Ad delivery end time."
+  },
+  "schedule_infos.expected_orders": {
+   "type": "number[]",
+   "enum": [],
+   "description": "The delivery order for an ad within the ad group. For example, a value of `[1]` indicates that the ad will be delivered first."
+  },
+  "schedule_infos.is_draft": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether the ad delivery information is in draft mode. If the value of this field is `true`, then the ad delivery information defined in `schedule_infos` has not been associated with any specific ads. To associate the ad delivery information with ads, pass the value of the returned `schedule_id` to the request parameter `schedule_id` in [/ad/create/](https://business-api.tiktok.com/portal/docs?id=1739953377508354). After you associate the ad delivery information with an ad, the value of this field will automatically be set to `false`, and the value of `schedule_id` will be the ID of the ad that you have associated the ad delivery information with."
+  },
+  "schedule_infos.schedule_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Schedule ID. You can associate a schedule ID with an ad through the `schedule_id` in the request of [/ad/create/](https://business-api.tiktok.com/portal/docs?id=1739953377508354). After you associate the `schedule_id` with an ad, the value of this field will set to the ID of the ad that you have associated the ad delivery information with, and `is_draft` will automatically be set to `false`."
+  },
+  "delivery_mode": {
+   "type": "string",
+   "enum": [
+    "STANDARD",
+    "SCHEDULE",
+    "SEQUENCE",
+    "VIEW_OPTIMIZE",
+    "OPTIMIZE"
+   ],
+   "description": "The strategy for sequencing and scheduling your ad delivery in a Reach & Frequency ad group. Enum values: `STANDARD`: Standard delivery. Your ads will be distributed evenly and are expected to achieve similar traffic size. `SCHEDULE`: Scheduled delivery. Set specific time periods to deliver each ad in. `SEQUENCE`: Sequenced delivery. Set a specific sequence to deliver your ads in. `VIEW_OPTIMIZE`: View optimized delivery. Your ads are distributed to maximize view-through rate (VTR), with more impressions allocated to ads predicted to achieve higher VTR. `OPTIMIZE`: Optimized delivery that delivers ads to achieve the best performance."
+  },
+  "dayparting": {
+   "type": "string",
+   "enum": [],
+   "description": "\"Ad delivery arrangement, in the format of a string that consists of 48 x 7 characters. Each character is mapped to a 30-minute timeframe from Monday to Sunday. Each character can be set to either 0 or 1. 1 represents delivery in the 30-minute timeframe, and 0 stands for non-delivery in the 30-minute timeframe. The first character is mapped to 0:01-0:30 of Monday; The second character is mapped to 0:31-1:00 of Monday, and the last character represents 23:31-0:00 Sunday. Note Not specified, all-0, or all-1 are considered as full-time delivery."
+  },
+  "optimization_goal": {
+   "type": "string",
+   "enum": [
+    "CLICK",
+    "CONVERT",
+    "INSTALL",
+    "IN_APP_EVENT",
+    "SHOW",
+    "REACH",
+    "LEAD_GENERATION",
+    "LEADS",
+    "WEBSITE_ENGAGEMENT",
+    "CONVERSATION",
+    "FOLLOWERS",
+    "PAGE_VISIT",
+    "VALUE",
+    "AUTOMATIC_VALUE_OPTIMIZATION",
+    "GMV",
+    "PURCHASES",
+    "INITIATE_CHECKOUTS",
+    "MT_LIVE_ROOM",
+    "PRODUCT_CLICK_IN_LIVE",
+    "ENGAGED_VIEW",
+    "ENGAGED_VIEW_FIFTEEN",
+    "TRAFFIC_LANDING_PAGE_VIEW",
+    "DESTINATION_VISIT",
+    "PREFERRED_LEAD"
+   ],
+   "description": "The measurable results that you'd like to drive your ads with. For enum values, see [Enumeration - Optimization Goal](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)."
+  },
+  "secondary_optimization_event": {
+   "type": "string",
+   "enum": [],
+   "description": "The secondary goal when `optimization_goal` is `INSTALL` or `VALUE`. For enum values, see [Conversion events - Secondary-goal events](https://ads.tiktok.com/marketing_api/docs?id=1739361474981889)."
+  },
+  "message_event_set_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The ID of the message event set to use in the Instant Messaging Ad Group."
+  },
+  "frequency": {
+   "type": "number",
+   "enum": [],
+   "description": "Frequency, together with `frequency_schedule`, controls how often people see your ad (only available for `REACH` ads). The below conditions should be both met: 1 1 For example, `frequency` = 2 & `frequency_schedule` = 3 means \"show ads no more than twice every 3 day\"."
+  },
+  "frequency_schedule": {
+   "type": "number",
+   "enum": [],
+   "description": "Frequency_schedule, together with `frequency`, controls how often people see your ad (only available for `REACH` ads). See `frequency` fields for more."
+  },
+  "bid_type": {
+   "type": "string",
+   "enum": [
+    "BID_TYPE_CUSTOM",
+    "BID_TYPE_NO_BID"
+   ],
+   "description": "Bidding strategy that determines how the system manages your cost per result, spends your budget, and how it delivers ads. See [Enumeration - Bidding Strategy](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)."
+  },
+  "bid_price": {
+   "type": "float",
+   "enum": [],
+   "description": "Bid price. The average cost per result that you want to achieve (for Cost Cap bidding strategy)."
+  },
+  "conversion_bid_price": {
+   "type": "float",
+   "enum": [],
+   "description": "Where you can set a target cost per conversion for oCPM(Optimized Cost per Mille)."
+  },
+  "deep_bid_type": {
+   "type": "string",
+   "enum": [
+    "DEFAULT",
+    "MIN",
+    "PACING",
+    "VO_MIN_ROAS",
+    "VO_HIGHEST_VALUE",
+    "AEO"
+   ],
+   "description": "Bidding strategy for in-app events. For enum values and their descriptions, see [Enumeration - Deep-level Bidding Strategy](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)."
+  },
+  "roas_bid": {
+   "type": "float",
+   "enum": [],
+   "description": "ROAS goal for Value Optimization."
+  },
+  "vbo_window": {
+   "type": "string",
+   "enum": [
+    "SEVEN_DAYS",
+    "ZERO_DAY"
+   ],
+   "description": "The time window of the specified bidding strategy for [VBO IAA](https://business-api.tiktok.com/portal/docs?id=1739381743067137) (Value-Based Optimization for in-app advertising) or [VBO IAP](https://business-api.tiktok.com/portal/docs?id=1739381743067137) (Value-Based Optimization for in-app purchase). Enum values: `SEVEN_DAYS`: The first seven days (day 7). `ZERO_DAY`: The current day (day 0)."
+  },
+  "bid_display_mode": {
+   "type": "string",
+   "enum": [],
+   "description": "How you calculate and measure Cost per View."
+  },
+  "deep_cpa_bid": {
+   "type": "float",
+   "enum": [],
+   "description": "Specify bid price in this field after you've chosen a bidding strategy for in-app events, for example VO_MIN."
+  },
+  "cpv_video_duration": {
+   "type": "string",
+   "enum": [
+    "SIX_SECONDS",
+    "TWO_SECONDS"
+   ],
+   "description": "Optimized video playback duration Optional values include: `SIX_SECONDS` (video playback 6 seconds) and ` TWO_SECONDS` (video playback 2 seconds)"
+  },
+  "next_day_retention": {
+   "type": "float",
+   "enum": [],
+   "description": "Day 2 retention ratio. Formula: `next_day_retention` = `conversion_bid_price`/`deep_cpa_bid`. Value range is (0,1]. Only valid when `placements` is `PLACEMENT_PANGLE` and `secondary_optimization_event` is `NEXT_DAY_OPEN`."
+  },
+  "click_attribution_window": {
+   "type": "string",
+   "enum": [
+    "OFF",
+    "ONE_DAY",
+    "SEVEN_DAYS",
+    "FOURTEEN_DAYS",
+    "TWENTY_EIGHT_DAYS"
+   ],
+   "description": "Click-through window for the ad group. This attribution window is the time between when a person clicks your ad and then takes an action. Enum values: `OFF`: Off. `ONE_DAY`: 1-day click. `SEVEN_DAYS`: 7-day click. `FOURTEEN_DAYS`: 14-day click. `TWENTY_EIGHT_DAYS`: 28-day click."
+  },
+  "engaged_view_attribution_window": {
+   "type": "string",
+   "enum": [
+    "ONE_DAY",
+    "SEVEN_DAYS"
+   ],
+   "description": "Engaged view-through window for the ad group. This attribution window is the time after someone watches at least 6 seconds of your video ad that a conversion is counted. Enum values: `ONE_DAY`: 1-day engaged view. `SEVEN_DAYS`: 7-day engaged view."
+  },
+  "view_attribution_window": {
+   "type": "string",
+   "enum": [
+    "OFF",
+    "ONE_DAY",
+    "SEVEN_DAYS"
+   ],
+   "description": "View-through window for the ad group. This attribution window is the time between when a person views your ad and then takes an action. Enum values: `OFF`: Off. `ONE_DAY`: 1-day view. `SEVEN_DAYS`: 7-day view."
+  },
+  "attribution_event_count": {
+   "type": "string",
+   "enum": [
+    "UNSET",
+    "EVERY",
+    "ONCE"
+   ],
+   "description": "Event count (Statistic type) for the ad group. The way that people's actions are counted after only viewing or clicking an ad. Enum values: `UNSET`: Unset. `EVERY`: Every. To count multiple events from someone as separate conversions. `ONCE`: Once. To count multiple events from someone as 1 conversion."
+  },
+  "billing_event": {
+   "type": "string",
+   "enum": [
+    "CPC",
+    "CPM",
+    "CPV",
+    "GD",
+    "OCPM"
+   ],
+   "description": "Billing event. To learn about the enum values, see [Enumerations - Billing Event](https://business-api.tiktok.com/portal/docs?id=1737174886619138#item-link-Billing%20Event)."
+  },
+  "pacing": {
+   "type": "string",
+   "enum": [
+    "PACING_MODE_SMOOTH",
+    "PACING_MODE_FAST"
+   ],
+   "description": "You can choose between `PACING_MODE_SMOOTH` and `PACING_MODE_FAST`. For `PACING_MODE_SMOOTH`, the budget is allocated evenly within the scheduled time. `PACING_MODE_FAST` would consume budget and produce results as soon as possible. When Campaign Budget Optimization (`budget_optimize_on`) is on, your setting will be ignored and it will be set as `PACING_MODE_SMOOTH`. Otherwise, this field is required."
+  },
+  "operation_status": {
+   "type": "string",
+   "enum": [
+    "ENABLE",
+    "DISABLE",
+    "FROZEN"
+   ],
+   "description": "Operation status. Enum values: `ENABLE` : The ad group is enabled (in 'ON' status). `DISABLE`: The ad group is disabled (in 'OFF' status). `FROZEN`: The ad group is terminated and cannot be enabled."
+  },
+  "secondary_status": {
+   "type": "string",
+   "enum": [
+    "ADGROUP_STATUS_ALL",
+    "ADGROUP_STATUS_NOT_DELETE",
+    "ADGROUP_STATUS_DELETE",
+    "ADGROUP_STATUS_CAMPAIGN_DELETE",
+    "ADGROUP_STATUS_ADVERTISER_AUDIT_DENY",
+    "ADGROUP_STATUS_ADVERTISER_AUDIT",
+    "ADVERTISER_CONTRACT_PENDING",
+    "ADVERTISER_ACCOUNT_PUNISH",
+    "ADGROUP_STATUS_CAMPAIGN_EXCEED",
+    "ADGROUP_STATUS_BUDGET_EXCEED",
+    "ADGROUP_STATUS_BALANCE_EXCEED",
+    "ADGROUP_STATUS_ADGROUP_PRE_ONLINE",
+    "ADGROUP_STATUS_AUDIT_DENY",
+    "ADGROUP_STATUS_REAUDIT",
+    "ADGROUP_STATUS_AUDIT",
+    "ADGROUP_STATUS_CREATE",
+    "ADGROUP_STATUS_FROZEN",
+    "ADGROUP_STATUS_NOT_START",
+    "ADGROUP_STATUS_LIVE_NOT_START",
+    "ADGROUP_STATUS_CAMPAIGN_DISABLE",
+    "ADGROUP_STATUS_DISABLE",
+    "ADGROUP_STATUS_SHADOW_ADGROUP_REAUDIT",
+    "ADGROUP_STATUS_PIXEL_UNBIND",
+    "ADGROUP_STATUS_PARTIAL_AUDIT_NO_DELIVERY",
+    "ADGROUP_STATUS_PARTIAL_AUDIT_DELIVERY_OK",
+    "ADGROUP_STATUS_INDUSTRY_QUALIFICATION_MISSING",
+    "ADGROUP_STATUS_INDUSTRY_QUALIFICATION_EXPIRED",
+    "ADGROUP_STATUS_INDUSTRY_QUALIFICATION_DENY",
+    "ADGROUP_STATUS_ASSET_AUTHORIZATION_LOST",
+    "ADGROUP_STATUS_TRANSCODING_FAIL",
+    "ADGROUP_STATUS_ADGROUP_QUOTA_LIMIT",
+    "ADGROUP_STATUS_IDENTITY_USED_BY_GMV_MAX_AD",
+    "ADGROUP_STATUS_SEARCH_KEYWORDS_IN_REVIEW",
+    "ADGROUP_STATUS_SEARCH_KEYWORDS_NOT_AVAILABLE",
+    "ADGROUP_STATUS_SEARCH_KEYWORDS_PARTIAL_APPROVED",
+    "ADGROUP_STATUS_DELIVERY_OK",
+    "ADGROUP_STATUS_REVIEW_PARTIALLY_APPROVED",
+    "ADGROUP_STATUS_TIME_DONE",
+    "ADGROUP_STATUS_RF_DEDUCTION_FAILED",
+    "ADGROUP_STATUS_RF_NO_VALID_CREATIVE",
+    "ADGROUP_STATUS_RF_CLOSED_OTHERS",
+    "ADGROUP_STATUS_RF_SHORT_BALANCE",
+    "ADGROUP_STATUS_RF_BOOKING",
+    "ADGROUP_STATUS_RF_NO_DELIVERY_CREATIVE",
+    "ADGROUP_STATUS_RF_SCHEDULE",
+    "ADGROUP_STATUS_RF_TERMINATE",
+    "ADGROUP_STATUS_RF_AD_AUDIT_DENY",
+    "ADVERTISER_ACCOUNT_INVALID",
+    "ADGROUP_STATUS_RF_ADGROUP_INVALID",
+    "ADGROUP_STATUS_RF_WITHDRAW_ORDER",
+    "ADGROUP_STATUS_RF_TIME_DONE",
+    "ADGROUP_STATUS_PROMOTE_AD_NOT_APPROVED",
+    "ADGROUP_STATUS_PROMOTE_WITHDRAW_ORDER"
+   ],
+   "description": "Ad group status（secondary status). For enum values, see [Enumeration - Ad Group Status - Secondary Status](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138). Note : This field is not returned in the sandbox environment because the ad group is not actually delivered."
+  },
+  "statistic_type": {
+   "type": "string",
+   "enum": [
+    "EVERYTIME",
+    "NONE"
+   ],
+   "description": "Conversion bid statistic type, bid for `EVERYTIME` (Each Purchase)/ `NONE` (Unique Purchase)"
+  },
+  "is_hfss": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether the promoted content is HFSS (High Fat, Salt, Sugar) Product/Brand. Supported values: `true`,`false`."
+  },
+  "is_lhf_compliance": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether the promoted content complies with LHF (Less Healthy Foods) regulations. When `is_lhf_compliance` is `true`, you confirm that any food or drink products you advertise on TikTok in the UK comply with the [2024 Less Healthy Foods Regulations](https://www.legislation.gov.uk/uksi/2024/1266/made) and all other applicable laws. Supported values: `true`,`false`."
+  },
+  "creative_material_mode": {
+   "type": "string",
+   "enum": [
+    "CUSTOM",
+    "DYNAMIC",
+    "SMART_CREATIVE"
+   ],
+   "description": "The strategy that your creatives will be delivered. Enum values: `CUSTOM`(custom), `DYNAMIC`(Automated Creative Optimization), and `SMART_CREATIVE`(Smart Creative). For Upgraded Smart+ Ad Groups, this field will be null."
+  },
+  "adgroup_app_profile_page_state": {
+   "type": "string",
+   "enum": [
+    "INVALID",
+    "UNSET",
+    "ON",
+    "OFF"
+   ],
+   "description": "Indicates whether the adgroup is using app profile page. Enum: `INVALID`, `UNSET`, `ON`, `OFF`."
+  },
+  "feed_type": {
+   "type": "string",
+   "enum": [
+    "STANDARD_FEED",
+    "TOP_FEED"
+   ],
+   "description": "Feed type option. Enum values: `STANDARD_FEED`, `TOP_FEED`."
+  },
+  "rf_purchased_type": {
+   "type": "string",
+   "enum": [
+    "FIXED_SHOW",
+    "FIXED_REACH"
+   ],
+   "description": "Billing method of Reach & Frequency ad groups. For more details, see [Enumeration - Reach & Frequency Buy Type](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138). Note : For non-Reach & Frequency ads, the value of this field will always be null."
+  },
+  "purchased_impression": {
+   "type": "number",
+   "enum": [],
+   "description": "Impressions to be purchased. Note : For non-Reach & Frequency ads, the value of this field will always be null."
+  },
+  "purchased_reach": {
+   "type": "number",
+   "enum": [],
+   "description": "Purchased user reach. Note : For non-Reach & Frequency ads, the value of this field will always be null."
+  },
+  "rf_estimated_cpr": {
+   "type": "number",
+   "enum": [],
+   "description": "The estimated cost per mile reach. Note : For non-Reach & Frequency ads, the value of this field will always be null."
+  },
+  "rf_estimated_frequency": {
+   "type": "number",
+   "enum": [],
+   "description": "The estimated show frequency. Note : For non-Reach & Frequency ads, the value of this field will always be null."
+  },
+  "split_test_group_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Split test group ID. Returned if the ad group is part of a split test."
+  },
+  "split_test_status": {
+   "type": "string",
+   "enum": [],
+   "description": "Split test status. Returned if the ad group is part of a split test."
+  },
+  "is_new_structure": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether the campaign is a new structure"
+  },
+  "skip_learning_phase": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to skip the learning stage."
+  },
+  "conversion_window": {
+   "type": "string",
+   "enum": [
+    "ONE_DAY_CLICK",
+    "SEVEN_DAY_CLICK",
+    "ONE_DAY_CLICK_OR_ONE_DAY_VIEW",
+    "SEVEN_DAY_CLICK_OR_ONE_DAY_VIEW"
+   ],
+   "description": "The time frame when you would like a conversion to happen after a user clicks on or views your ad. Your ad delivery will be optimized using the conversion data during the time frame you select. This setting will not impact your attribution data. For enum values, ee [Enumeration - Conversion Window](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)."
+  }
+ },
+ "ad": {
+  "advertiser_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Advertiser ID."
+  },
+  "campaign_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Campaign ID."
+  },
+  "campaign_name": {
+   "type": "string",
+   "enum": [],
+   "description": "Campaign name."
+  },
+  "campaign_automation_type": {
+   "type": "string",
+   "enum": [
+    "MANUAL",
+    "SMART_PLUS",
+    "UPGRADED_SMART_PLUS",
+    "UPGRADED_SMART_PLUS_CREATIVE"
+   ],
+   "description": "Campaign automation type. Enum values: `MANUAL`: Manual Campaigns. `SMART_PLUS`: Smart+ Campaigns. `UPGRADED_SMART_PLUS`: Upgraded Smart+ Campaigns, a new automated campaign type. To learn more about Upgraded Smart+ Campaigns, see [Upgraded Smart+ Campaign](https://business-api.tiktok.com/portal/docs?id=1853452461203458). When `campaign_automation_type` is `UPGRADED_SMART_PLUS`, the returned `ad_id_v2` is the ID of the Upgraded Smart+ Ad. `UPGRADED_SMART_PLUS_CREATIVE`: Upgraded Smart+ Campaigns, a new automated campaign type. To learn more about Upgraded Smart+ Campaigns, see [Upgraded Smart+ Campaign](https://business-api.tiktok.com/portal/docs?id=1853452461203458). When `campaign_automation_type` is `UPGRADED_SMART_PLUS_CREATIVE`, the returned `ad_id` is the ID of a creative in the Upgraded Smart+ Ad (Asset Group)."
+  },
+  "campaign_system_origin": {
+   "type": "string",
+   "enum": [
+    "PROMOTE"
+   ],
+   "description": "Returned for Promote ads only. Not returned for non-Promote ads. The origin (source) of the campaign that the ad belongs to. Enum values: `PROMOTE`: The campaign is a Promote campaign created through the TikTok mobile App. Only the following settings can be retrieved for a Promote ad (`campaign_system_origin` is `PROMOTE` at the campaign level): `advertiser_id` `campaign_id` `campaign_name` `adgroup_id` `adgroup_name` `ad_id` `ad_name` `create_time` `operation_status` `secondary_status`"
+  },
+  "adgroup_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Ad group ID."
+  },
+  "adgroup_name": {
+   "type": "string",
+   "enum": [],
+   "description": "Ad group name."
+  },
+  "smart_plus_ad_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned only when `campaign_automation_type` is `UPGRADED_SMART_PLUS_CREATIVE`. The ID of the Upgraded Smart+ Ad."
+  },
+  "ad_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Ad ID. When `campaign_automation_type` is `MANUAL`, this field represents the ID of a Manual Ad. When `campaign_automation_type` is `SMART_PLUS`, this field represents the ID of an ad within a Smart+ Campaign. When `campaign_automation_type` is `UPGRADED_SMART_PLUS_CREATIVE`, this field represents the ID of a creative in the Upgraded Smart+ Ad."
+  },
+  "ad_id_v2": {
+   "type": "string",
+   "enum": [],
+   "description": "A v2 ad ID. When `campaign_automation_type` is `MANUAL`, this field represents the ID of a Manual Ad. When `campaign_automation_type` is `SMART_PLUS`, this field represents the ID of an ad within a Smart+ Campaign. When `campaign_automation_type` is `UPGRADED_SMART_PLUS`, this field represents the ID of an Upgraded Smart+ Ad."
+  },
+  "ad_name": {
+   "type": "string",
+   "enum": [],
+   "description": "Ad name."
+  },
+  "create_time": {
+   "type": "string",
+   "enum": [],
+   "description": "Time at which the ad was created, in the format of `YYYY-MM-DD HH:MM:SS` (UTC time zone)."
+  },
+  "modify_time": {
+   "type": "string",
+   "enum": [],
+   "description": "Time at which the ad was last modified, in the format of `YYYY-MM-DD HH:MM:SS` (UTC time zone)."
+  },
+  "identity_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Identity ID. If you are not using Spark Ads, `identity_id` and `identity_type` (`CUSTOMIZED_USER`) can be used for better management of ads information."
+  },
+  "identity_type": {
+   "type": "string",
+   "enum": [
+    "CUSTOMIZED_USER",
+    "AUTH_CODE",
+    "TT_USER",
+    "BC_AUTH_TT"
+   ],
+   "description": "Identity type. Enum values: `CUSTOMIZED_USER`, `AUTH_CODE`, `TT_USER`, `BC_AUTH_TT`."
+  },
+  "identity_authorized_bc_id": {
+   "type": "string",
+   "enum": [],
+   "description": "ID of the Business Center that a TikTok Account User in Business Center identity is associated with. Returned when `identity_type` is `BC_AUTH_TT`."
+  },
+  "catalog_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The catalog you choose for your ads. Note : Starting June 30th, 2024, this field will no longer be returned for newly created Shopping Ads where `product_source` is `STORE` at the ad group level because the specified `catalog_id` will be ignored. Existing Shopping Ads where `product_source` is `STORE` will not be affected unless you update them. If you update the existing ads, the existing `catalog_id`, if present for the ad, will no longer be returned."
+  },
+  "product_specific_type": {
+   "type": "string",
+   "enum": [
+    "ALL",
+    "PRODUCT_SET",
+    "CUSTOMIZED_PRODUCTS"
+   ],
+   "description": "Different dimensions to choose products. Enum values: `ALL`: Allow TikTok to dynamically choose from all products. `PRODUCT_SET`: Specify a product set. TikTok will dynamically choose products from this set. `CUSTOMIZED_PRODUCTS`: Specify a customized number of products."
+  },
+  "item_group_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "Product SPU IDs."
+  },
+  "product_set_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The ID of the product set."
+  },
+  "sku_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "IDs of the SKUs."
+  },
+  "vehicle_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "IDs of vehicles."
+  },
+  "showcase_products": {
+   "type": "object[]",
+   "enum": [],
+   "description": "The list of Showcase products that you use in your ad. See [Create Video Shopping Ads with products from Showcase](https://ads.tiktok.com/marketing_api/docs?id=1759232259360770) to learn more."
+  },
+  "showcase_products.item_group_id": {
+   "type": "string",
+   "enum": [],
+   "description": "SPU ID of the product."
+  },
+  "showcase_products.store_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The ID of the store that the product (`item_group_id`) belongs to. Note that the only supported store type is TikTok Shop."
+  },
+  "showcase_products.catalog_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The ID of the catalog that the product (`item_group_id`) belongs to. Note : Starting June 30th, 2024, this field will no longer be returned for newly created Shopping Ads where `product_source` is `STORE` at the ad group level because the specified `catalog_id` within the `showcase_products` object array will be ignored. Existing Shopping Ads where `product_source` is `STORE` will not be affected unless you update them. If you update the existing ads, the existing `catalog_id` within the `showcase_products` object array, if present for the ad, will no longer be returned."
+  },
+  "ad_format": {
+   "type": "string",
+   "enum": [
+    "SINGLE_IMAGE",
+    "SINGLE_VIDEO",
+    "LIVE_CONTENT",
+    "CAROUSEL_ADS",
+    "CATALOG_CAROUSEL"
+   ],
+   "description": "The ad format. Enum values: `SINGLE_IMAGE`, `SINGLE_VIDEO`, `LIVE_CONTENT`, `CAROUSEL_ADS` (non-VSA Carousel Ads), `CATALOG_CAROUSEL`(VSA Carousel Ads)."
+  },
+  "vertical_video_strategy": {
+   "type": "string",
+   "enum": [
+    "UNSET",
+    "SINGLE_VIDEO",
+    "CATALOG_VIDEOS",
+    "CATALOG_UPLOADED_VIDEOS",
+    "LIVE_STREAM"
+   ],
+   "description": "The video type that you use for Product Sales scenarios. Enum values: `UNSET` (unset), `SINGLE_VIDEO` (single video), `CATALOG_VIDEOS` (catalog video using video templates), `CATALOG_UPLOADED_VIDEOS` (catalog video using uploaded videos), `LIVE_STREAM` (livestream video)."
+  },
+  "dynamic_format": {
+   "type": "string",
+   "enum": [
+    "UNSET",
+    "DYNAMIC_CREATIVE"
+   ],
+   "description": "Dynamic format. Enum values: `UNSET`: Unset. `DYNAMIC_CREATIVE`: smart creative. To display different videos, product cards and destinations to each person based on purchase intent, maximizing conversions."
+  },
+  "video_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The video ID. If the ad is a Spark Ad created by pulling organic videos from linked Business Account, authorized posts, or authorized TikTok accounts in the Business Center, the value of this field will be null. You can get the the ID of a TikTok post via the `tiktok_item_id` field. To learn more about Spark Ads, see [Create Spark Ads](https://business-api.tiktok.com/portal/docs?id=1739470744631298)."
+  },
+  "image_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "A list of image IDs"
+  },
+  "carousel_image_index": {
+   "type": "integer",
+   "enum": [],
+   "description": "The index that specifies the additional images to be used in the VSA Carousel ad. The number you set via this field represents the position of the product image within the additional image list (`additional_image_urls`) for each catalog product."
+  },
+  "end_card_cta": {
+   "type": "string",
+   "enum": [
+    "SEARCH_INVENTORY",
+    "LEARN_MORE",
+    "SHOP_NOW",
+    "SIGN_UP",
+    "CONTACT_US",
+    "BOOK_NOW",
+    "READ_MORE",
+    "VIEW_MORE",
+    "ORDER_NOW"
+   ],
+   "description": "Call-to-action for the end card (`image_ids`) of an [Automotive Carousel Ad for Inventory](https://business-api.tiktok.com/portal/docs?id=1827752507854850#item-link-Ad%20format%20as%20Catalog%20Carousel) or [Automotive Carousel Ad for Models](https://business-api.tiktok.com/portal/docs?id=1829635758164994#item-link-Ad%20format%20as%20Catalog%20Carousel). Enum values: `SEARCH_INVENTORY` (Recommended): Search inventory. `LEARN_MORE`: Learn more. `SHOP_NOW`: Shop now. `SIGN_UP`: Sign up. `CONTACT_US`: Contact us. `BOOK_NOW`: Book now. `READ_MORE`: Read more. `VIEW_MORE`: View now. `ORDER_NOW`: Order now."
+  },
+  "auto_disclaimer_types": {
+   "type": "string[]",
+   "enum": [
+    "EMISSION",
+    "DISCOUNT"
+   ],
+   "description": "The type of disclaimer to show in the [Automotive Carousel Ads for Models](https://business-api.tiktok.com/portal/docs?id=1829635758164994#item-link-Ad%20format%20as%20Catalog%20Carousel). Enum values: `EMISSION`: Emssion disclaimer. `DISCOUNT`: Discount or offer disclaimer."
+  },
+  "product_display_field_list": {
+   "type": "string[]",
+   "enum": [
+    "DEALER_NAME",
+    "MAKE",
+    "MODEL",
+    "YEAR",
+    "MILEAGE",
+    "PRICE",
+    "SALE_PRICE",
+    "EXTERIOR_COLOR",
+    "TRIM",
+    "ADDRESS_CITY",
+    "VEHICLE_STATE"
+   ],
+   "description": "A list of product details to display in your [Automotive Carousel Ad for Inventory](https://business-api.tiktok.com/portal/docs?id=1827752507854850#item-link-Ad%20format%20as%20Catalog%20Carousel). Max size: 2. Enum values: `DEALER_NAME`: the `dealer_name` field of vehicles. `MAKE`: the `make` field of vehicles. `MODEL`: the `model` field of vehicles. `YEAR`: the `year` field of vehicles. `MILEAGE`: the `mileage` field of vehicles. `PRICE`: the `price` field of vehicles. `SALE_PRICE`: the `sale_price` field of vehicles. `EXTERIOR_COLOR`: the `exterior_color` field of vehicles. `TRIM`: the `trim` field of vehicles. `ADDRESS_CITY`: the `city` field of vehicles. `VEHICLE_STATE`: the `state_of_vehicle` field of vehicles. The title of each vehicle is displayed automatically. For instance, if you set this field to `[\"MILEAGE\",\"YEAR\"]`, the ad will display the `mileage`, `price` and `title` fields of each vehicle. To retrieve the product detail fields of your vehicles in an Auto-Inventory catalog and check whether you need to update the details, use [/catalog/product/get/](https://business-api.tiktok.com/portal/docs?id=1740564136678402)."
+  },
+  "music_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The ID of the piece of music that is used in the TikTok Carousel Ad."
+  },
+  "tiktok_item_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The ID of the TikTok post that is used as Spark Ad. To learn more about Spark Ads, see [Create Spark Ads](https://business-api.tiktok.com/portal/docs?id=1739470744631298). Note : This field is returned for any of the following types of Spark Ads: Spark Ads created through [Spark Ads Pull](https://business-api.tiktok.com/portal/docs?id=1739470744631298#item-link-Spark%20Ads%20Pull). Spark Ads created through [Spark Ads Push](https://business-api.tiktok.com/portal/docs?id=1739470744631298#item-link-Spark%20Ads%20Push) and have passed ad reviews."
+  },
+  "promotional_music_disabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether to disable the promotional use of the music in the Spark Ad post. The default value is `true`. If you want to allow dueting and stitching for the Spark Ad post, you need to set this field to `false`. This field is only valid for Spark Ad posts."
+  },
+  "item_duet_status": {
+   "type": "string",
+   "enum": [
+    "ENABLE",
+    "DISABLE"
+   ],
+   "description": "Whether to enable dueting for the Spark Ad post. This field is valid only when `promotional_music_disabled` is set to `false`. Enum values: `ENABLE`, `DISABLE`. This field is only valid for Spark Ad posts."
+  },
+  "item_stitch_status": {
+   "type": "string",
+   "enum": [
+    "ENABLE",
+    "DISABLE"
+   ],
+   "description": "Whether to enable stitching for the Spark Ad post. This field is valid only when `promotional_music_disabled` is set to `false`. Enum values: `ENABLE`, `DISABLE`. This field is only valid for Spark Ad posts."
+  },
+  "dark_post_status": {
+   "type": "string",
+   "enum": [
+    "ON",
+    "OFF"
+   ],
+   "description": "Indicates whether the ad is a Spark Ads dark post. Enum value: `ON`, `OFF`."
+  },
+  "branded_content_disabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Default is `false`. If `branded_content_disabled` is `true`, you cannot modify `dark_post_status`."
+  },
+  "shopping_ads_video_package_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Catalog video template ID. Returned when the corresponding campaign `objective_type` is `PRODUCT_SALES`."
+  },
+  "ad_text": {
+   "type": "string",
+   "enum": [],
+   "description": "The ad text. It is shown to your audience as part of your ad creative, to deliver the message you intend to communicate to them."
+  },
+  "ad_texts": {
+   "type": "string[]",
+   "enum": [],
+   "description": "A list of ad texts."
+  },
+  "call_to_action": {
+   "type": "string",
+   "enum": [
+    "APPLY_NOW",
+    "BOOK_NOW",
+    "CALL_NOW",
+    "CHECK_AVAILABLILITY",
+    "CONTACT_US",
+    "DOWNLOAD_NOW",
+    "EXPERIENCE_NOW",
+    "GET_QUOTE",
+    "GET_SHOWTIMES",
+    "GET_TICKETS_NOW",
+    "INSTALL_NOW",
+    "INTERESTED",
+    "LEARN_MORE",
+    "LISTEN_NOW",
+    "ORDER_NOW",
+    "PLAY_GAME",
+    "PREORDER_NOW",
+    "READ_MORE",
+    "SEND_MESSAGE",
+    "SHOP_NOW",
+    "SIGN_UP",
+    "SUBSCRIBE",
+    "VIEW_NOW",
+    "VIEW_PROFILE",
+    "VISIT_STORE",
+    "WATCH_LIVE",
+    "WATCH_NOW",
+    "JOIN_THIS_HASHTAG",
+    "SHOOT_WITH_THIS_EFFECT",
+    "VIEW_VIDEO_WITH_THIS_EFFECT"
+   ],
+   "description": "For call-to-action text, see [Enumeration - Call-to-action](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138)"
+  },
+  "call_to_action_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The ID of the CTA portfolio that you want to use in your ads. A CTA portfolio is a group of auto-optimized CTAs. If both this field and `call_to_action` are specified, `call_to_action` will be ignored. For details about dynamic CTAs, see [CTA Recommendations - Dynamic CTAs](https://ads.tiktok.com/marketing_api/docs?id=1740307296329730)."
+  },
+  "card_id": {
+   "type": "string",
+   "enum": [],
+   "description": "Creative portfolio ID."
+  },
+  "landing_page_url": {
+   "type": "string",
+   "enum": [],
+   "description": "Landing page URL."
+  },
+  "utm_params": {
+   "type": "object[]",
+   "enum": [],
+   "description": "Returned only in any of the following scenarios: Video Shopping Ads (VSA) for Catalog scenarios: At the campaign level: `objective_type` is set to `PRODUCT_SALES` At the ad group level: `shopping_ads_type` is set to `VIDEO` (Video Shopping Ads) `product_source` is set to `CATALOG` `promotion_type` is set to `WEBSITE`, `APP_ANDROID`, or `APP_IOS` Automotive Ads for Inventory (AIA) or [Automotive Ads for Models](https://business-api.tiktok.com/portal/docs?id=1829635758164994) scenarios: At the campaign level: `objective_type` is set to `LEAD_GENERATION` `catalog_enabled` is set to `true` At the ad group level: `promotion_target_type` is set to `EXTERNAL_WEBSITE` Other scenarios: At the campaign level: `objective_type` is set to `REACH`, `TRAFFIC`, `VIDEO_VIEWS`, `LEAD_GENERATION` (with `catalog_enabled` as `false`), `ENGAGEMENT`, `APP_PROMOTION` (with `app_promotion_type` as `APP_PREREGISTRATION`), `WEB_CONVERSIONS`, or `RF_REACH`. A list of URL parameters."
+  },
+  "utm_params.key": {
+   "type": "string",
+   "enum": [],
+   "description": "The URL parameter."
+  },
+  "utm_params.value": {
+   "type": "string",
+   "enum": [],
+   "description": "The value of the URL parameter."
+  },
+  "page_id": {
+   "type": "number",
+   "enum": [],
+   "description": "Page ID."
+  },
+  "cpp_url": {
+   "type": "string",
+   "enum": [],
+   "description": "The Custom Product Page (CPP) URL. CPPs are product pages with customized screenshots, promotional text, and app previews that can be used to highlight specific content or features of the promoted app, or reach specific audiences."
+  },
+  "tiktok_page_category": {
+   "type": "string",
+   "enum": [
+    "PROFILE_PAGE",
+    "OTHER_TIKTOK_PAGE",
+    "TIKTOK_INSTANT_PAGE"
+   ],
+   "description": "The category of the TikTok pages that you want to promote. Enum values: `PROFILE_PAGE`: TikTok account profile page. `OTHER_TIKTOK_PAGE`: Other TikTok pages, including Playlist Page, Hashtag Page, Music Page and Branded Effect Page. `TIKTOK_INSTANT_PAGE`: Custom TikTok Instant Page."
+  },
+  "phone_region_code": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned only when `promotion_type` is set to `LEAD_GEN_CLICK_TO_CALL` at the ad group level. The region code for the phone number that the audience can click on the ad to call. To learn about how to create a Lead Generation ad with promotion type as phone call, refer to [here](https://business-api.tiktok.com/portal/docs?id=1774482936048641). Note : Creating a Lead Generation ad with promotion type as phone call is currently an allowlist-only feature. If you would like to access it, please contact your TikTok representative."
+  },
+  "phone_region_calling_code": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned only when `promotion_type` is set to `LEAD_GEN_CLICK_TO_CALL` at the ad group level. The phone number that the audience can click on the ad to call. Note : Creating a Lead Generation ad with promotion type as phone call is currently an allowlist-only feature. If you would like to access it, please contact your TikTok representative."
+  },
+  "phone_number": {
+   "type": "string",
+   "enum": [],
+   "description": "Returned only when `promotion_type` is set to `LEAD_GEN_CLICK_TO_CALL` at the ad group level. The phone number that the audience can click on the ad to call. Note : Creating a Lead Generation ad with promotion type as phone call is currently an allowlist-only feature. If you would like to access it, please contact your TikTok representative."
+  },
+  "creative_auto_enhancement_strategy_list": {
+   "type": "string[]",
+   "enum": [
+    "VIDEO_QUALITY",
+    "MUSIC_REFRESH",
+    "IMAGE_QUALITY",
+    "IMAGE_RESIZE"
+   ],
+   "description": "The list of automatic enhancement strategies to apply to your ads. The enhancements you specified will be automatically applied in real-time as your campaign is delivered. Enum values: `VIDEO_QUALITY`: Video quality. Improve overall visual quality with increased resolution and clarity. `MUSIC_REFRESH`: Music refresh. Stay on-trend by swapping in music currently popular on TikTok. `IMAGE_QUALITY`: Image quality. Improve overall visual quality with increased resolution and clarity. `IMAGE_RESIZE`: Resize. Resize your image to take advantage of full-screen capabilities."
+  },
+  "deeplink": {
+   "type": "string",
+   "enum": [],
+   "description": "The specific location where you want your audience to go if they have your app installed."
+  },
+  "deeplink_type": {
+   "type": "string",
+   "enum": [
+    "NORMAL",
+    "DEFERRED_DEEPLINK"
+   ],
+   "description": "The deeplink type. Allowed values differs based on campaign objectives. Enum values: `NORMAL`: non-deferred deeplink. `DEFERRED_DEEPLINK`: deferred deeplink."
+  },
+  "deeplink_format_type": {
+   "type": "string",
+   "enum": [
+    "UNIVERSAL_OR_APP_LINK",
+    "SCHEME_LINK",
+    "NONE"
+   ],
+   "description": "The format type of the deeplink. Enum values: `UNIVERSAL_OR_APP_LINK`: Apple’s universal link or Android App Link starting with `http://` or `https://`. `SCHEME_LINK`: Custom URL scheme, in the format of `scheme://resource`. For instance, a Custom URL scheme of WhatsApp should follow the format `whatsapp://resource`. `NONE`: Not a deeplink."
+  },
+  "shopping_ads_deeplink_type": {
+   "type": "string",
+   "enum": [
+    "NONE",
+    "CUSTOM",
+    "SHOPPING_ADS"
+   ],
+   "description": "The source of the deeplink to be used in the Shopping Ads. Enum values: `NONE`: No deeplink. `CUSTOM`: Custom deeplink. Use the deeplink you provided in the ad. `SHOPPING_ADS`: Product deeplink. Use the deeplink you've provided for each product in the catalog."
+  },
+  "deeplink_utm_params": {
+   "type": "object[]",
+   "enum": [],
+   "description": "A list of deeplink URL parameters. Note : Deeplink URL parameters are currently an allowlist-only feature. If you would like to access it, please contact your TikTok representative."
+  },
+  "deeplink_utm_params.key": {
+   "type": "string",
+   "enum": [],
+   "description": "The deeplink URL parameter."
+  },
+  "deeplink_utm_params.value": {
+   "type": "string",
+   "enum": [],
+   "description": "The value of the deeplink URL parameter."
+  },
+  "shopping_ads_fallback_type": {
+   "type": "string",
+   "enum": [
+    "DEFAULT",
+    "CUSTOM",
+    "SHOPPING_ADS"
+   ],
+   "description": "In the Shopping Ads retargeting scenario, the fallback website type when the deeplink fails to be triggered. Enum values: `DEFAULT`: Unset. `CUSTOM`: Custom link. Fall back to the web page link you provide. `SHOPPING_ADS`: Product link. Fall back to the web page link you've provided for each product in the catalog."
+  },
+  "fallback_type": {
+   "type": "string",
+   "enum": [
+    "APP_INSTALL",
+    "WEBSITE",
+    "UNSET"
+   ],
+   "description": "Fallback Type. If the audience do not have the app installed, you can have them fall back to install the app, or to view a specific web page. Enum values: `APP_INSTALL`: the App Store or Google Play page for the promoted App that is specified through the `app_id` field at the ad group level. `WEBSITE`: the promoted web page that is specified through `landing_page_url`. `UNSET`: Unset."
+  },
+  "dynamic_destination": {
+   "type": "string",
+   "enum": [
+    "DLP",
+    "UNSET"
+   ],
+   "description": "Dynamic destination strategy. Enum values: `DLP`: Dynamic Landing Page. Displaying different destinations including a custom website or Instant Product Page to each person based on their profile, behavior, and intent to maximize ad conversion. `UNSET`: Unset."
+  },
+  "auto_message_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The ID of the automatic message to use in a TikTok Direct Messaging Ad. Currently, the only supported automatic message type is welcome message."
+  },
+  "aigc_disclosure_type": {
+   "type": "string",
+   "enum": [
+    "SELF_DISCLOSURE",
+    "NOT_DECLARED"
+   ],
+   "description": "Whether to turn on the AIGC (Artificial Intelligence Generated Content) self-disclosure toggle to indicate the ad contains AI-generated content. After the toggle is turned on, your ad will carry an \"Advertiser labeled as Al-generated\" label when viewed in full. Enum values: `SELF_DISCLOSURE`: To turn on the toggle to declare that the ad contains AI-generated content. `NOT_DECLARED`: To not declare that the ad contains AI-generated content."
+  },
+  "disclaimer_type": {
+   "type": "string",
+   "enum": [
+    "TEXT_LINK",
+    "TEXT_ONLY"
+   ],
+   "description": "Type of disclaimer in the ad. Enum values: `TEXT_LINK`(clickable disclaimers), `TEXT_ONLY`(text-only disclaimers). Note : Disclaimers are currently an allowlist-only feature for advertisers not registered in Canada and America using auction ad objectives, and for all advertisers using Reach & Frequency ad objectives. If you would like to access it, please contact your TikTok representative."
+  },
+  "disclaimer_text": {
+   "type": "object",
+   "enum": [],
+   "description": "The text-only disclaimer in the ad."
+  },
+  "disclaimer_text.text": {
+   "type": "string",
+   "enum": [],
+   "description": "The disclaimer text."
+  },
+  "disclaimer_clickable_texts": {
+   "type": "object[]",
+   "enum": [],
+   "description": "The clickable disclaimer or clickable disclaimers in the ad."
+  },
+  "disclaimer_clickable_texts.text": {
+   "type": "string",
+   "enum": [],
+   "description": "The disclaimer text."
+  },
+  "disclaimer_clickable_texts.url": {
+   "type": "string",
+   "enum": [],
+   "description": "The URL for the clickable disclaimer. When users tap each text, they will be redirected to the URL and see more disclaimer details."
+  },
+  "tracking_pixel_id": {
+   "type": "number",
+   "enum": [],
+   "description": "The pixel ID that is tracked. You can use this field to track offsite events that do not happen on the TikTok instant page."
+  },
+  "tracking_app_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The ID of the application that is tracked."
+  },
+  "tracking_offline_event_set_ids": {
+   "type": "string[]",
+   "enum": [],
+   "description": "A list of Offline Event set IDs that are tracked. See [here](https://ads.tiktok.com/marketing_api/docs?id=1758051319816193) to learn more about how to create and manage Offline Event sets."
+  },
+  "tracking_message_event_set_id": {
+   "type": "string",
+   "enum": [],
+   "description": "The ID of the message event set that is measured in the Instant Messaging Ad."
+  },
+  "vast_moat_enabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether Moat Viewability Verification is enabled for the ad. TikTok has partnered with Moat to launch viewability measurement for Brand Auction and Reach & Frequency In-feed ads purchased on TikTok for Business. Note : If you want to enable Moat Viewability Measurement for the ad, we recommend setting `viewability_postbid_partner` to `MOAT` instead of using `vast_moat_enabled`."
+  },
+  "viewability_postbid_partner": {
+   "type": "string",
+   "enum": [
+    "UNSET",
+    "MOAT",
+    "DOUBLE_VERIFY",
+    "IAS",
+    "ZEFR"
+   ],
+   "description": "Post-bid third-party viewability measurement partner. Enum values: `UNSET`, `MOAT`, `DOUBLE_VERIFY`, `IAS`, `ZEFR`. Note : Post-bid third-party viewability measurement is currently an allowlist-only feature. If you would like to access it, please contact your TikTok representative."
+  },
+  "viewability_vast_url": {
+   "type": "string",
+   "enum": [],
+   "description": "The wrapped VAST URL used by the post-bid third-party partner to measure viewability. The value is null when `viewability_postbid_partner` is not `IAS`. Note : Post-bid third-party viewability measurement is currently an allowlist-only feature. If you would like to access it, please contact your TikTok representative."
+  },
+  "brand_safety_postbid_partner": {
+   "type": "string",
+   "enum": [
+    "UNSET",
+    "DOUBLE_VERIFY",
+    "IAS",
+    "ZEFR"
+   ],
+   "description": "Post-bid third-party brand safety measurement partner. Enum values: `UNSET`，`DOUBLE_VERIFY`, `IAS`, `ZEFR`. Note : Post-bid third-party brand safety measurement is currently an allowlist-only feature. If you would like to access it, please contact your TikTok representative."
+  },
+  "brand_safety_vast_url": {
+   "type": "string",
+   "enum": [],
+   "description": "The wrapped VAST URL used by the post-bid third-party partner to measure brand safety. The value is null when `brand_safety_postbid_partner` is not `IAS`. Note : Post-bid third-party brand safety measurement is currently an allowlist-only feature. If you would like to access it, please contact your TikTok representative."
+  },
+  "impression_tracking_url": {
+   "type": "string",
+   "enum": [],
+   "description": "Default Impression Tracking URL."
+  },
+  "click_tracking_url": {
+   "type": "string",
+   "enum": [],
+   "description": "Click Tracking URL."
+  },
+  "playable_url": {
+   "type": "string",
+   "enum": [],
+   "description": "Playable material URL."
+  },
+  "operation_status": {
+   "type": "string",
+   "enum": [
+    "ENABLE",
+    "DISABLE",
+    "FROZEN"
+   ],
+   "description": "Operation status. Enum values: `ENABLE` : The ad is enabled (in 'ON' status). `DISABLE`: The ad is disabled (in 'OFF' status). `FROZEN`: The ad is terminated and cannot be enabled."
+  },
+  "secondary_status": {
+   "type": "string",
+   "enum": [
+    "AD_STATUS_ALL",
+    "AD_STATUS_NOT_DELETE",
+    "AD_STATUS_CAMPAIGN_DELETE",
+    "AD_STATUS_ADGROUP_DELETE",
+    "AD_STATUS_DELETE",
+    "AD_STATUS_ADVERTISER_AUDIT_DENY",
+    "AD_STATUS_ADVERTISER_AUDIT",
+    "ADVERTISER_CONTRACT_PENDING",
+    "ADVERTISER_ACCOUNT_PUNISH",
+    "AD_STATUS_BALANCE_EXCEED",
+    "AD_STATUS_CAMPAIGN_EXCEED",
+    "AD_STATUS_BUDGET_EXCEED",
+    "AD_STATUS_AD_PRE_ONLINE",
+    "AD_STATUS_AUDIT",
+    "AD_STATUS_REAUDIT",
+    "AD_STATUS_AUDIT_DENY",
+    "AD_STATUS_ADGROUP_AUDIT_DENY",
+    "AD_STATUS_ADGROUP_PARTIAL_AUDIT_NO_DELIVERY",
+    "AD_STATUS_REVIEW_PARTIALLY_APPROVED",
+    "AD_STATUS_PARTIAL_AUDIT_DELIVERY_OK",
+    "AD_STATUS_PARTIAL_AUDIT_NO_DELIVERY",
+    "AD_STATUS_ADGROUP_INDUSTRY_QUALIFICATION_MISSING",
+    "AD_STATUS_ADGROUP_INDUSTRY_QUALIFICATION_EXPIRED",
+    "AD_STATUS_ADGROUP_INDUSTRY_QUALIFICATION_DENY",
+    "AD_STATUS_MUSIC_AUTHORIZATION_MISSING",
+    "AD_STAUS_PIXEL_UNBIND",
+    "AD_STATUS_LIVE_OFFLINE",
+    "AD_STATUS_NOT_START",
+    "AD_STATUS_DONE",
+    "AD_STATUS_CAMPAIGN_DISABLE",
+    "AD_STATUS_ADGROUP_DISABLE",
+    "ADGROUP_STATUS_FROZEN",
+    "AD_STATUS_DISABLE",
+    "AD_STATUS_DELIVERY_OK",
+    "AD_STATUS_PROCESS_AUDIO",
+    "AD_STATUS_TRANSCODING_FAIL",
+    "AD_STATUS_ADGROUP_ASSET_AUTHORIZATION_LOST",
+    "AD_STATUS_ASSET_AUTHORIZATION_LOST",
+    "AD_STATUS_AD_QUOTA_LIMIT",
+    "AD_STATUS_PRODUCT_UNAVAILABLE",
+    "AD_STATUS_ANCHOR_UNAVAILABLE",
+    "AD_STATUS_NO_AUTHORIZATION_OF_SHOWCASE",
+    "AD_STATUS_RF_ADGROUP_CLOSED",
+    "AD_STATUS_PROMOTE_AD_OFFLINE_AUDIT",
+    "AD_STATUS_PROMOTE_ADGROUP_CLOSED"
+   ],
+   "description": "Ad status (Secondary status). For enum values, see [Enumeration-Ad Status - Secondary Status](https://ads.tiktok.com/marketing_api/docs?id=1737174886619138). Note : This field is not returned in the sandbox environment because the ad is not actually delivered."
+  },
+  "creative_type": {
+   "type": "string",
+   "enum": [
+    "SHOP_PDP",
+    "SHOP_PLP",
+    "SHORT_VIDEO_LIVE",
+    "DIRECT_LIVE",
+    "PSA",
+    "CUSTOM_INSTANT_PAGE",
+    "AUTO_INVENTORY_INSTANT_PAGE"
+   ],
+   "description": "Creative type for Live Shopping Ads, Product Shopping Ads, App Pre-Registration, Automotive Ads for Inventory, or Automotive Ads for Models scenarios. Enum values: `SHOP_PDP`: Shop ads with a single product link. `SHOP_PLP`: Shop ads with 6-50 product links. `SHORT_VIDEO_LIVE`: Short videos that direct traffic to live shopping room. `DIRECT_LIVE`: Live shopping room. Each campaign can have only one live shopping room. `PSA`: The product visuals will be used as ad creative. `CUSTOM_INSTANT_PAGE`: Customized TikTok Instant Page. Returned only when `app_promotion_type` is `APP_PREREGISTRATION` at the campaign level and `promotion_website_type` is set to `TIKTOK_NATIVE_PAGE` at the ad group level. `AUTO_INVENTORY_INSTANT_PAGE`：A video or carousel with an auto-generated Instant Product Page showcasing the inventory of the Auto-Inventory catalog in Automotive Ads for Inventory or the models of the Auto-Model Catalog in the Automotive Ads for Models. Returned only when `objective_type` is `LEAD_GENERATION` and `catalog_enabled` is set to `true` at the campaign level."
+  },
+  "app_name": {
+   "type": "string",
+   "enum": [],
+   "description": "App name that is displayed in the ad."
+  },
+  "display_name": {
+   "type": "string",
+   "enum": [],
+   "description": "The display name of landing page or pure exposure ad."
+  },
+  "avatar_icon_web_uri": {
+   "type": "string",
+   "enum": [],
+   "description": "ID of the avatar image."
+  },
+  "profile_image_url": {
+   "type": "string",
+   "enum": [],
+   "description": "Avatar URL."
+  },
+  "creative_authorized": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether you grant displaying some of your ads in our TikTok For Business Creative Center. Only valid for non-US advertisers, the default value is `false`. Note : `creative_authorized` can only be used for video ads."
+  },
+  "is_aco": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether the ad is an automated ad or Smart Creative ad. Set to `True` for an automated ad or Smart Creative ad."
+  },
+  "is_new_structure": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Whether the campaign is a new structure (for the same campaign, the structure of campaign, adgroups and ads are the same)"
+  },
+  "optimization_event": {
+   "type": "string",
+   "enum": [],
+   "description": "Conversion event for the ad group. See [Conversion events](https://ads.tiktok.com/marketing_api/docs?id=1739361474981889) for more."
+  },
+  "share_disabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Returned only for [TopView ads](https://business-api.tiktok.com/portal/docs/topview/v1.3), where this setting is configured at the ad level rather than the ad group level. Whether to disable sharing of the ad to third-party platforms. Supported values: `true`, `false`."
+  },
+  "comment_disabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Returned only for [TopView ads](https://business-api.tiktok.com/portal/docs/topview/v1.3), where this setting is configured at the ad level rather than the ad group level. Whether to disable comments on the ad. Supported values: `true`, `false`."
+  },
+  "video_download_disabled": {
+   "type": "boolean",
+   "enum": [],
+   "description": "Returned only for [TopView ads](https://business-api.tiktok.com/portal/docs/topview/v1.3), where this setting is configured at the ad level rather than the ad group level. Whether to disable downloading videos from the ad. Supported values: `true`, `false`."
+  }
+ },
+ "metrics": {
+  "spend": {
+   "group": "core",
+   "label": "Cost",
+   "description": "Sum of your total ad spend."
+  },
+  "billed_cost": {
+   "group": "core",
+   "label": "Net cost",
+   "description": "Sum of your total ad spend, excluding ad credit or coupons used. Note : This metric is only supported in synchronous basic reports. This metric might delay up to 11 hours, with records only available from September 1, 2023."
+  },
+  "cash_spend": {
+   "group": "core",
+   "label": "Cost Charged by Cash",
+   "description": "The estimated amount of money you've spent on your campaign, ad group, or ad during its schedule charged by cash. (This metric can be required at the advertiser level only and lifetime, hourly breakdown is not supported.) Please note that there may be a delay from 24h to 48h between when you were charged and when you can see it through the API."
+  },
+  "voucher_spend": {
+   "group": "core",
+   "label": "Cost Charged by Voucher",
+   "description": "The estimated amount of money you've spent on your campaign, ad group, or ad during its schedule charged by voucher. (This metric can be required at the advertiser level only and lifetime, hourly breakdown is not supported.) Please note that there may be a delay from 24h to 48h between when you were charged and when you can see it through the API."
+  },
+  "cpc": {
+   "group": "core",
+   "label": "CPC (destination)",
+   "description": "Average cost of each click to a specified destination."
+  },
+  "cpm": {
+   "group": "core",
+   "label": "CPM",
+   "description": "Average amount you spent per 1,000 impressions."
+  },
+  "impressions": {
+   "group": "core",
+   "label": "Impressions",
+   "description": "Number of times your ads were shown."
+  },
+  "gross_impressions": {
+   "group": "core",
+   "label": "Gross Impressions (Includes Invalid Impressions)",
+   "description": "Number of times your ads were shown, including invalid impressions."
+  },
+  "clicks": {
+   "group": "core",
+   "label": "Clicks (destination)",
+   "description": "Number of clicks from your ads to a specified destination."
+  },
+  "ctr": {
+   "group": "core",
+   "label": "CTR (destination)",
+   "description": "Percentage of impressions that resulted in a destination click out of all impressions."
+  },
+  "reach": {
+   "group": "core",
+   "label": "Reach",
+   "description": "Number of unique users who saw your ads at least once."
+  },
+  "cost_per_1000_reached": {
+   "group": "core",
+   "label": "Cost per 1,000 people reached",
+   "description": "Average cost to reach 1,000 unique users."
+  },
+  "frequency": {
+   "group": "core",
+   "label": "Frequency",
+   "description": "The average number of times each user saw your ad over a given time period."
+  },
+  "conversion": {
+   "group": "core",
+   "label": "Conversions",
+   "description": "Number of times your ad resulted in the optimization event you selected."
+  },
+  "cost_per_conversion": {
+   "group": "core",
+   "label": "Cost per conversion",
+   "description": "Average amount spent on a conversion."
+  },
+  "conversion_rate": {
+   "group": "core",
+   "label": "Conversion rate (CVR, clicks)",
+   "description": "Percentage of results you received out of all destination clicks on your ads. Note : Starting late October, 2023, the calculation logic for this metric will be updated to be impression-based (the same as `conversion_rate_v2`). To ensure a smooth API integration and avoid disruptions caused by the change in calculation logic, we recommend you switch to using the impression-based metric `conversion_rate_v2` as soon as possible."
+  },
+  "conversion_rate_v2": {
+   "group": "core",
+   "label": "Conversion rate (CVR)",
+   "description": "Percentage of results you received out of all impressions on your ads."
+  },
+  "real_time_conversion": {
+   "group": "core",
+   "label": "Conversions by conversion time",
+   "description": "Number of times your ad resulted in the optimization event you selected."
+  },
+  "real_time_cost_per_conversion": {
+   "group": "core",
+   "label": "Cost per conversion by conversion time",
+   "description": "Average amount spent on a conversion."
+  },
+  "real_time_conversion_rate": {
+   "group": "core",
+   "label": "Real-time conversion rate (CVR, clicks)",
+   "description": "Percentage of conversions you received out of all destination clicks on your ads. Note : Starting late October, 2023, the calculation logic for this metric will be updated to be impression-based (the same as `real_time_conversion_rate_v2`). To ensure a smooth API integration and avoid disruptions caused by the change in calculation logic, we recommend you switch to using the impression-based metric `real_time_conversion_rate_v2` as soon as possible."
+  },
+  "real_time_conversion_rate_v2": {
+   "group": "core",
+   "label": "Conversion rate (CVR) by conversion time",
+   "description": "Percentage of conversions you received out of all impressions on your ads."
+  },
+  "result": {
+   "group": "core",
+   "label": "Results",
+   "description": "Number of times your ad resulted in an intended outcome based on your campaign objective and optimization goal."
+  },
+  "cost_per_result": {
+   "group": "core",
+   "label": "Cost per result",
+   "description": "Average cost per each result from your ads."
+  },
+  "result_rate": {
+   "group": "core",
+   "label": "Result rate",
+   "description": "Percentage of results that happened out of all impressions on your ads."
+  },
+  "real_time_result": {
+   "group": "core",
+   "label": "Real-time results",
+   "description": "Number of times your ad resulted in an intended outcome based on your campaign objective and optimization goal."
+  },
+  "real_time_cost_per_result": {
+   "group": "core",
+   "label": "Real-time cost per result",
+   "description": "Average cost per each result from your ads."
+  },
+  "real_time_result_rate": {
+   "group": "core",
+   "label": "Real-time result rate",
+   "description": "Percentage of results that happened out of all impressions on your ads."
+  },
+  "secondary_goal_result": {
+   "group": "core",
+   "label": "Deep funnel result",
+   "description": "Number of times your ad resulted in an intended outcome based on the deep funnel event you selected."
+  },
+  "cost_per_secondary_goal_result": {
+   "group": "core",
+   "label": "Cost per deep funnel result",
+   "description": "Average cost per each deep funnel result from your ads."
+  },
+  "secondary_goal_result_rate": {
+   "group": "core",
+   "label": "Deep funnel result rate",
+   "description": "Percentage of deep funnel results out of total impressions on your ads."
+  },
+  "video_play_actions": {
+   "group": "video",
+   "label": "Video views",
+   "description": "Number of times your video started to play. For each video impression, plays are counted separately and replays are excluded."
+  },
+  "video_watched_2s": {
+   "group": "video",
+   "label": "2-second video views",
+   "description": "Number of times your video was played for at least 2 seconds. For each video impression, plays are counted separately and replays are excluded."
+  },
+  "video_watched_6s": {
+   "group": "video",
+   "label": "6-second video views",
+   "description": "Number of times your video was played for at least 6 seconds. For each video impression, plays are counted separately and replays are excluded."
+  },
+  "video_views_p25": {
+   "group": "video",
+   "label": "Video views at 25%",
+   "description": "Number of times your video was played at least 25% of its length. For each impression, views are counted separately and replays are excluded."
+  },
+  "video_views_p50": {
+   "group": "video",
+   "label": "Video views at 50%",
+   "description": "Number of times your video was played at least 50% of its length. For each impression, views are counted separately and replays are excluded."
+  },
+  "video_views_p75": {
+   "group": "video",
+   "label": "Video views at 75%",
+   "description": "Number of times your video was played at least 75% of its length. For each impression, views are counted separately and replays are excluded."
+  },
+  "video_views_p100": {
+   "group": "video",
+   "label": "Video views at 100%",
+   "description": "Number of times your video was played 100% of its length. For each impression, views are counted separately and replays are excluded."
+  },
+  "average_video_play": {
+   "group": "video",
+   "label": "Average play time per video view",
+   "description": "Average time your video was played per single video view, including any time spent replaying the video."
+  },
+  "average_video_play_per_user": {
+   "group": "video",
+   "label": "Average play time per user",
+   "description": "Average time your video was played per user, including any time spent replaying the video."
+  },
+  "engaged_view": {
+   "group": "video",
+   "label": "6-second focused views",
+   "description": "Number of times your video was played for at least 6 seconds, played in full if it is less than 6 seconds, or received at least 1 engagement within the first 6 seconds."
+  },
+  "paid_engaged_view": {
+   "group": "video",
+   "label": "6-second focused views (paid views)",
+   "description": "Number of times your video was played for at least 6 seconds, or played in full if it is less than 6 seconds. For each video impression, plays are counted separately and replays are excluded. Note : If you want to use this metric, you can specify any of the following dimension groupings in the `dimensions` field of the request: one ID dimension ( `advertiser_id`, `campaign_id`, `adgroup_id`, or `ad_id`) one ID dimension + `stat_time_day`"
+  },
+  "paid_engagement_engaged_view": {
+   "group": "video",
+   "label": "6-second focused views (paid interactions)",
+   "description": "The number of times your video received at least one positive interaction (likes, shares, follows, or clicks) without being viewed for 6 seconds. This metric is only available for advertisers using focused view products. For each video impression, paid interactions are counted separately and replays are excluded. Note : If you want to use this metric, you can specify any of the following dimension groupings in the `dimensions` field of the request: one ID dimension ( `advertiser_id`, `campaign_id`, `adgroup_id`, or `ad_id`) one ID dimension + `stat_time_day`"
+  },
+  "engaged_view_15s": {
+   "group": "video",
+   "label": "15-second focused views",
+   "description": "Number of times your video was played for at least 15 seconds, played in full if it is less than 15 seconds, or received at least 1 engagement within the first 15 seconds."
+  },
+  "paid_engaged_view_15s": {
+   "group": "video",
+   "label": "15-second focused views (paid views)",
+   "description": "The number of times your video was viewed for at least 15 seconds, or viewed in full if it is less than 15 seconds long. For each video impression, plays are counted separately and replays are excluded. This metric is only available for advertisers using focused view products. Note : If you want to use this metric, you can specify any of the following dimension groupings in the `dimensions` field of the request: one ID dimension ( `advertiser_id`, `campaign_id`, `adgroup_id`, or `ad_id`) one ID dimension + `stat_time_day`"
+  },
+  "paid_engagement_engaged_view_15s": {
+   "group": "video",
+   "label": "15-second focused views (paid interactions)",
+   "description": "The number of times your video received at least one positive interaction (likes, shares, follows, or clicks) without being viewed for 15 seconds. This metric is only available for advertisers using focused view products. For each video impression, paid interactions are counted separately and replays are excluded. Note : If you want to use this metric, you can specify any of the following dimension groupings in the `dimensions` field of the request: one ID dimension ( `advertiser_id`, `campaign_id`, `adgroup_id`, or `ad_id`) one ID dimension + `stat_time_day`"
+  },
+  "engagements": {
+   "group": "engagement",
+   "label": "Clicks (all)",
+   "description": "Number of clicks from your ads. This includes clicks that lead to destination as well as those for social and interaction purposes."
+  },
+  "engagement_rate": {
+   "group": "engagement",
+   "label": "CTR (all)",
+   "description": "Percentage of impressions that resulted in a click out of all impressions."
+  },
+  "clicks_on_music_disc": {
+   "group": "engagement",
+   "label": "Sound clicks",
+   "description": "Number of clicks on the sound associated with your ad during the ad impression."
+  },
+  "duet_clicks": {
+   "group": "engagement",
+   "label": "Duet button clicks",
+   "description": "Number of clicks on the \"Duet\" button."
+  },
+  "stitch_clicks": {
+   "group": "engagement",
+   "label": "Stitch button clicks",
+   "description": "Number of clicks on the \"Stitch\" button."
+  },
+  "sound_usage_clicks": {
+   "group": "engagement",
+   "label": "Use sound button clicks",
+   "description": "Number of clicks on the \"Use sound\" button."
+  },
+  "anchor_clicks": {
+   "group": "engagement",
+   "label": "Anchor clicks",
+   "description": "Number of clicks on ad anchors."
+  },
+  "anchor_click_rate": {
+   "group": "engagement",
+   "label": "Anchor click rate",
+   "description": "Percentage of anchor clicks out of all impressions on your ads."
+  },
+  "clicks_on_hashtag_challenge": {
+   "group": "engagement",
+   "label": "Hashtag clicks",
+   "description": "Number of clicks on the hashtag challenge associated with your ad during the ad impression."
+  },
+  "follows": {
+   "group": "social",
+   "label": "Paid follows",
+   "description": "Number of follows to the associated profile during the ad impression."
+  },
+  "likes": {
+   "group": "social",
+   "label": "Paid likes",
+   "description": "Number of times your ad was liked during the ad impression."
+  },
+  "comments": {
+   "group": "social",
+   "label": "Paid comments",
+   "description": "Number of comments sent on your ad during the ad impression."
+  },
+  "shares": {
+   "group": "social",
+   "label": "Paid shares",
+   "description": "Number of shares of your ad during the ad impression."
+  },
+  "profile_visits": {
+   "group": "social",
+   "label": "Paid profile visits",
+   "description": "Number of visits to the associated profile during the ad impression."
+  },
+  "profile_visits_rate": {
+   "group": "social",
+   "label": "Paid profile visit rate",
+   "description": "Percentage of profile visits from ads out of all impressions on your ads."
+  },
+  "tt_playlist_visit": {
+   "group": "social",
+   "label": "Playlist page visit",
+   "description": "The number of playlist page visits the paid ad drove during the campaign."
+  },
+  "tt_playlist_visit_rate": {
+   "group": "social",
+   "label": "Playlist page visit rate",
+   "description": "The rate of playlist page visits per impression the paid ad drove during the campaign."
+  },
+  "cost_per_consideration": {
+   "group": "social",
+   "label": "Cost per consideration",
+   "description": "Average cost per consideration audience from your ad. Note : If you want to use this metric, you can specify any of the following dimension groupings in the `dimensions` field of the request: one ID dimension ( `advertiser_id`, `campaign_id`, `adgroup_id`, `ad_id` , or `ad_id_v2` ) one ID dimension + `stat_time_day`"
+  },
+  "new_consideration_rate": {
+   "group": "social",
+   "label": "New consideration rate",
+   "description": "Percentage of consideration audience acquired from all ad impressions. Note : If you want to use this metric, you can specify any of the following dimension groupings in the `dimensions` field of the request: one ID dimension ( `advertiser_id`, `campaign_id`, `adgroup_id`, `ad_id` , or `ad_id_v2` ) one ID dimension + `stat_time_day`"
+  },
+  "new_consideration_size": {
+   "group": "social",
+   "label": "New consideration size",
+   "description": "Number of acquired consideration audience your ad resulted in. Note : If you want to use this metric, you can specify any of the following dimension groupings in the `dimensions` field of the request: one ID dimension ( `advertiser_id`, `campaign_id`, `adgroup_id`, `ad_id` , or `ad_id_v2` ) one ID dimension + `stat_time_day`"
+  },
+  "complete_payment_roas": {
+   "group": "website",
+   "label": "Purchase ROAS (website)",
+   "description": "Return on ad spend (ROAS) from website purchase actions."
+  },
+  "complete_payment": {
+   "group": "website",
+   "label": "Purchases (website)",
+   "description": "Number of website purchase actions attributed to your ads."
+  },
+  "cost_per_complete_payment": {
+   "group": "website",
+   "label": "Cost per purchase (website)",
+   "description": "Average cost per website purchase action attributed to your ads."
+  },
+  "complete_payment_rate": {
+   "group": "website",
+   "label": "Unique purchase rate (website) (%)",
+   "description": "Percentage of website purchase actions from all clicks attributed to your ads."
+  },
+  "value_per_complete_payment": {
+   "group": "website",
+   "label": "Value per purchase (website)",
+   "description": "Average value per website purchase action attributed to your ads."
+  },
+  "total_complete_payment_rate": {
+   "group": "website",
+   "label": "Purchase value (website)",
+   "description": "Total value of website purchase actions attributed to your ads."
+  },
+  "total_landing_page_view": {
+   "group": "website",
+   "label": "Landing page views (website)",
+   "description": "Number of landing page view events from your ads."
+  },
+  "cost_per_landing_page_view": {
+   "group": "website",
+   "label": "Cost per landing page view (website)",
+   "description": "Average cost per landing page view event on your website."
+  },
+  "landing_page_view_rate": {
+   "group": "website",
+   "label": "Landing page view rate (website)",
+   "description": "Percentage of click events that are landing page view events."
+  },
+  "total_pageview": {
+   "group": "website",
+   "label": "Page views (website)",
+   "description": "Number of page view events."
+  },
+  "cost_per_pageview": {
+   "group": "website",
+   "label": "Cost per page view (website)",
+   "description": "Average cost per page view event."
+  },
+  "pageview_rate": {
+   "group": "website",
+   "label": "Page view rate (website) (%)",
+   "description": "Percentage of page view events out of all click events."
+  },
+  "avg_value_per_pageview": {
+   "group": "website",
+   "label": "Value per page view (website)",
+   "description": "Average value returned from each page view event."
+  },
+  "total_value_per_pageview": {
+   "group": "website",
+   "label": "Total page view value (website)",
+   "description": "Total value returned from all page view events."
+  },
+  "page_browse_view": {
+   "group": "website",
+   "label": "Page Browse",
+   "description": "The number of page browse events."
+  },
+  "cost_per_page_browse_view": {
+   "group": "website",
+   "label": "Cost per Page Browse",
+   "description": "The average cost of each page browse event."
+  },
+  "page_browse_view_rate": {
+   "group": "website",
+   "label": "Page Browse Rate (%)",
+   "description": "The percentage of page browse events out of all click events."
+  },
+  "total_page_browse_view_value": {
+   "group": "website",
+   "label": "Value per Page Browse",
+   "description": "The average value returned from page browse events."
+  },
+  "value_per_page_browse_view": {
+   "group": "website",
+   "label": "Total Page Browse Value",
+   "description": "The total value returned from page browse events."
+  },
+  "button_click": {
+   "group": "website",
+   "label": "Button clicks (website)",
+   "description": "The number of website click button actions attributed to your ads."
+  },
+  "cost_per_button_click": {
+   "group": "website",
+   "label": "Cost per button click (website)",
+   "description": "The average cost per website click button action attributed to your ads."
+  },
+  "button_click_rate": {
+   "group": "website",
+   "label": "Unique button click rate (website)",
+   "description": "The percentage of website click button actions from all clicks attributed to your ads."
+  },
+  "value_per_button_click": {
+   "group": "website",
+   "label": "Value per button click (website)",
+   "description": "The average value per website click button action attributed to your ads."
+  },
+  "total_button_click_value": {
+   "group": "website",
+   "label": "Button click value (website)",
+   "description": "The total value of website click button actions attributed to your ads."
+  },
+  "online_consult": {
+   "group": "website",
+   "label": "Contacts (website)",
+   "description": "The number of website contact actions attributed to your ads."
+  },
+  "cost_per_online_consult": {
+   "group": "website",
+   "label": "Cost per contact (website)",
+   "description": "The average cost per website contact action attributed to your ads."
+  },
+  "online_consult_rate": {
+   "group": "website",
+   "label": "Unique contact rate (website)",
+   "description": "The percentage of website contact actions from all clicks attributed to your ads."
+  },
+  "value_per_online_consult": {
+   "group": "website",
+   "label": "Value per contact (website)",
+   "description": "The average value per website contact action attributed to your ads."
+  },
+  "total_online_consult_value": {
+   "group": "website",
+   "label": "Contact value (website)",
+   "description": "The total value of website contact actions attributed to your ads."
+  },
+  "user_registration": {
+   "group": "website",
+   "label": "Registrations (website)",
+   "description": "The number of website complete registration actions attributed to your ads."
+  },
+  "cost_per_user_registration": {
+   "group": "website",
+   "label": "Cost per registration (website)",
+   "description": "The average cost per website complete registration action attributed to your ads."
+  },
+  "user_registration_rate": {
+   "group": "website",
+   "label": "Unique registration rate (website) (%)",
+   "description": "The percentage of website complete registration actions from all clicks attributed to your ads."
+  },
+  "value_per_user_registration": {
+   "group": "website",
+   "label": "Value per registration (website)",
+   "description": "The average value per website complete registration action attributed to your ads."
+  },
+  "total_user_registration_value": {
+   "group": "website",
+   "label": "Registration value (website)",
+   "description": "The total value of website complete registration actions attributed to your ads."
+  },
+  "page_content_view_events": {
+   "group": "website",
+   "label": "Content views (website)",
+   "description": "The number of website view content actions attributed to your ads."
+  },
+  "cost_per_page_content_view_event": {
+   "group": "website",
+   "label": "Cost per content view (website)",
+   "description": "The average cost per website view content action attributed to your ads."
+  },
+  "page_content_view_event_rate": {
+   "group": "website",
+   "label": "Unique content view rate (website) (%)",
+   "description": "The percentage of website view content actions from all clicks attributed to your ads."
+  },
+  "value_per_page_content_view_event": {
+   "group": "website",
+   "label": "Value per content view (website)",
+   "description": "The average value per website view content action attributed to your ads."
+  },
+  "total_page_view_content_events_value": {
+   "group": "website",
+   "label": "Content view value (website)",
+   "description": "The total value of website view content actions attributed to your ads."
+  },
+  "product_details_page_browse": {
+   "group": "website",
+   "label": "Product Details Page Browse",
+   "description": "The number of product details page browse events."
+  },
+  "cost_per_product_details_page_browse": {
+   "group": "website",
+   "label": "Product Details Page Browse Cost",
+   "description": "The average cost of each product details page browse event."
+  },
+  "product_details_page_browse_rate": {
+   "group": "website",
+   "label": "Product Details Page Browse Rate (%)",
+   "description": "The percentage of product details page browse events out of all click events."
+  },
+  "value_per_product_details_page_browse": {
+   "group": "website",
+   "label": "Value per Product Details Page Browse",
+   "description": "The average value returned from product details page browse events."
+  },
+  "total_product_details_page_browse_value": {
+   "group": "website",
+   "label": "Total Product Details Page Browse Value",
+   "description": "The total value returned from product details page browse events."
+  },
+  "web_event_add_to_cart": {
+   "group": "website",
+   "label": "Adds to cart (website)",
+   "description": "The number of website add to cart actions attributed to your ads."
+  },
+  "cost_per_web_event_add_to_cart": {
+   "group": "website",
+   "label": "Cost per add to cart (website)",
+   "description": "The average cost per website add to cart action attributed to your ads."
+  },
+  "web_event_add_to_cart_rate": {
+   "group": "website",
+   "label": "Unique add to cart rate (website) (%)",
+   "description": "The percentage of website add to cart actions from all clicks attributed to your ads."
+  },
+  "value_per_web_event_add_to_cart": {
+   "group": "website",
+   "label": "Value per add to cart (website)",
+   "description": "The average value per website add to cart action attributed to your ads."
+  },
+  "total_web_event_add_to_cart_value": {
+   "group": "website",
+   "label": "Add to cart value (website)",
+   "description": "The total value of website add to cart actions attributed to your ads."
+  },
+  "on_web_order": {
+   "group": "website",
+   "label": "Orders placed (website)",
+   "description": "The number of website place order actions attributed to your ads."
+  },
+  "cost_per_on_web_order": {
+   "group": "website",
+   "label": "Cost per order placed (website)",
+   "description": "The average cost per website place order action attributed to your ads."
+  },
+  "on_web_order_rate": {
+   "group": "website",
+   "label": "Unique orders placed rate (website) (%)",
+   "description": "The percentage of website place order actions from all clicks attributed to your ads."
+  },
+  "value_per_on_web_order": {
+   "group": "website",
+   "label": "Value per order placed (website)",
+   "description": "The average value per website place order action attributed to your ads."
+  },
+  "total_on_web_order_value": {
+   "group": "website",
+   "label": "Orders placed value (website)",
+   "description": "The total value of website place order actions attributed to your ads."
+  },
+  "initiate_checkout": {
+   "group": "website",
+   "label": "Checkouts initiated (website)",
+   "description": "The number of website initiate checkout actions attributed to your ads."
+  },
+  "cost_per_initiate_checkout": {
+   "group": "website",
+   "label": "Cost per checkout initiated (website)",
+   "description": "The average cost per website initiate checkout action attributed to your ads."
+  },
+  "initiate_checkout_rate": {
+   "group": "website",
+   "label": "Unique checkout initiation rate (website) (%)",
+   "description": "The percentage of website initiate checkout actions from all clicks attributed to your ads."
+  },
+  "value_per_initiate_checkout": {
+   "group": "website",
+   "label": "Value per checkout initiated (website)",
+   "description": "The average value per website initiate checkout action attributed to your ads."
+  },
+  "total_initiate_checkout_value": {
+   "group": "website",
+   "label": "Checkout initiation value (website)",
+   "description": "The total value of website initiate checkout actions attributed to your ads."
+  },
+  "add_billing": {
+   "group": "website",
+   "label": "Payment info added (website)",
+   "description": "Number of add payment info actions on your website."
+  },
+  "cost_per_add_billing": {
+   "group": "website",
+   "label": "Cost per payment info added (website)",
+   "description": "Average cost per add payment info action on your website attributed to your ads."
+  },
+  "add_billing_rate": {
+   "group": "website",
+   "label": "Unique payment info added rate (%) (website)",
+   "description": "Percentage of add payment info actions on your website from all clicks attributed to your ads."
+  },
+  "value_per_add_billing": {
+   "group": "website",
+   "label": "Value per payment info added (website)",
+   "description": "Average value per add payment info action on your website attributed to your ads."
+  },
+  "total_add_billing_value": {
+   "group": "website",
+   "label": "Add payment info value (website)",
+   "description": "Total value of add payment info actions on your website attributed to your ads."
+  },
+  "page_event_search": {
+   "group": "website",
+   "label": "Searches (website)",
+   "description": "The number of website search actions attributed to your ads."
+  },
+  "cost_per_page_event_search": {
+   "group": "website",
+   "label": "Cost per search (website)",
+   "description": "The average cost per website search action attributed to your ads."
+  },
+  "page_event_search_rate": {
+   "group": "website",
+   "label": "Unique search rate (website) (%)",
+   "description": "The percentage of website search actions from all clicks attributed to your ads."
+  },
+  "value_per_page_event_search": {
+   "group": "website",
+   "label": "Value per search (website)",
+   "description": "The average value per website search action attributed to your ads."
+  },
+  "total_page_event_search_value": {
+   "group": "website",
+   "label": "Search value (website)",
+   "description": "The total value of website search actions attributed to your ads."
+  },
+  "form": {
+   "group": "website",
+   "label": "Form submissions (website)",
+   "description": "The number of website lead actions attributed to your ads."
+  },
+  "cost_per_form": {
+   "group": "website",
+   "label": "Cost per form submitted (website)",
+   "description": "The average cost per website lead action attributed to your ads."
+  },
+  "form_rate": {
+   "group": "website",
+   "label": "Unique form submission rate (website) (%)",
+   "description": "The percentage of website lead actions from all clicks attributed to your ads."
+  },
+  "value_per_form": {
+   "group": "website",
+   "label": "Value per form submitted (website)",
+   "description": "The average value per website lead attributed to your ads."
+  },
+  "total_form_value": {
+   "group": "website",
+   "label": "Form submission value (website)",
+   "description": "The total value of website lead actions attributed to your ads."
+  },
+  "download_start": {
+   "group": "website",
+   "label": "Downloads (website)",
+   "description": "The number of website download actions attributed to your ads."
+  },
+  "cost_per_download_start": {
+   "group": "website",
+   "label": "Cost per download (website)",
+   "description": "The average cost per website download action attributed to your ads."
+  },
+  "download_start_rate": {
+   "group": "website",
+   "label": "Unique download rate (website) (%)",
+   "description": "The percentage of website download actions from all clicks attributed to your ads."
+  },
+  "value_per_download_start": {
+   "group": "website",
+   "label": "Value per download (website)",
+   "description": "The average value per website download action attributed to your ads."
+  },
+  "total_download_start_value": {
+   "group": "website",
+   "label": "Download value (website)",
+   "description": "The total value of website download actions attributed to your ads."
+  },
+  "on_web_add_to_wishlist": {
+   "group": "website",
+   "label": "Adds to wishlist (website)",
+   "description": "The number of website add to wishlist actions attributed to your ads."
+  },
+  "cost_per_on_web_add_to_wishlist": {
+   "group": "website",
+   "label": "Cost per add to wishlist (website)",
+   "description": "The average cost per website add to wishlist action attributed to your ads."
+  },
+  "on_web_add_to_wishlist_per_click": {
+   "group": "website",
+   "label": "Unique add to wishlist rate (website) (%)",
+   "description": "The percentage of website add to wishlist actions from all clicks attributed to your ads."
+  },
+  "value_per_on_web_add_to_wishlist": {
+   "group": "website",
+   "label": "Value per add to wishlist (website)",
+   "description": "The average value per website add to wishlist action attributed to your ads."
+  },
+  "total_on_web_add_to_wishlist_value": {
+   "group": "website",
+   "label": "Add to wishlist value (website)",
+   "description": "The total value of website add to wishlist actions attributed to your ads."
+  },
+  "on_web_subscribe": {
+   "group": "website",
+   "label": "Subscriptions (website)",
+   "description": "The number of website subscribe actions attributed to your ads."
+  },
+  "cost_per_on_web_subscribe": {
+   "group": "website",
+   "label": "Cost per subscription (website)",
+   "description": "The average cost per website subscribe action attributed to your ads."
+  },
+  "on_web_subscribe_per_click": {
+   "group": "website",
+   "label": "Unique subscription rate (website) (%)",
+   "description": "The percentage of website subscribe actions from all clicks attributed to your ads."
+  },
+  "value_per_on_web_subscribe": {
+   "group": "website",
+   "label": "Value per subscription (website)",
+   "description": "The average value per website subscribe action attributed to your ads."
+  },
+  "total_on_web_subscribe_value": {
+   "group": "website",
+   "label": "Subscription value (website)",
+   "description": "The total value of website subscribe actions attributed to your ads."
+  },
+  "website_total_find_location": {
+   "group": "website",
+   "label": "Total find location",
+   "description": "The number of find location events."
+  },
+  "website_cost_per_find_location": {
+   "group": "website",
+   "label": "Cost per find location",
+   "description": "The average cost of each find location event."
+  },
+  "website_find_location_rate": {
+   "group": "website",
+   "label": "Find location rate",
+   "description": "The percentage of find location events out of all click events."
+  },
+  "website_value_per_find_location": {
+   "group": "website",
+   "label": "Value per find location",
+   "description": "The average value returned from each find location event."
+  },
+  "website_total_find_location_value": {
+   "group": "website",
+   "label": "Total find location value",
+   "description": "The total value returned from all find location events."
+  },
+  "website_total_schedule": {
+   "group": "website",
+   "label": "Total schedule",
+   "description": "The number of schedule events."
+  },
+  "website_cost_per_schedule": {
+   "group": "website",
+   "label": "Cost per schedule",
+   "description": "The average cost of each schedule event."
+  },
+  "website_schedule_rate": {
+   "group": "website",
+   "label": "Schedule rate",
+   "description": "The percentage of schedule events out of all click events."
+  },
+  "website_value_per_schedule": {
+   "group": "website",
+   "label": "Value per schedule",
+   "description": "The average value returned from each schedule event."
+  },
+  "website_total_schedule_value": {
+   "group": "website",
+   "label": "Total schedule value",
+   "description": "The total value returned from all schedule events."
+  },
+  "website_total_customize_product": {
+   "group": "website",
+   "label": "Total customize product",
+   "description": "The number of customize product events."
+  },
+  "website_cost_per_customize_product": {
+   "group": "website",
+   "label": "Cost per customize product",
+   "description": "The average cost of each customize product event."
+  },
+  "website_customize_product_rate": {
+   "group": "website",
+   "label": "Customize product rate",
+   "description": "The percentage of customize product events out of all click events."
+  },
+  "website_value_per_customize_product": {
+   "group": "website",
+   "label": "Value per customize product",
+   "description": "The average value returned from each customize product event."
+  },
+  "website_total_customize_product_value": {
+   "group": "website",
+   "label": "Total customize product value",
+   "description": "The total value returned from all customize product events."
+  },
+  "custom_page_events": {
+   "group": "website",
+   "label": "Custom events (website)",
+   "description": "The number of custom web events attributed to your ads."
+  },
+  "cost_per_custom_page_event": {
+   "group": "website",
+   "label": "Cost per custom event (website)",
+   "description": "The average cost per custom web event attributed to your ads."
+  },
+  "custom_page_event_rate": {
+   "group": "website",
+   "label": "Custom event rate (website) (%)",
+   "description": "The percentage of custom web events from all clicks attributed to your ads."
+  },
+  "value_per_custom_page_event": {
+   "group": "website",
+   "label": "Value per custom event (website)",
+   "description": "The average value per custom web event attributed to your ads."
+  },
+  "custom_page_events_value": {
+   "group": "website",
+   "label": "Custom event value (website)",
+   "description": "The total value of custom web events attributed to your ads."
+  },
+  "vta_conversion": {
+   "group": "attribution",
+   "label": "VTA conversions",
+   "description": "The number of conversion events attributed to an ad impression."
+  },
+  "cost_per_vta_conversion": {
+   "group": "attribution",
+   "label": "Cost per VTA conversion",
+   "description": "The average cost per each conversion event attributed to an ad impression."
+  },
+  "cta_conversion": {
+   "group": "attribution",
+   "label": "CTA conversions",
+   "description": "The number of conversion events attributed to a click on your ad."
+  },
+  "cost_per_cta_conversion": {
+   "group": "attribution",
+   "label": "Cost per CTA conversion",
+   "description": "The average cost per each conversion event attributed to a click on your ad."
+  },
+  "engaged_view_through_conversions": {
+   "group": "attribution",
+   "label": "EVTA conversions",
+   "description": "Number of conversions attributed to engaged views."
+  },
+  "cost_per_engaged_view_through_conversion": {
+   "group": "attribution",
+   "label": "Cost per EVTA conversion",
+   "description": "Average cost per conversion attributed to an engaged view.The average cost of each conversion that is attributed to an engaged view."
+  },
+  "vta_app_install": {
+   "group": "attribution",
+   "label": "VTA app installs",
+   "description": "The number of app install events attributed to an ad impression."
+  },
+  "cost_per_vta_app_install": {
+   "group": "attribution",
+   "label": "Cost per VTA app install",
+   "description": "The average cost per each app install event attributed to an ad impression."
+  },
+  "cta_app_install": {
+   "group": "attribution",
+   "label": "CTA app installs",
+   "description": "The number of app install events attributed to a click on your ad."
+  },
+  "cost_per_cta_app_install": {
+   "group": "attribution",
+   "label": "Cost per CTA app install",
+   "description": "The average cost per each app install event attributed to a click on your ad."
+  },
+  "evta_app_install": {
+   "group": "attribution",
+   "label": "EVTA app installs",
+   "description": "The number of app install actions attributed to engaged views of your ad. Note : The EVTA metrics can only be used with the following dimensions: `advertiser_id` `campaign_id` `adgroup_id` `ad_id` `stat_time_day`"
+  },
+  "cost_per_evta_app_install": {
+   "group": "attribution",
+   "label": "Cost per EVTA app install",
+   "description": "The average cost per app install action attributed to engaged views of your ad."
+  },
+  "vta_registration": {
+   "group": "attribution",
+   "label": "VTA registrations",
+   "description": "Number of registration events attributed to an ad impression based on information received from your measurement partner."
+  },
+  "cost_per_vta_registration": {
+   "group": "attribution",
+   "label": "Cost per VTA registration",
+   "description": "Average cost per registration event attributed to an ad impression."
+  },
+  "cta_registration": {
+   "group": "attribution",
+   "label": "CTA registrations",
+   "description": "Number of in-app registration events attributed to a click on your ad based on information received from your measurement partner."
+  },
+  "cost_per_cta_registration": {
+   "group": "attribution",
+   "label": "Cost per CTA registration",
+   "description": "Average cost for an in-app registration event attributed to a click on your ad."
+  },
+  "evta_registration": {
+   "group": "attribution",
+   "label": "EVTA registrations",
+   "description": "The number of registration actions attributed to engaged views of your ad."
+  },
+  "cost_per_evta_registration": {
+   "group": "attribution",
+   "label": "Cost per EVTA registration",
+   "description": "The average cost per registration action attributed to engaged views of your ad."
+  },
+  "vta_purchase": {
+   "group": "attribution",
+   "label": "VTA purchases (app)",
+   "description": "Number of in-app purchase events attributed to an ad impression based on information received from your measurement partner."
+  },
+  "cost_per_vta_purchase": {
+   "group": "attribution",
+   "label": "Cost per VTA purchase (app)",
+   "description": "Average cost per in-app purchase event attributed to an ad impression."
+  },
+  "cta_purchase": {
+   "group": "attribution",
+   "label": "CTA purchases (app)",
+   "description": "Number of in-app purchase events attributed to clicks on your ad based on information received from your measurement partner."
+  },
+  "cost_per_cta_purchase": {
+   "group": "attribution",
+   "label": "Cost per CTA purchase (app)",
+   "description": "Average cost per in-app purchase event attributed to a click on your ad."
+  },
+  "evta_purchase": {
+   "group": "attribution",
+   "label": "EVTA purchases (app)",
+   "description": "The number of in-app purchase actions attributed to engaged views of your ad."
+  },
+  "cost_per_evta_purchase": {
+   "group": "attribution",
+   "label": "Cost per EVTA purchase (app)",
+   "description": "The average cost per in-app purchase action attributed to engaged views of your ad."
+  },
+  "vta_complete_payment": {
+   "group": "attribution",
+   "label": "VTA purchases (website)",
+   "description": "Website purchase events attributed to someone only viewing your ad."
+  },
+  "cost_per_vta_payments_completed": {
+   "group": "attribution",
+   "label": "Cost per VTA purchase (website)",
+   "description": "Average cost of each website purchase event attributed to someone only viewing your ad."
+  },
+  "evta_payments_completed": {
+   "group": "attribution",
+   "label": "EVTA purchases (website)",
+   "description": "The number of website purchase actions attributed to engaged views of your ad."
+  },
+  "cost_per_evta_payments_completed": {
+   "group": "attribution",
+   "label": "Cost per EVTA purchase (website)",
+   "description": "The average cost per website purchase action attributed to engaged views of your ad."
+  },
+  "vta_complete_payment_value": {
+   "group": "attribution",
+   "label": "VTA purchase value",
+   "description": "Total value of purchase events attributed to someone only viewing your ad."
+  },
+  "vta_complete_payment_roas": {
+   "group": "attribution",
+   "label": "VTA purchase ROAS",
+   "description": "Return on ad spend (ROAS) from purchase events attributed to someone only viewing your ad."
+  }
+ }
+}

@@ -1,0 +1,176 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "impersonation": {},
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "sanidi_sharedcommondataserviceforapps_79822"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "When_a_row_is_added_or_modified": {
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "parameters": {
+              "subscriptionRequest/message": 4,
+              "subscriptionRequest/entityname": "sanidi_googleadsadvertisement",
+              "subscriptionRequest/scope": 4,
+              "subscriptionRequest/filteringattributes": "sanidi_cost"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "SubscribeWebhookTrigger"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        }
+      },
+      "actions": {
+        "List_Advertisements": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords"
+            },
+            "parameters": {
+              "entityName": "sanidi_advertisements",
+              "$select": "sanidi_advertisementid,sanidi_cost",
+              "$filter": "_sanidi_googleadsadvertisement_value eq @{triggerOutputs()?['body/sanidi_googleadsadvertisementid']}",
+              "$expand": "sanidi_googleadsadvertisement($select=sanidi_cost),sanidi_metaadvertisement($select=sanidi_spend),sanidi_snapadvertisement($select=sanidi_spend),sanidi_tiktokadvertisement($select=sanidi_spend)"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "For_each_Advertisement": {
+          "runAfter": {
+            "List_Advertisements": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach",
+          "foreach": "@outputs('List_Advertisements')?['body/value']",
+          "actions": {
+            "Total_Cost": {
+              "runAfter": {},
+              "type": "Compose",
+              "inputs": "@add(add(add(float(coalesce(items('For_each_Advertisement')?['sanidi_googleadsadvertisement']?['sanidi_cost'], 0)), float(coalesce(items('For_each_Advertisement')?['sanidi_metaadvertisement']?['sanidi_spend'], 0))), float(coalesce(items('For_each_Advertisement')?['sanidi_snapadvertisement']?['sanidi_spend'], 0))), float(coalesce(items('For_each_Advertisement')?['sanidi_tiktokadvertisement']?['sanidi_spend'], 0)))"
+            },
+            "Has_Value_And_Changed": {
+              "runAfter": {
+                "Total_Cost": [
+                  "Succeeded"
+                ]
+              },
+              "type": "If",
+              "description": "Skip when all linked platform values are blank (leave cost as is) or the cost is already correct",
+              "expression": {
+                "and": [
+                  {
+                    "or": [
+                      {
+                        "not": {
+                          "equals": [
+                            "@items('For_each_Advertisement')?['sanidi_googleadsadvertisement']?['sanidi_cost']",
+                            null
+                          ]
+                        }
+                      },
+                      {
+                        "not": {
+                          "equals": [
+                            "@items('For_each_Advertisement')?['sanidi_metaadvertisement']?['sanidi_spend']",
+                            null
+                          ]
+                        }
+                      },
+                      {
+                        "not": {
+                          "equals": [
+                            "@items('For_each_Advertisement')?['sanidi_snapadvertisement']?['sanidi_spend']",
+                            null
+                          ]
+                        }
+                      },
+                      {
+                        "not": {
+                          "equals": [
+                            "@items('For_each_Advertisement')?['sanidi_tiktokadvertisement']?['sanidi_spend']",
+                            null
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "or": [
+                      {
+                        "equals": [
+                          "@items('For_each_Advertisement')?['sanidi_cost']",
+                          null
+                        ]
+                      },
+                      {
+                        "not": {
+                          "equals": [
+                            "@float(items('For_each_Advertisement')?['sanidi_cost'])",
+                            "@outputs('Total_Cost')"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Update_Advertisement_Cost": {
+                  "runAfter": {},
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "connectionName": "shared_commondataserviceforapps",
+                      "operationId": "UpdateOnlyRecord"
+                    },
+                    "parameters": {
+                      "entityName": "sanidi_advertisements",
+                      "recordId": "@items('For_each_Advertisement')?['sanidi_advertisementid']",
+                      "item/sanidi_cost": "@outputs('Total_Cost')"
+                    },
+                    "authentication": "@parameters('$authentication')"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

@@ -1,0 +1,3421 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "TikTok",
+    "description": "Read-only access to TikTok API for Business campaigns, ad groups, ads and their lifetime insights. Pass the long-term access token to every action.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Al Sanidi Marketing",
+      "email": "sa2@alsanidi.com.sa"
+    }
+  },
+  "host": "business-api.tiktok.com",
+  "basePath": "/open_api/v1.3",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/oauth2/access_token/": {
+      "post": {
+        "operationId": "GetAccessToken",
+        "summary": "Get access token",
+        "description": "One-time setup: exchanges the authorization code from the advertiser authorization page for a long-term access token, and lists the advertiser IDs that were authorized. Store both in the environment variables.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "app_id",
+                "secret",
+                "auth_code"
+              ],
+              "properties": {
+                "app_id": {
+                  "type": "string",
+                  "x-ms-summary": "App ID"
+                },
+                "secret": {
+                  "type": "string",
+                  "x-ms-summary": "App secret",
+                  "format": "password"
+                },
+                "auth_code": {
+                  "type": "string",
+                  "x-ms-summary": "Authorization code",
+                  "format": "password",
+                  "description": "auth_code from the redirect URL; valid for 1 hour, single use."
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AccessTokenResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/advertiser/get/": {
+      "get": {
+        "operationId": "ListAuthorizedAdvertisers",
+        "summary": "List authorized advertisers",
+        "description": "Lists the advertisers (ad accounts) the access token is authorized for.",
+        "parameters": [
+          {
+            "name": "Access-Token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "TikTok long-term access token (environment variable TikTok Ads Access Token).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "app_id",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "App ID",
+            "description": "TikTok developer app ID.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "secret",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "App secret",
+            "description": "TikTok developer app secret.",
+            "x-ms-visibility": "important",
+            "format": "password"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AuthorizedAdvertisersResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/advertiser/info/": {
+      "get": {
+        "operationId": "GetAdvertiserInfo",
+        "summary": "Get advertiser info",
+        "description": "Name, currency, time zone and status of an advertiser (ad account).",
+        "parameters": [
+          {
+            "name": "Access-Token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "TikTok long-term access token (environment variable TikTok Ads Access Token).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "advertiser_id",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Advertiser ID",
+            "description": "TikTok advertiser (ad account) ID.",
+            "x-ms-visibility": "important"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdvertiserInfo"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/campaign/get/": {
+      "get": {
+        "operationId": "ListCampaigns",
+        "summary": "List campaigns",
+        "description": "Lists all campaigns of an advertiser with every field TikTok returns, including deleted ones.",
+        "parameters": [
+          {
+            "name": "Access-Token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "TikTok long-term access token (environment variable TikTok Ads Access Token).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "advertiser_id",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Advertiser ID",
+            "description": "TikTok advertiser (ad account) ID.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Campaign ID",
+            "description": "Only return items of this campaign.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "include_deleted",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Include deleted",
+            "description": "Also return deleted items (TikTok leaves them out by default).",
+            "default": true,
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "max_rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Max rows",
+            "description": "Stop after this many rows. Omit to return everything.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CampaignsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/adgroup/get/": {
+      "get": {
+        "operationId": "ListAdGroups",
+        "summary": "List ad groups",
+        "description": "Lists ad groups (all of the advertiser, or of one campaign) with every field TikTok returns, including deleted ones.",
+        "parameters": [
+          {
+            "name": "Access-Token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "TikTok long-term access token (environment variable TikTok Ads Access Token).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "advertiser_id",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Advertiser ID",
+            "description": "TikTok advertiser (ad account) ID.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Campaign ID",
+            "description": "Only return items of this campaign.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "adgroup_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Ad group ID",
+            "description": "Only return items of this ad group.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "include_deleted",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Include deleted",
+            "description": "Also return deleted items (TikTok leaves them out by default).",
+            "default": true,
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "max_rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Max rows",
+            "description": "Stop after this many rows. Omit to return everything.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdGroupsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/ad/get/": {
+      "get": {
+        "operationId": "ListAds",
+        "summary": "List ads",
+        "description": "Lists ads (all of the advertiser, or of one ad group) with every field TikTok returns, including deleted ones.",
+        "parameters": [
+          {
+            "name": "Access-Token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "TikTok long-term access token (environment variable TikTok Ads Access Token).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "advertiser_id",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Advertiser ID",
+            "description": "TikTok advertiser (ad account) ID.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "adgroup_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Ad group ID",
+            "description": "Only return items of this ad group.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Campaign ID",
+            "description": "Only return items of this campaign.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "include_deleted",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "x-ms-summary": "Include deleted",
+            "description": "Also return deleted items (TikTok leaves them out by default).",
+            "default": true,
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "max_rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Max rows",
+            "description": "Stop after this many rows. Omit to return everything.",
+            "x-ms-visibility": "advanced"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AdsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/insights/lifetime": {
+      "get": {
+        "operationId": "GetLifetimeInsights",
+        "summary": "Get lifetime insights",
+        "description": "All-time metrics (Core, Video, Clicks, Social, Website, Attribution) for every campaign, ad group or ad of an advertiser: one row per item, keyed like the Dataverse columns.",
+        "parameters": [
+          {
+            "name": "Access-Token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "TikTok long-term access token (environment variable TikTok Ads Access Token).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "advertiser_id",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Advertiser ID",
+            "description": "TikTok advertiser (ad account) ID.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Level",
+            "description": "Level to report on.",
+            "enum": [
+              "campaign",
+              "adgroup",
+              "ad"
+            ],
+            "default": "campaign",
+            "x-ms-visibility": "important"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/InsightsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/report/integrated/get/": {
+      "post": {
+        "operationId": "RunReport",
+        "summary": "Run report",
+        "description": "Runs any synchronous TikTok report (/report/integrated/get/) and returns all pages as flat rows.",
+        "parameters": [
+          {
+            "name": "Access-Token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "TikTok long-term access token (environment variable TikTok Ads Access Token).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "advertiser_id",
+                "dimensions"
+              ],
+              "properties": {
+                "advertiser_id": {
+                  "type": "string",
+                  "x-ms-summary": "Advertiser ID"
+                },
+                "report_type": {
+                  "type": "string",
+                  "x-ms-summary": "Report type",
+                  "default": "BASIC",
+                  "enum": [
+                    "BASIC",
+                    "AUDIENCE",
+                    "PLAYABLE_MATERIAL",
+                    "CATALOG"
+                  ]
+                },
+                "data_level": {
+                  "type": "string",
+                  "x-ms-summary": "Data level",
+                  "default": "AUCTION_CAMPAIGN",
+                  "enum": [
+                    "AUCTION_ADVERTISER",
+                    "AUCTION_CAMPAIGN",
+                    "AUCTION_ADGROUP",
+                    "AUCTION_AD"
+                  ]
+                },
+                "dimensions": {
+                  "type": "string",
+                  "x-ms-summary": "Dimensions (JSON)",
+                  "description": "e.g. [\"campaign_id\", \"stat_time_day\"]"
+                },
+                "metrics": {
+                  "type": "string",
+                  "x-ms-summary": "Metrics (JSON)",
+                  "description": "e.g. [\"spend\", \"impressions\", \"clicks\"]"
+                },
+                "filtering": {
+                  "type": "string",
+                  "x-ms-summary": "Filtering (JSON)"
+                },
+                "start_date": {
+                  "type": "string",
+                  "x-ms-summary": "Start date",
+                  "description": "YYYY-MM-DD"
+                },
+                "end_date": {
+                  "type": "string",
+                  "x-ms-summary": "End date",
+                  "description": "YYYY-MM-DD"
+                },
+                "query_lifetime": {
+                  "type": "boolean",
+                  "x-ms-summary": "Lifetime",
+                  "default": false
+                },
+                "max_rows": {
+                  "type": "integer",
+                  "x-ms-summary": "Max rows",
+                  "default": 10000
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/ReportResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "integer",
+              "x-ms-summary": "Code"
+            },
+            "message": {
+              "type": "string",
+              "x-ms-summary": "Message"
+            },
+            "status": {
+              "type": "string",
+              "x-ms-summary": "Status"
+            }
+          }
+        }
+      }
+    },
+    "AccessTokenResponse": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "x-ms-summary": "Access token"
+        },
+        "scope": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "x-ms-summary": "Scope"
+        },
+        "advertiser_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Advertiser IDs"
+        },
+        "advertiser_ids_text": {
+          "type": "string",
+          "x-ms-summary": "Advertiser IDs (comma-separated)"
+        }
+      }
+    },
+    "AuthorizedAdvertisersResponse": {
+      "type": "object",
+      "properties": {
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "advertiser_ids_text": {
+          "type": "string",
+          "x-ms-summary": "Advertiser IDs (comma-separated)"
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "type": "object",
+            "properties": {
+              "advertiser_id": {
+                "type": "string",
+                "x-ms-summary": "Advertiser ID"
+              },
+              "advertiser_name": {
+                "type": "string",
+                "x-ms-summary": "Advertiser name"
+              }
+            }
+          }
+        }
+      }
+    },
+    "AdvertiserInfo": {
+      "type": "object",
+      "properties": {
+        "advertiser_id": {
+          "type": "string",
+          "x-ms-summary": "Advertiser ID"
+        },
+        "name": {
+          "type": "string",
+          "x-ms-summary": "Advertiser name"
+        },
+        "currency": {
+          "type": "string",
+          "x-ms-summary": "Currency"
+        },
+        "display_timezone": {
+          "type": "string",
+          "x-ms-summary": "Time zone"
+        },
+        "timezone": {
+          "type": "string",
+          "x-ms-summary": "Time zone (UTC offset)"
+        },
+        "status": {
+          "type": "string",
+          "x-ms-summary": "Status"
+        },
+        "company": {
+          "type": "string",
+          "x-ms-summary": "Company"
+        },
+        "country": {
+          "type": "string",
+          "x-ms-summary": "Country"
+        }
+      }
+    },
+    "Campaign": {
+      "type": "object",
+      "properties": {
+        "campaignname": {
+          "type": "string",
+          "x-ms-summary": "Campaign Name",
+          "description": "Source: campaign_name."
+        },
+        "campaignid": {
+          "type": "string",
+          "x-ms-summary": "Campaign ID",
+          "description": "Source: campaign_id."
+        },
+        "advertiserid": {
+          "type": "string",
+          "x-ms-summary": "Advertiser ID",
+          "description": "Source: advertiser_id."
+        },
+        "advertisername": {
+          "type": "string",
+          "x-ms-summary": "Advertiser Name",
+          "description": "Source: /advertiser/info/ name."
+        },
+        "currency": {
+          "type": "string",
+          "x-ms-summary": "Currency",
+          "description": "Source: /advertiser/info/ currency."
+        },
+        "accounttimezone": {
+          "type": "string",
+          "x-ms-summary": "Account Time Zone",
+          "description": "Source: /advertiser/info/ display_timezone."
+        },
+        "campaignsystemorigin": {
+          "type": "string",
+          "x-ms-summary": "Campaign System Origin",
+          "description": "One of: PROMOTE. Source: campaign_system_origin."
+        },
+        "createtime": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Created On (TikTok)",
+          "description": "UTC. Source: create_time."
+        },
+        "modifytime": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Modified On (TikTok)",
+          "description": "UTC. Source: modify_time."
+        },
+        "ponumber": {
+          "type": "string",
+          "x-ms-summary": "PO Number",
+          "description": "Source: po_number."
+        },
+        "isnewstructure": {
+          "type": "boolean",
+          "x-ms-summary": "Is New Structure",
+          "description": "Source: is_new_structure."
+        },
+        "operationstatus": {
+          "type": "string",
+          "x-ms-summary": "Operation Status",
+          "description": "One of: ENABLE, DISABLE. Source: operation_status."
+        },
+        "secondarystatus": {
+          "type": "string",
+          "x-ms-summary": "Secondary Status",
+          "description": "One of: CAMPAIGN_STATUS_DELETE, ADVERTISER_CONTRACT_PENDING, ADVERTISER_ACCOUNT_PUNISH, CAMPAIGN_STATUS_BUDGET_EXCEED, CAMPAIGN_STATUS_DISABLE, CAMPAIGN_STATUS_AWAITING_RELEASE, CAMPAIGN_STATUS_IDENTITY_USED_BY_GMV_MAX_AD, CAMPAIGN_STATUS_ENABLE, CAMPAIGN_STATUS_ALL, CAMPAIGN_STATUS_NOT_DELETE, CAMPAIGN_STATUS_TTS_TT_ASSET_UNAVAILABLE, CAMPAIGN_STATUS_TTS_TT_IDENTITY_UNAVAILABLE, CAMPAIGN_STATUS_TIKTOK_SHOP_UNAVAILABLE, CAMPAIGN_STATUS_REVIEW_DISAPPROVED, CAMPAIGN_STATUS_AD_UNAVAILABLE, CAMPAIGN_STATUS_PRODUCT_UNAVAILABLE, CAMPAIGN_STATUS_LIVE_GMV_MAX_AUTHORIZATION_CANCEL, CAMPAIGN_STATUS_PRODUCT_GMV_MAX_AUTHORIZATION_CANCEL, CAMPAIGN_STATUS_IDENTITY_USED_BY_LIVE_GMV_MAX, CAMPAIGN_STATUS_PRODUCT_USED_BY_PRODUCT_GMV_MAX. Source: secondary_status."
+        },
+        "objectivetype": {
+          "type": "string",
+          "x-ms-summary": "Objective Type",
+          "description": "One of: APP_PROMOTION, WEB_CONVERSIONS, REACH, BRAND_CONSIDERATION, TRAFFIC, VIDEO_VIEWS, PRODUCT_SALES, ENGAGEMENT, LEAD_GENERATION, TOPVIEW_REACH. Source: objective_type."
+        },
+        "virtualobjectivetype": {
+          "type": "string",
+          "x-ms-summary": "Virtual Objective Type",
+          "description": "One of: SALES. Source: virtual_objective_type."
+        },
+        "objective": {
+          "type": "string",
+          "x-ms-summary": "Objective",
+          "description": "One of: APP, LANDING_PAGE. Source: objective."
+        },
+        "apppromotiontype": {
+          "type": "string",
+          "x-ms-summary": "App Promotion Type",
+          "description": "One of: APP_INSTALL, APP_RETARGETING, APP_PREREGISTRATION, APP_POSTS_PROMOTION. Source: app_promotion_type."
+        },
+        "salesdestination": {
+          "type": "string",
+          "x-ms-summary": "Sales Destination",
+          "description": "One of: TIKTOK_SHOP, WEBSITE, APP, WEB_AND_APP. Source: sales_destination."
+        },
+        "campaigntype": {
+          "type": "string",
+          "x-ms-summary": "Campaign Type",
+          "description": "One of: REGULAR_CAMPAIGN, IOS14_CAMPAIGN. Source: campaign_type."
+        },
+        "campaignautomationtype": {
+          "type": "string",
+          "x-ms-summary": "Campaign Automation Type",
+          "description": "One of: MANUAL, SMART_PLUS, UPGRADED_SMART_PLUS. Source: campaign_automation_type."
+        },
+        "issmartperformancecampaign": {
+          "type": "boolean",
+          "x-ms-summary": "Smart Performance Campaign",
+          "description": "Source: is_smart_performance_campaign."
+        },
+        "issearchcampaign": {
+          "type": "boolean",
+          "x-ms-summary": "Search Campaign",
+          "description": "Source: is_search_campaign."
+        },
+        "isadvanceddedicatedcampaign": {
+          "type": "boolean",
+          "x-ms-summary": "Advanced Dedicated Campaign",
+          "description": "Source: is_advanced_dedicated_campaign."
+        },
+        "rfcampaigntype": {
+          "type": "string",
+          "x-ms-summary": "R&F Campaign Type",
+          "description": "One of: STANDARD, PULSE, TOPVIEW. Source: rf_campaign_type."
+        },
+        "campaignproductsource": {
+          "type": "string",
+          "x-ms-summary": "Product Source",
+          "description": "One of: CATALOG, STORE. Source: campaign_product_source."
+        },
+        "catalogenabled": {
+          "type": "boolean",
+          "x-ms-summary": "Catalog Enabled",
+          "description": "Source: catalog_enabled."
+        },
+        "specialindustries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Special Industries",
+          "description": "TikTok enum values. Source: special_industries."
+        },
+        "appid": {
+          "type": "string",
+          "x-ms-summary": "App ID",
+          "description": "Source: app_id."
+        },
+        "campaignappprofilepagestate": {
+          "type": "string",
+          "x-ms-summary": "App Profile Page State",
+          "description": "One of: INVALID, UNSET, ON, OFF. Source: campaign_app_profile_page_state."
+        },
+        "disableskancampaign": {
+          "type": "boolean",
+          "x-ms-summary": "SKAN Disabled",
+          "description": "Source: disable_skan_campaign."
+        },
+        "bidaligntype": {
+          "type": "string",
+          "x-ms-summary": "Bid Align Type",
+          "description": "One of: SAN, SKAN. Source: bid_align_type."
+        },
+        "postbackwindowmode": {
+          "type": "string",
+          "x-ms-summary": "SKAN Postback Window Mode",
+          "description": "One of: POSTBACK_WINDOW_MODE1, POSTBACK_WINDOW_MODE2, POSTBACK_WINDOW_MODE3. Source: postback_window_mode."
+        },
+        "budgetmode": {
+          "type": "string",
+          "x-ms-summary": "Budget Mode",
+          "description": "One of: BUDGET_MODE_DAY, BUDGET_MODE_TOTAL, BUDGET_MODE_INFINITE, BUDGET_MODE_DYNAMIC_DAILY_BUDGET. Source: budget_mode."
+        },
+        "budget": {
+          "type": "number",
+          "x-ms-summary": "Budget",
+          "description": "In the ad account currency. Source: budget."
+        },
+        "budgetoptimizeon": {
+          "type": "boolean",
+          "x-ms-summary": "Campaign Budget Optimization",
+          "description": "Source: budget_optimize_on."
+        },
+        "bidtype": {
+          "type": "string",
+          "x-ms-summary": "Bid Type",
+          "description": "One of: BID_TYPE_CUSTOM, BID_TYPE_NO_BID. Source: bid_type."
+        },
+        "deepbidtype": {
+          "type": "string",
+          "x-ms-summary": "Deep Bid Type",
+          "description": "One of: DEFAULT, MIN, PACING, VO_MIN_ROAS, VO_HIGHEST_VALUE, AEO. Source: deep_bid_type."
+        },
+        "roasbid": {
+          "type": "number",
+          "x-ms-summary": "ROAS Bid",
+          "description": "Source: roas_bid."
+        },
+        "optimizationgoal": {
+          "type": "string",
+          "x-ms-summary": "Optimization Goal",
+          "description": "One of: CLICK, CONVERT, INSTALL, IN_APP_EVENT, SHOW, REACH, LEAD_GENERATION, LEADS, WEBSITE_ENGAGEMENT, CONVERSATION, FOLLOWERS, PAGE_VISIT, VALUE, AUTOMATIC_VALUE_OPTIMIZATION, GMV, PURCHASES, INITIATE_CHECKOUTS, MT_LIVE_ROOM, PRODUCT_CLICK_IN_LIVE, ENGAGED_VIEW, ENGAGED_VIEW_FIFTEEN, TRAFFIC_LANDING_PAGE_VIEW, DESTINATION_VISIT, PREFERRED_LEAD. Source: optimization_goal."
+        },
+        "rtaid": {
+          "type": "string",
+          "x-ms-summary": "RTA ID",
+          "description": "Source: rta_id."
+        },
+        "rtabidenabled": {
+          "type": "boolean",
+          "x-ms-summary": "RTA Bid Enabled",
+          "description": "Source: rta_bid_enabled."
+        },
+        "rtaproductselectionenabled": {
+          "type": "boolean",
+          "x-ms-summary": "RTA Product Selection Enabled",
+          "description": "Source: rta_product_selection_enabled."
+        },
+        "lastsyncedon": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Last Synced On",
+          "description": "When the connector read the data (UTC)."
+        },
+        "rawpayload": {
+          "type": "string",
+          "x-ms-summary": "Raw Payload",
+          "description": "Full TikTok object as JSON."
+        }
+      }
+    },
+    "CampaignsResponse": {
+      "type": "object",
+      "properties": {
+        "advertiser_id": {
+          "type": "string",
+          "x-ms-summary": "Advertiser ID"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "$ref": "#/definitions/Campaign"
+          }
+        }
+      }
+    },
+    "AdGroup": {
+      "type": "object",
+      "properties": {
+        "adgroupname": {
+          "type": "string",
+          "x-ms-summary": "Ad Group Name",
+          "description": "Source: adgroup_name."
+        },
+        "adgroupid": {
+          "type": "string",
+          "x-ms-summary": "Ad Group ID",
+          "description": "Source: adgroup_id."
+        },
+        "campaignid": {
+          "type": "string",
+          "x-ms-summary": "Campaign ID",
+          "description": "Source: campaign_id."
+        },
+        "campaignname": {
+          "type": "string",
+          "x-ms-summary": "Campaign Name",
+          "description": "Source: campaign_name."
+        },
+        "advertiserid": {
+          "type": "string",
+          "x-ms-summary": "Advertiser ID",
+          "description": "Source: advertiser_id."
+        },
+        "campaignsystemorigin": {
+          "type": "string",
+          "x-ms-summary": "Campaign System Origin",
+          "description": "One of: PROMOTE. Source: campaign_system_origin."
+        },
+        "campaignautomationtype": {
+          "type": "string",
+          "x-ms-summary": "Campaign Automation Type",
+          "description": "One of: MANUAL, SMART_PLUS, UPGRADED_SMART_PLUS. Source: campaign_automation_type."
+        },
+        "issmartperformancecampaign": {
+          "type": "boolean",
+          "x-ms-summary": "Smart Performance Campaign",
+          "description": "Source: is_smart_performance_campaign."
+        },
+        "createtime": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Created On (TikTok)",
+          "description": "UTC. Source: create_time."
+        },
+        "modifytime": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Modified On (TikTok)",
+          "description": "UTC. Source: modify_time."
+        },
+        "isnewstructure": {
+          "type": "boolean",
+          "x-ms-summary": "Is New Structure",
+          "description": "Source: is_new_structure."
+        },
+        "splittestgroupid": {
+          "type": "string",
+          "x-ms-summary": "Split Test Group ID",
+          "description": "Source: split_test_group_id."
+        },
+        "splitteststatus": {
+          "type": "string",
+          "x-ms-summary": "Split Test Status",
+          "description": "Source: split_test_status."
+        },
+        "operationstatus": {
+          "type": "string",
+          "x-ms-summary": "Operation Status",
+          "description": "One of: ENABLE, DISABLE, FROZEN. Source: operation_status."
+        },
+        "secondarystatus": {
+          "type": "string",
+          "x-ms-summary": "Secondary Status",
+          "description": "One of: ADGROUP_STATUS_ALL, ADGROUP_STATUS_NOT_DELETE, ADGROUP_STATUS_DELETE, ADGROUP_STATUS_CAMPAIGN_DELETE, ADGROUP_STATUS_ADVERTISER_AUDIT_DENY, ADGROUP_STATUS_ADVERTISER_AUDIT, ADVERTISER_CONTRACT_PENDING, ADVERTISER_ACCOUNT_PUNISH, ADGROUP_STATUS_CAMPAIGN_EXCEED, ADGROUP_STATUS_BUDGET_EXCEED, ADGROUP_STATUS_BALANCE_EXCEED, ADGROUP_STATUS_ADGROUP_PRE_ONLINE, ADGROUP_STATUS_AUDIT_DENY, ADGROUP_STATUS_REAUDIT, ADGROUP_STATUS_AUDIT, ADGROUP_STATUS_CREATE, ADGROUP_STATUS_FROZEN, ADGROUP_STATUS_NOT_START, ADGROUP_STATUS_LIVE_NOT_START, ADGROUP_STATUS_CAMPAIGN_DISABLE, ADGROUP_STATUS_DISABLE, ADGROUP_STATUS_SHADOW_ADGROUP_REAUDIT, ADGROUP_STATUS_PIXEL_UNBIND, ADGROUP_STATUS_PARTIAL_AUDIT_NO_DELIVERY, ADGROUP_STATUS_PARTIAL_AUDIT_DELIVERY_OK, ADGROUP_STATUS_INDUSTRY_QUALIFICATION_MISSING, ADGROUP_STATUS_INDUSTRY_QUALIFICATION_EXPIRED, ADGROUP_STATUS_INDUSTRY_QUALIFICATION_DENY, ADGROUP_STATUS_ASSET_AUTHORIZATION_LOST, ADGROUP_STATUS_TRANSCODING_FAIL, ADGROUP_STATUS_ADGROUP_QUOTA_LIMIT, ADGROUP_STATUS_IDENTITY_USED_BY_GMV_MAX_AD, ADGROUP_STATUS_SEARCH_KEYWORDS_IN_REVIEW, ADGROUP_STATUS_SEARCH_KEYWORDS_NOT_AVAILABLE, ADGROUP_STATUS_SEARCH_KEYWORDS_PARTIAL_APPROVED, ADGROUP_STATUS_DELIVERY_OK, ADGROUP_STATUS_REVIEW_PARTIALLY_APPROVED, ADGROUP_STATUS_TIME_DONE, ADGROUP_STATUS_RF_DEDUCTION_FAILED, ADGROUP_STATUS_RF_NO_VALID_CREATIVE, ADGROUP_STATUS_RF_CLOSED_OTHERS, ADGROUP_STATUS_RF_SHORT_BALANCE, ADGROUP_STATUS_RF_BOOKING, ADGROUP_STATUS_RF_NO_DELIVERY_CREATIVE, ADGROUP_STATUS_RF_SCHEDULE, ADGROUP_STATUS_RF_TERMINATE, ADGROUP_STATUS_RF_AD_AUDIT_DENY, ADVERTISER_ACCOUNT_INVALID, ADGROUP_STATUS_RF_ADGROUP_INVALID, ADGROUP_STATUS_RF_WITHDRAW_ORDER, ADGROUP_STATUS_RF_TIME_DONE, ADGROUP_STATUS_PROMOTE_AD_NOT_APPROVED, ADGROUP_STATUS_PROMOTE_WITHDRAW_ORDER. Source: secondary_status."
+        },
+        "skiplearningphase": {
+          "type": "boolean",
+          "x-ms-summary": "Skip Learning Phase",
+          "description": "Source: skip_learning_phase."
+        },
+        "promotiontype": {
+          "type": "string",
+          "x-ms-summary": "Promotion Type",
+          "description": "One of: APP_ANDROID, APP_IOS, MINI_APP, MINI_GAME, GAME, WEBSITE, LEAD_GENERATION, LEAD_GEN_CLICK_TO_TT_DIRECT_MESSAGE, LEAD_GEN_CLICK_TO_SOCIAL_MEDIA_APP_MESSAGE, LEAD_GEN_CLICK_TO_CALL, WEBSITE_OR_DISPLAY, TIKTOK_SHOP, VIDEO_SHOPPING, LIVE_SHOPPING, PSA_PRODUCT. Source: promotion_type."
+        },
+        "promotiontargettype": {
+          "type": "string",
+          "x-ms-summary": "Promotion Target Type",
+          "description": "One of: INSTANT_PAGE, EXTERNAL_WEBSITE, UNSET. Source: promotion_target_type."
+        },
+        "promotionwebsitetype": {
+          "type": "string",
+          "x-ms-summary": "Promotion Website Type",
+          "description": "One of: UNSET, TIKTOK_NATIVE_PAGE. Source: promotion_website_type."
+        },
+        "messagingapptype": {
+          "type": "string",
+          "x-ms-summary": "Messaging App Type",
+          "description": "One of: MESSENGER, WHATSAPP, ZALO, LINE, IM_URL. Source: messaging_app_type."
+        },
+        "messagingappaccountid": {
+          "type": "string",
+          "x-ms-summary": "Messaging App Account ID",
+          "description": "Source: messaging_app_account_id."
+        },
+        "phoneregioncode": {
+          "type": "string",
+          "x-ms-summary": "Phone Region Code",
+          "description": "Source: phone_region_code."
+        },
+        "phoneregioncallingcode": {
+          "type": "string",
+          "x-ms-summary": "Phone Region Calling Code",
+          "description": "Source: phone_region_calling_code."
+        },
+        "phonenumber": {
+          "type": "string",
+          "x-ms-summary": "Phone Number",
+          "description": "Source: phone_number."
+        },
+        "appid": {
+          "type": "string",
+          "x-ms-summary": "App ID",
+          "description": "Source: app_id."
+        },
+        "apptype": {
+          "type": "string",
+          "x-ms-summary": "App Type",
+          "description": "One of: APP_ANDROID, APP_IOS. Source: app_type."
+        },
+        "appdownloadurl": {
+          "type": "string",
+          "x-ms-summary": "App Download URL",
+          "description": "Source: app_download_url."
+        },
+        "appconfig": {
+          "type": "string",
+          "x-ms-summary": "App Config",
+          "description": "JSON. Source: app_config."
+        },
+        "pixelid": {
+          "type": "string",
+          "x-ms-summary": "Pixel ID",
+          "description": "Source: pixel_id."
+        },
+        "optimizationevent": {
+          "type": "string",
+          "x-ms-summary": "Optimization Event",
+          "description": "Source: optimization_event."
+        },
+        "customconversionid": {
+          "type": "string",
+          "x-ms-summary": "Custom Conversion ID",
+          "description": "Source: custom_conversion_id."
+        },
+        "secondaryoptimizationevent": {
+          "type": "string",
+          "x-ms-summary": "Secondary Optimization Event",
+          "description": "Source: secondary_optimization_event."
+        },
+        "messageeventsetid": {
+          "type": "string",
+          "x-ms-summary": "Message Event Set ID",
+          "description": "Source: message_event_set_id."
+        },
+        "deepfunneloptimizationstatus": {
+          "type": "string",
+          "x-ms-summary": "Deep Funnel Optimization Status",
+          "description": "One of: ON, OFF. Source: deep_funnel_optimization_status."
+        },
+        "deepfunneleventsource": {
+          "type": "string",
+          "x-ms-summary": "Deep Funnel Event Source",
+          "description": "One of: PIXEL, OFFLINE, CRM. Source: deep_funnel_event_source."
+        },
+        "deepfunneleventsourceid": {
+          "type": "string",
+          "x-ms-summary": "Deep Funnel Event Source ID",
+          "description": "Source: deep_funnel_event_source_id."
+        },
+        "deepfunneloptimizationevent": {
+          "type": "string",
+          "x-ms-summary": "Deep Funnel Optimization Event",
+          "description": "Source: deep_funnel_optimization_event."
+        },
+        "shoppingadstype": {
+          "type": "string",
+          "x-ms-summary": "Shopping Ads Type",
+          "description": "One of: VIDEO, LIVE, PRODUCT_SHOPPING_ADS, CATALOG_LISTING_ADS, UNSET. Source: shopping_ads_type."
+        },
+        "productsource": {
+          "type": "string",
+          "x-ms-summary": "Product Source",
+          "description": "One of: UNSET, CATALOG, STORE, SHOWCASE. Source: product_source."
+        },
+        "catalogid": {
+          "type": "string",
+          "x-ms-summary": "Catalog ID",
+          "description": "Source: catalog_id."
+        },
+        "catalogauthorizedbcid": {
+          "type": "string",
+          "x-ms-summary": "Catalog BC ID",
+          "description": "Source: catalog_authorized_bc_id."
+        },
+        "storeid": {
+          "type": "string",
+          "x-ms-summary": "Store ID",
+          "description": "Source: store_id."
+        },
+        "storeauthorizedbcid": {
+          "type": "string",
+          "x-ms-summary": "Store BC ID",
+          "description": "Source: store_authorized_bc_id."
+        },
+        "identityid": {
+          "type": "string",
+          "x-ms-summary": "Identity ID",
+          "description": "Source: identity_id."
+        },
+        "identitytype": {
+          "type": "string",
+          "x-ms-summary": "Identity Type",
+          "description": "One of: AUTH_CODE, TT_USER, BC_AUTH_TT. Source: identity_type."
+        },
+        "identityauthorizedbcid": {
+          "type": "string",
+          "x-ms-summary": "Identity BC ID",
+          "description": "Source: identity_authorized_bc_id."
+        },
+        "shoppingadsretargetingtype": {
+          "type": "string",
+          "x-ms-summary": "Shopping Retargeting Type",
+          "description": "One of: LAB1, LAB2, LAB3, OFF. Source: shopping_ads_retargeting_type."
+        },
+        "shoppingretargetingactiondays": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Shopping Retargeting Action Days",
+          "description": "Source: shopping_ads_retargeting_actions_days."
+        },
+        "shoppingretargetingaudiencerelation": {
+          "type": "string",
+          "x-ms-summary": "Shopping Retargeting Audience Relation",
+          "description": "One of: OR, AND. Source: shopping_ads_retargeting_custom_audience_relation."
+        },
+        "includedcustomactions": {
+          "type": "string",
+          "x-ms-summary": "Shopping Retargeting Included Actions",
+          "description": "JSON. Source: included_custom_actions."
+        },
+        "excludedcustomactions": {
+          "type": "string",
+          "x-ms-summary": "Shopping Retargeting Excluded Actions",
+          "description": "JSON. Source: excluded_custom_actions."
+        },
+        "placementtype": {
+          "type": "string",
+          "x-ms-summary": "Placement Type",
+          "description": "One of: PLACEMENT_TYPE_AUTOMATIC, PLACEMENT_TYPE_NORMAL. Source: placement_type."
+        },
+        "placements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Placements",
+          "description": "TikTok enum values. Source: placements."
+        },
+        "tiktoksubplacements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "TikTok Subplacements",
+          "description": "TikTok enum values. Source: tiktok_subplacements."
+        },
+        "searchresultenabled": {
+          "type": "boolean",
+          "x-ms-summary": "Search Result Enabled",
+          "description": "Source: search_result_enabled."
+        },
+        "automatedkeywordsenabled": {
+          "type": "boolean",
+          "x-ms-summary": "Automated Keywords Enabled",
+          "description": "Source: automated_keywords_enabled."
+        },
+        "searchkeywords": {
+          "type": "string",
+          "x-ms-summary": "Search Keywords",
+          "description": "JSON. Source: search_keywords."
+        },
+        "blockedpangleappids": {
+          "type": "string",
+          "x-ms-summary": "Blocked Pangle App IDs",
+          "description": "One value per line. Source: blocked_pangle_app_ids."
+        },
+        "commentdisabled": {
+          "type": "boolean",
+          "x-ms-summary": "Comments Disabled",
+          "description": "Source: comment_disabled."
+        },
+        "videodownloaddisabled": {
+          "type": "boolean",
+          "x-ms-summary": "Video Download Disabled",
+          "description": "Source: video_download_disabled."
+        },
+        "sharedisabled": {
+          "type": "boolean",
+          "x-ms-summary": "Sharing Disabled",
+          "description": "Source: share_disabled."
+        },
+        "locationids": {
+          "type": "string",
+          "x-ms-summary": "Location IDs",
+          "description": "One value per line. Source: location_ids."
+        },
+        "zipcodeids": {
+          "type": "string",
+          "x-ms-summary": "Zip Code IDs",
+          "description": "One value per line. Source: zipcode_ids."
+        },
+        "languages": {
+          "type": "string",
+          "x-ms-summary": "Languages",
+          "description": "One value per line. Source: languages."
+        },
+        "gender": {
+          "type": "string",
+          "x-ms-summary": "Gender",
+          "description": "One of: GENDER_UNLIMITED, GENDER_MALE, GENDER_FEMALE. Source: gender."
+        },
+        "agegroups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Age Groups",
+          "description": "TikTok enum values. Source: age_groups."
+        },
+        "spendingpower": {
+          "type": "string",
+          "x-ms-summary": "Spending Power",
+          "description": "One of: ALL, HIGH. Source: spending_power."
+        },
+        "householdincome": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Household Income",
+          "description": "TikTok enum values. Source: household_income."
+        },
+        "audienceids": {
+          "type": "string",
+          "x-ms-summary": "Audience IDs",
+          "description": "One value per line. Source: audience_ids."
+        },
+        "excludedaudienceids": {
+          "type": "string",
+          "x-ms-summary": "Excluded Audience IDs",
+          "description": "One value per line. Source: excluded_audience_ids."
+        },
+        "smartaudienceenabled": {
+          "type": "boolean",
+          "x-ms-summary": "Smart Audience Enabled",
+          "description": "Source: smart_audience_enabled."
+        },
+        "audiencetype": {
+          "type": "string",
+          "x-ms-summary": "Audience Type",
+          "description": "One of: CUSTOM_AUDIENCE, EXCLUDE_INTERACT_USERS, INCLUDE_INTERACT_USERS, INCLUDE_SPECIFIC_EVENTS, EXCLUDE_SPECIFIC_EVENTS, NEW_CUSTOM_AUDIENCE. Source: audience_type."
+        },
+        "audiencerule": {
+          "type": "string",
+          "x-ms-summary": "Audience Rule",
+          "description": "JSON. Source: audience_rule."
+        },
+        "savedaudienceid": {
+          "type": "string",
+          "x-ms-summary": "Saved Audience ID",
+          "description": "Source: saved_audience_id."
+        },
+        "interestcategoryids": {
+          "type": "string",
+          "x-ms-summary": "Interest Category IDs",
+          "description": "One value per line. Source: interest_category_ids."
+        },
+        "interestkeywordids": {
+          "type": "string",
+          "x-ms-summary": "Interest Keyword IDs",
+          "description": "One value per line. Source: interest_keyword_ids."
+        },
+        "purchaseintentionkeywordids": {
+          "type": "string",
+          "x-ms-summary": "Purchase Intention Keyword IDs",
+          "description": "One value per line. Source: purchase_intention_keyword_ids."
+        },
+        "actions": {
+          "type": "string",
+          "x-ms-summary": "Behaviors",
+          "description": "JSON. Source: actions."
+        },
+        "smartinterestbehaviorenabled": {
+          "type": "boolean",
+          "x-ms-summary": "Smart Interests & Behaviors",
+          "description": "Source: smart_interest_behavior_enabled."
+        },
+        "includedpangleaudiencepackages": {
+          "type": "string",
+          "x-ms-summary": "Included Pangle Audience Packages",
+          "description": "One value per line. Source: included_pangle_audience_package_ids."
+        },
+        "excludedpangleaudiencepackages": {
+          "type": "string",
+          "x-ms-summary": "Excluded Pangle Audience Packages",
+          "description": "One value per line. Source: excluded_pangle_audience_package_ids."
+        },
+        "autotargetingenabled": {
+          "type": "boolean",
+          "x-ms-summary": "Auto Targeting Enabled (deprecated)",
+          "description": "Source: auto_targeting_enabled."
+        },
+        "targetingexpansion": {
+          "type": "string",
+          "x-ms-summary": "Targeting Expansion (deprecated)",
+          "description": "JSON. Source: targeting_expansion."
+        },
+        "contextualtagids": {
+          "type": "string",
+          "x-ms-summary": "Contextual Tag IDs",
+          "description": "One value per line. Source: contextual_tag_ids."
+        },
+        "operatingsystems": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Operating Systems",
+          "description": "TikTok enum values. Source: operating_systems."
+        },
+        "minandroidversion": {
+          "type": "string",
+          "x-ms-summary": "Min Android Version",
+          "description": "Source: min_android_version."
+        },
+        "miniosversion": {
+          "type": "string",
+          "x-ms-summary": "Min iOS Version",
+          "description": "Source: min_ios_version."
+        },
+        "ios14targeting": {
+          "type": "string",
+          "x-ms-summary": "iOS 14 Targeting",
+          "description": "One of: UNSET, IOS14_MINUS, IOS14_PLUS, ALL. Source: ios14_targeting."
+        },
+        "ios14quotatype": {
+          "type": "string",
+          "x-ms-summary": "iOS 14 Quota Type",
+          "description": "One of: OCCUPIED, UNOCCUPIED. Source: ios14_quota_type."
+        },
+        "devicemodelids": {
+          "type": "string",
+          "x-ms-summary": "Device Model IDs",
+          "description": "One value per line. Source: device_model_ids."
+        },
+        "networktypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Network Types",
+          "description": "TikTok enum values. Source: network_types."
+        },
+        "carrierids": {
+          "type": "string",
+          "x-ms-summary": "Carrier IDs",
+          "description": "One value per line. Source: carrier_ids."
+        },
+        "ispids": {
+          "type": "string",
+          "x-ms-summary": "ISP IDs",
+          "description": "One value per line. Source: isp_ids."
+        },
+        "devicepriceranges": {
+          "type": "string",
+          "x-ms-summary": "Device Price Ranges",
+          "description": "One value per line. Source: device_price_ranges."
+        },
+        "brandsafetytype": {
+          "type": "string",
+          "x-ms-summary": "Brand Safety Type",
+          "description": "One of: NO_BRAND_SAFETY, EXPANDED_INVENTORY, STANDARD_INVENTORY, LIMITED_INVENTORY, THIRD_PARTY. Source: brand_safety_type."
+        },
+        "brandsafetypartner": {
+          "type": "string",
+          "x-ms-summary": "Brand Safety Partner",
+          "description": "One of: IAS, OPEN_SLATE. Source: brand_safety_partner."
+        },
+        "inventoryfilterenabled": {
+          "type": "boolean",
+          "x-ms-summary": "Inventory Filter Enabled",
+          "description": "Source: inventory_filter_enabled."
+        },
+        "categoryexclusionids": {
+          "type": "string",
+          "x-ms-summary": "Category Exclusion IDs",
+          "description": "One value per line. Source: category_exclusion_ids."
+        },
+        "verticalsensitivityid": {
+          "type": "string",
+          "x-ms-summary": "Vertical Sensitivity ID",
+          "description": "Source: vertical_sensitivity_id."
+        },
+        "ishfss": {
+          "type": "boolean",
+          "x-ms-summary": "HFSS Product",
+          "description": "Source: is_hfss."
+        },
+        "islhfcompliance": {
+          "type": "boolean",
+          "x-ms-summary": "LHF Compliance",
+          "description": "Source: is_lhf_compliance."
+        },
+        "budgetmode": {
+          "type": "string",
+          "x-ms-summary": "Budget Mode",
+          "description": "One of: BUDGET_MODE_DAY, BUDGET_MODE_TOTAL, BUDGET_MODE_INFINITE. Source: budget_mode."
+        },
+        "budget": {
+          "type": "number",
+          "x-ms-summary": "Budget",
+          "description": "In the ad account currency. Source: budget."
+        },
+        "scheduledbudget": {
+          "type": "number",
+          "x-ms-summary": "Scheduled Budget",
+          "description": "In the ad account currency. Source: scheduled_budget."
+        },
+        "scheduletype": {
+          "type": "string",
+          "x-ms-summary": "Schedule Type",
+          "description": "One of: SCHEDULE_FROM_NOW, SCHEDULE_START_END. Source: schedule_type."
+        },
+        "schedulestarttime": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Schedule Start Time",
+          "description": "UTC. Source: schedule_start_time."
+        },
+        "scheduleendtime": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Schedule End Time",
+          "description": "UTC. Source: schedule_end_time."
+        },
+        "dayparting": {
+          "type": "string",
+          "x-ms-summary": "Dayparting",
+          "description": "Source: dayparting."
+        },
+        "pacing": {
+          "type": "string",
+          "x-ms-summary": "Pacing",
+          "description": "One of: PACING_MODE_SMOOTH, PACING_MODE_FAST. Source: pacing."
+        },
+        "deliverymode": {
+          "type": "string",
+          "x-ms-summary": "Delivery Mode",
+          "description": "One of: STANDARD, SCHEDULE, SEQUENCE, VIEW_OPTIMIZE, OPTIMIZE. Source: delivery_mode."
+        },
+        "scheduleinfos": {
+          "type": "string",
+          "x-ms-summary": "Schedule Infos",
+          "description": "JSON. Source: schedule_infos."
+        },
+        "optimizationgoal": {
+          "type": "string",
+          "x-ms-summary": "Optimization Goal",
+          "description": "One of: CLICK, CONVERT, INSTALL, IN_APP_EVENT, SHOW, REACH, LEAD_GENERATION, LEADS, WEBSITE_ENGAGEMENT, CONVERSATION, FOLLOWERS, PAGE_VISIT, VALUE, AUTOMATIC_VALUE_OPTIMIZATION, GMV, PURCHASES, INITIATE_CHECKOUTS, MT_LIVE_ROOM, PRODUCT_CLICK_IN_LIVE, ENGAGED_VIEW, ENGAGED_VIEW_FIFTEEN, TRAFFIC_LANDING_PAGE_VIEW, DESTINATION_VISIT, PREFERRED_LEAD. Source: optimization_goal."
+        },
+        "billingevent": {
+          "type": "string",
+          "x-ms-summary": "Billing Event",
+          "description": "One of: CPC, CPM, CPV, GD, OCPM. Source: billing_event."
+        },
+        "bidtype": {
+          "type": "string",
+          "x-ms-summary": "Bid Type",
+          "description": "One of: BID_TYPE_CUSTOM, BID_TYPE_NO_BID. Source: bid_type."
+        },
+        "bidprice": {
+          "type": "number",
+          "x-ms-summary": "Bid Price",
+          "description": "In the ad account currency. Source: bid_price."
+        },
+        "conversionbidprice": {
+          "type": "number",
+          "x-ms-summary": "Conversion Bid Price",
+          "description": "In the ad account currency. Source: conversion_bid_price."
+        },
+        "deepbidtype": {
+          "type": "string",
+          "x-ms-summary": "Deep Bid Type",
+          "description": "One of: DEFAULT, MIN, PACING, VO_MIN_ROAS, VO_HIGHEST_VALUE, AEO. Source: deep_bid_type."
+        },
+        "roasbid": {
+          "type": "number",
+          "x-ms-summary": "ROAS Bid",
+          "description": "Source: roas_bid."
+        },
+        "deepcpabid": {
+          "type": "number",
+          "x-ms-summary": "Deep CPA Bid",
+          "description": "In the ad account currency. Source: deep_cpa_bid."
+        },
+        "vbowindow": {
+          "type": "string",
+          "x-ms-summary": "VBO Window",
+          "description": "One of: SEVEN_DAYS, ZERO_DAY. Source: vbo_window."
+        },
+        "biddisplaymode": {
+          "type": "string",
+          "x-ms-summary": "Bid Display Mode",
+          "description": "Source: bid_display_mode."
+        },
+        "cpvvideoduration": {
+          "type": "string",
+          "x-ms-summary": "CPV Video Duration",
+          "description": "One of: SIX_SECONDS, TWO_SECONDS. Source: cpv_video_duration."
+        },
+        "nextdayretention": {
+          "type": "number",
+          "x-ms-summary": "Next Day Retention",
+          "description": "Source: next_day_retention."
+        },
+        "statistictype": {
+          "type": "string",
+          "x-ms-summary": "Statistic Type",
+          "description": "One of: EVERYTIME, NONE. Source: statistic_type."
+        },
+        "frequencycap": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Frequency Cap",
+          "description": "Source: frequency."
+        },
+        "frequencyschedule": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Frequency Cap Days",
+          "description": "Source: frequency_schedule."
+        },
+        "creativematerialmode": {
+          "type": "string",
+          "x-ms-summary": "Creative Material Mode",
+          "description": "One of: CUSTOM, DYNAMIC, SMART_CREATIVE. Source: creative_material_mode."
+        },
+        "adgroupappprofilepagestate": {
+          "type": "string",
+          "x-ms-summary": "App Profile Page State",
+          "description": "One of: INVALID, UNSET, ON, OFF. Source: adgroup_app_profile_page_state."
+        },
+        "feedtype": {
+          "type": "string",
+          "x-ms-summary": "Feed Type",
+          "description": "One of: STANDARD_FEED, TOP_FEED. Source: feed_type."
+        },
+        "clickattributionwindow": {
+          "type": "string",
+          "x-ms-summary": "Click Attribution Window",
+          "description": "One of: OFF, ONE_DAY, SEVEN_DAYS, FOURTEEN_DAYS, TWENTY_EIGHT_DAYS. Source: click_attribution_window."
+        },
+        "engagedviewattributionwindow": {
+          "type": "string",
+          "x-ms-summary": "Engaged View Attribution Window",
+          "description": "One of: ONE_DAY, SEVEN_DAYS. Source: engaged_view_attribution_window."
+        },
+        "viewattributionwindow": {
+          "type": "string",
+          "x-ms-summary": "View Attribution Window",
+          "description": "One of: OFF, ONE_DAY, SEVEN_DAYS. Source: view_attribution_window."
+        },
+        "attributioneventcount": {
+          "type": "string",
+          "x-ms-summary": "Attribution Event Count",
+          "description": "One of: UNSET, EVERY, ONCE. Source: attribution_event_count."
+        },
+        "conversionwindow": {
+          "type": "string",
+          "x-ms-summary": "Conversion Window (deprecated)",
+          "description": "One of: ONE_DAY_CLICK, SEVEN_DAY_CLICK, ONE_DAY_CLICK_OR_ONE_DAY_VIEW, SEVEN_DAY_CLICK_OR_ONE_DAY_VIEW. Source: conversion_window."
+        },
+        "rfpurchasedtype": {
+          "type": "string",
+          "x-ms-summary": "R&F Purchased Type",
+          "description": "One of: FIXED_SHOW, FIXED_REACH. Source: rf_purchased_type."
+        },
+        "purchasedimpression": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Purchased Impression",
+          "description": "Source: purchased_impression."
+        },
+        "purchasedreach": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Purchased Reach",
+          "description": "Source: purchased_reach."
+        },
+        "rfestimatedcpr": {
+          "type": "number",
+          "x-ms-summary": "R&F Estimated CPR",
+          "description": "In the ad account currency. Source: rf_estimated_cpr."
+        },
+        "rfestimatedfrequency": {
+          "type": "number",
+          "x-ms-summary": "R&F Estimated Frequency",
+          "description": "Source: rf_estimated_frequency."
+        },
+        "predictimpression": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Predicted Impressions (k)",
+          "description": "Source: predict_impression."
+        },
+        "topviewreachrange": {
+          "type": "string",
+          "x-ms-summary": "TopView Reach Range (k)",
+          "description": "One value per line. Source: topview_reach_range."
+        },
+        "prediscountcpm": {
+          "type": "number",
+          "x-ms-summary": "TopView Pre-discount CPM",
+          "description": "In the ad account currency. Source: pre_discount_cpm."
+        },
+        "topviewcpm": {
+          "type": "number",
+          "x-ms-summary": "TopView Estimated CPM",
+          "description": "In the ad account currency. Source: cpm."
+        },
+        "discounttype": {
+          "type": "string",
+          "x-ms-summary": "TopView Discount Type",
+          "description": "One of: NO_DISCOUNT, BY_PERCENTAGE, BY_AMOUNT. Source: discount_type."
+        },
+        "discountamount": {
+          "type": "number",
+          "x-ms-summary": "TopView Discount Amount",
+          "description": "In the ad account currency. Source: discount_amount."
+        },
+        "discountpercentage": {
+          "type": "number",
+          "x-ms-summary": "TopView Discount (%)",
+          "description": "Source: discount_percentage."
+        },
+        "prediscountbudget": {
+          "type": "number",
+          "x-ms-summary": "TopView Pre-discount Budget",
+          "description": "In the ad account currency. Source: pre_discount_budget."
+        },
+        "lastsyncedon": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Last Synced On",
+          "description": "When the connector read the data (UTC)."
+        },
+        "rawpayload": {
+          "type": "string",
+          "x-ms-summary": "Raw Payload",
+          "description": "Full TikTok object as JSON."
+        }
+      }
+    },
+    "AdGroupsResponse": {
+      "type": "object",
+      "properties": {
+        "advertiser_id": {
+          "type": "string",
+          "x-ms-summary": "Advertiser ID"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "$ref": "#/definitions/AdGroup"
+          }
+        }
+      }
+    },
+    "Ad": {
+      "type": "object",
+      "properties": {
+        "adname": {
+          "type": "string",
+          "x-ms-summary": "Ad Name",
+          "description": "Source: ad_name."
+        },
+        "adid": {
+          "type": "string",
+          "x-ms-summary": "Ad ID",
+          "description": "Source: ad_id."
+        },
+        "adidv2": {
+          "type": "string",
+          "x-ms-summary": "Ad ID v2",
+          "description": "Source: ad_id_v2."
+        },
+        "smartplusadid": {
+          "type": "string",
+          "x-ms-summary": "Smart+ Ad ID",
+          "description": "Source: smart_plus_ad_id."
+        },
+        "adgroupid": {
+          "type": "string",
+          "x-ms-summary": "Ad Group ID",
+          "description": "Source: adgroup_id."
+        },
+        "adgroupname": {
+          "type": "string",
+          "x-ms-summary": "Ad Group Name",
+          "description": "Source: adgroup_name."
+        },
+        "campaignid": {
+          "type": "string",
+          "x-ms-summary": "Campaign ID",
+          "description": "Source: campaign_id."
+        },
+        "campaignname": {
+          "type": "string",
+          "x-ms-summary": "Campaign Name",
+          "description": "Source: campaign_name."
+        },
+        "advertiserid": {
+          "type": "string",
+          "x-ms-summary": "Advertiser ID",
+          "description": "Source: advertiser_id."
+        },
+        "campaignautomationtype": {
+          "type": "string",
+          "x-ms-summary": "Campaign Automation Type",
+          "description": "One of: MANUAL, SMART_PLUS, UPGRADED_SMART_PLUS, UPGRADED_SMART_PLUS_CREATIVE. Source: campaign_automation_type."
+        },
+        "campaignsystemorigin": {
+          "type": "string",
+          "x-ms-summary": "Campaign System Origin",
+          "description": "One of: PROMOTE. Source: campaign_system_origin."
+        },
+        "createtime": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Created On (TikTok)",
+          "description": "UTC. Source: create_time."
+        },
+        "modifytime": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Modified On (TikTok)",
+          "description": "UTC. Source: modify_time."
+        },
+        "isnewstructure": {
+          "type": "boolean",
+          "x-ms-summary": "Is New Structure",
+          "description": "Source: is_new_structure."
+        },
+        "operationstatus": {
+          "type": "string",
+          "x-ms-summary": "Operation Status",
+          "description": "One of: ENABLE, DISABLE, FROZEN. Source: operation_status."
+        },
+        "secondarystatus": {
+          "type": "string",
+          "x-ms-summary": "Secondary Status",
+          "description": "One of: AD_STATUS_ALL, AD_STATUS_NOT_DELETE, AD_STATUS_CAMPAIGN_DELETE, AD_STATUS_ADGROUP_DELETE, AD_STATUS_DELETE, AD_STATUS_ADVERTISER_AUDIT_DENY, AD_STATUS_ADVERTISER_AUDIT, ADVERTISER_CONTRACT_PENDING, ADVERTISER_ACCOUNT_PUNISH, AD_STATUS_BALANCE_EXCEED, AD_STATUS_CAMPAIGN_EXCEED, AD_STATUS_BUDGET_EXCEED, AD_STATUS_AD_PRE_ONLINE, AD_STATUS_AUDIT, AD_STATUS_REAUDIT, AD_STATUS_AUDIT_DENY, AD_STATUS_ADGROUP_AUDIT_DENY, AD_STATUS_ADGROUP_PARTIAL_AUDIT_NO_DELIVERY, AD_STATUS_REVIEW_PARTIALLY_APPROVED, AD_STATUS_PARTIAL_AUDIT_DELIVERY_OK, AD_STATUS_PARTIAL_AUDIT_NO_DELIVERY, AD_STATUS_ADGROUP_INDUSTRY_QUALIFICATION_MISSING, AD_STATUS_ADGROUP_INDUSTRY_QUALIFICATION_EXPIRED, AD_STATUS_ADGROUP_INDUSTRY_QUALIFICATION_DENY, AD_STATUS_MUSIC_AUTHORIZATION_MISSING, AD_STAUS_PIXEL_UNBIND, AD_STATUS_LIVE_OFFLINE, AD_STATUS_NOT_START, AD_STATUS_DONE, AD_STATUS_CAMPAIGN_DISABLE, AD_STATUS_ADGROUP_DISABLE, ADGROUP_STATUS_FROZEN, AD_STATUS_DISABLE, AD_STATUS_DELIVERY_OK, AD_STATUS_PROCESS_AUDIO, AD_STATUS_TRANSCODING_FAIL, AD_STATUS_ADGROUP_ASSET_AUTHORIZATION_LOST, AD_STATUS_ASSET_AUTHORIZATION_LOST, AD_STATUS_AD_QUOTA_LIMIT, AD_STATUS_PRODUCT_UNAVAILABLE, AD_STATUS_ANCHOR_UNAVAILABLE, AD_STATUS_NO_AUTHORIZATION_OF_SHOWCASE, AD_STATUS_RF_ADGROUP_CLOSED, AD_STATUS_PROMOTE_AD_OFFLINE_AUDIT, AD_STATUS_PROMOTE_ADGROUP_CLOSED. Source: secondary_status."
+        },
+        "isaco": {
+          "type": "boolean",
+          "x-ms-summary": "Smart Creative (ACO)",
+          "description": "Source: is_aco."
+        },
+        "creativeauthorized": {
+          "type": "boolean",
+          "x-ms-summary": "Creative Authorized",
+          "description": "Source: creative_authorized."
+        },
+        "adformat": {
+          "type": "string",
+          "x-ms-summary": "Ad Format",
+          "description": "One of: SINGLE_IMAGE, SINGLE_VIDEO, LIVE_CONTENT, CAROUSEL_ADS, CATALOG_CAROUSEL. Source: ad_format."
+        },
+        "creativetype": {
+          "type": "string",
+          "x-ms-summary": "Creative Type",
+          "description": "One of: SHOP_PDP, SHOP_PLP, SHORT_VIDEO_LIVE, DIRECT_LIVE, PSA, CUSTOM_INSTANT_PAGE, AUTO_INVENTORY_INSTANT_PAGE. Source: creative_type."
+        },
+        "dynamicformat": {
+          "type": "string",
+          "x-ms-summary": "Dynamic Format",
+          "description": "One of: UNSET, DYNAMIC_CREATIVE. Source: dynamic_format."
+        },
+        "verticalvideostrategy": {
+          "type": "string",
+          "x-ms-summary": "Vertical Video Strategy",
+          "description": "One of: UNSET, SINGLE_VIDEO, CATALOG_VIDEOS, CATALOG_UPLOADED_VIDEOS, LIVE_STREAM. Source: vertical_video_strategy."
+        },
+        "videoid": {
+          "type": "string",
+          "x-ms-summary": "Video ID",
+          "description": "Source: video_id."
+        },
+        "imageids": {
+          "type": "string",
+          "x-ms-summary": "Image IDs",
+          "description": "One value per line. Source: image_ids."
+        },
+        "carouselimageindex": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Carousel Image Index",
+          "description": "Source: carousel_image_index."
+        },
+        "musicid": {
+          "type": "string",
+          "x-ms-summary": "Music ID",
+          "description": "Source: music_id."
+        },
+        "endcardcta": {
+          "type": "string",
+          "x-ms-summary": "End Card CTA",
+          "description": "One of: SEARCH_INVENTORY, LEARN_MORE, SHOP_NOW, SIGN_UP, CONTACT_US, BOOK_NOW, READ_MORE, VIEW_MORE, ORDER_NOW. Source: end_card_cta."
+        },
+        "autodisclaimertypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Auto Disclaimer Types",
+          "description": "TikTok enum values. Source: auto_disclaimer_types."
+        },
+        "productdisplayfieldlist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Product Display Fields",
+          "description": "TikTok enum values. Source: product_display_field_list."
+        },
+        "creativeautoenhancements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Creative Auto-enhancements",
+          "description": "TikTok enum values. Source: creative_auto_enhancement_strategy_list."
+        },
+        "aigcdisclosuretype": {
+          "type": "string",
+          "x-ms-summary": "AIGC Disclosure Type",
+          "description": "One of: SELF_DISCLOSURE, NOT_DECLARED. Source: aigc_disclosure_type."
+        },
+        "playableurl": {
+          "type": "string",
+          "x-ms-summary": "Playable URL",
+          "description": "Source: playable_url."
+        },
+        "adtext": {
+          "type": "string",
+          "x-ms-summary": "Ad Text",
+          "description": "Source: ad_text."
+        },
+        "adtexts": {
+          "type": "string",
+          "x-ms-summary": "Ad Texts",
+          "description": "One value per line. Source: ad_texts."
+        },
+        "calltoaction": {
+          "type": "string",
+          "x-ms-summary": "Call To Action",
+          "description": "One of: APPLY_NOW, BOOK_NOW, CALL_NOW, CHECK_AVAILABLILITY, CONTACT_US, DOWNLOAD_NOW, EXPERIENCE_NOW, GET_QUOTE, GET_SHOWTIMES, GET_TICKETS_NOW, INSTALL_NOW, INTERESTED, LEARN_MORE, LISTEN_NOW, ORDER_NOW, PLAY_GAME, PREORDER_NOW, READ_MORE, SEND_MESSAGE, SHOP_NOW, SIGN_UP, SUBSCRIBE, VIEW_NOW, VIEW_PROFILE, VISIT_STORE, WATCH_LIVE, WATCH_NOW, JOIN_THIS_HASHTAG, SHOOT_WITH_THIS_EFFECT, VIEW_VIDEO_WITH_THIS_EFFECT. Source: call_to_action."
+        },
+        "calltoactionid": {
+          "type": "string",
+          "x-ms-summary": "CTA Portfolio ID",
+          "description": "Source: call_to_action_id."
+        },
+        "cardid": {
+          "type": "string",
+          "x-ms-summary": "Creative Portfolio ID",
+          "description": "Source: card_id."
+        },
+        "displayname": {
+          "type": "string",
+          "x-ms-summary": "Display Name",
+          "description": "Source: display_name."
+        },
+        "appname": {
+          "type": "string",
+          "x-ms-summary": "App Name",
+          "description": "Source: app_name."
+        },
+        "avatariconweburi": {
+          "type": "string",
+          "x-ms-summary": "Avatar Icon",
+          "description": "Source: avatar_icon_web_uri."
+        },
+        "profileimageurl": {
+          "type": "string",
+          "x-ms-summary": "Profile Image URL",
+          "description": "Source: profile_image_url."
+        },
+        "identityid": {
+          "type": "string",
+          "x-ms-summary": "Identity ID",
+          "description": "Source: identity_id."
+        },
+        "identitytype": {
+          "type": "string",
+          "x-ms-summary": "Identity Type",
+          "description": "One of: CUSTOMIZED_USER, AUTH_CODE, TT_USER, BC_AUTH_TT. Source: identity_type."
+        },
+        "identityauthorizedbcid": {
+          "type": "string",
+          "x-ms-summary": "Identity BC ID",
+          "description": "Source: identity_authorized_bc_id."
+        },
+        "tiktokitemid": {
+          "type": "string",
+          "x-ms-summary": "TikTok Post ID",
+          "description": "Source: tiktok_item_id."
+        },
+        "promotionalmusicdisabled": {
+          "type": "boolean",
+          "x-ms-summary": "Promotional Music Disabled",
+          "description": "Source: promotional_music_disabled."
+        },
+        "itemduetstatus": {
+          "type": "string",
+          "x-ms-summary": "Duet Status",
+          "description": "One of: ENABLE, DISABLE. Source: item_duet_status."
+        },
+        "itemstitchstatus": {
+          "type": "string",
+          "x-ms-summary": "Stitch Status",
+          "description": "One of: ENABLE, DISABLE. Source: item_stitch_status."
+        },
+        "darkpoststatus": {
+          "type": "string",
+          "x-ms-summary": "Dark Post Status",
+          "description": "One of: ON, OFF. Source: dark_post_status."
+        },
+        "brandedcontentdisabled": {
+          "type": "boolean",
+          "x-ms-summary": "Branded Content Disabled",
+          "description": "Source: branded_content_disabled."
+        },
+        "catalogid": {
+          "type": "string",
+          "x-ms-summary": "Catalog ID",
+          "description": "Source: catalog_id."
+        },
+        "productspecifictype": {
+          "type": "string",
+          "x-ms-summary": "Product Specific Type",
+          "description": "One of: ALL, PRODUCT_SET, CUSTOMIZED_PRODUCTS. Source: product_specific_type."
+        },
+        "itemgroupids": {
+          "type": "string",
+          "x-ms-summary": "Item Group IDs",
+          "description": "One value per line. Source: item_group_ids."
+        },
+        "productsetid": {
+          "type": "string",
+          "x-ms-summary": "Product Set ID",
+          "description": "Source: product_set_id."
+        },
+        "skuids": {
+          "type": "string",
+          "x-ms-summary": "SKU IDs",
+          "description": "One value per line. Source: sku_ids."
+        },
+        "vehicleids": {
+          "type": "string",
+          "x-ms-summary": "Vehicle IDs",
+          "description": "One value per line. Source: vehicle_ids."
+        },
+        "showcaseproducts": {
+          "type": "string",
+          "x-ms-summary": "Showcase Products",
+          "description": "JSON. Source: showcase_products."
+        },
+        "shoppingadsvideopackageid": {
+          "type": "string",
+          "x-ms-summary": "Shopping Video Package ID",
+          "description": "Source: shopping_ads_video_package_id."
+        },
+        "landingpageurl": {
+          "type": "string",
+          "x-ms-summary": "Landing Page URL",
+          "description": "Source: landing_page_url."
+        },
+        "utmparams": {
+          "type": "string",
+          "x-ms-summary": "UTM Params",
+          "description": "JSON. Source: utm_params."
+        },
+        "pageid": {
+          "type": "string",
+          "x-ms-summary": "Page ID",
+          "description": "Source: page_id."
+        },
+        "cppurl": {
+          "type": "string",
+          "x-ms-summary": "CPP URL",
+          "description": "Source: cpp_url."
+        },
+        "tiktokpagecategory": {
+          "type": "string",
+          "x-ms-summary": "TikTok Page Category",
+          "description": "One of: PROFILE_PAGE, OTHER_TIKTOK_PAGE, TIKTOK_INSTANT_PAGE. Source: tiktok_page_category."
+        },
+        "phoneregioncode": {
+          "type": "string",
+          "x-ms-summary": "Phone Region Code",
+          "description": "Source: phone_region_code."
+        },
+        "phoneregioncallingcode": {
+          "type": "string",
+          "x-ms-summary": "Phone Region Calling Code",
+          "description": "Source: phone_region_calling_code."
+        },
+        "phonenumber": {
+          "type": "string",
+          "x-ms-summary": "Phone Number",
+          "description": "Source: phone_number."
+        },
+        "deeplink": {
+          "type": "string",
+          "x-ms-summary": "Deeplink",
+          "description": "Source: deeplink."
+        },
+        "deeplinktype": {
+          "type": "string",
+          "x-ms-summary": "Deeplink Type",
+          "description": "One of: NORMAL, DEFERRED_DEEPLINK. Source: deeplink_type."
+        },
+        "deeplinkformattype": {
+          "type": "string",
+          "x-ms-summary": "Deeplink Format Type",
+          "description": "One of: UNIVERSAL_OR_APP_LINK, SCHEME_LINK, NONE. Source: deeplink_format_type."
+        },
+        "shoppingadsdeeplinktype": {
+          "type": "string",
+          "x-ms-summary": "Shopping Deeplink Type",
+          "description": "One of: NONE, CUSTOM, SHOPPING_ADS. Source: shopping_ads_deeplink_type."
+        },
+        "deeplinkutmparams": {
+          "type": "string",
+          "x-ms-summary": "Deeplink UTM Params",
+          "description": "JSON. Source: deeplink_utm_params."
+        },
+        "shoppingadsfallbacktype": {
+          "type": "string",
+          "x-ms-summary": "Shopping Fallback Type",
+          "description": "One of: DEFAULT, CUSTOM, SHOPPING_ADS. Source: shopping_ads_fallback_type."
+        },
+        "fallbacktype": {
+          "type": "string",
+          "x-ms-summary": "Fallback Type",
+          "description": "One of: APP_INSTALL, WEBSITE, UNSET. Source: fallback_type."
+        },
+        "dynamicdestination": {
+          "type": "string",
+          "x-ms-summary": "Dynamic Destination",
+          "description": "One of: DLP, UNSET. Source: dynamic_destination."
+        },
+        "automessageid": {
+          "type": "string",
+          "x-ms-summary": "Auto Message ID",
+          "description": "Source: auto_message_id."
+        },
+        "disclaimertype": {
+          "type": "string",
+          "x-ms-summary": "Disclaimer Type",
+          "description": "One of: TEXT_LINK, TEXT_ONLY. Source: disclaimer_type."
+        },
+        "disclaimertext": {
+          "type": "string",
+          "x-ms-summary": "Disclaimer Text",
+          "description": "JSON. Source: disclaimer_text."
+        },
+        "disclaimerclickabletexts": {
+          "type": "string",
+          "x-ms-summary": "Clickable Disclaimers",
+          "description": "JSON. Source: disclaimer_clickable_texts."
+        },
+        "trackingpixelid": {
+          "type": "string",
+          "x-ms-summary": "Tracking Pixel ID",
+          "description": "Source: tracking_pixel_id."
+        },
+        "trackingappid": {
+          "type": "string",
+          "x-ms-summary": "Tracking App ID",
+          "description": "Source: tracking_app_id."
+        },
+        "trackingofflineeventsetids": {
+          "type": "string",
+          "x-ms-summary": "Tracking Offline Event Set IDs",
+          "description": "One value per line. Source: tracking_offline_event_set_ids."
+        },
+        "trackingmessageeventsetid": {
+          "type": "string",
+          "x-ms-summary": "Tracking Message Event Set ID",
+          "description": "Source: tracking_message_event_set_id."
+        },
+        "optimizationevent": {
+          "type": "string",
+          "x-ms-summary": "Optimization Event",
+          "description": "Source: optimization_event."
+        },
+        "vastmoatenabled": {
+          "type": "boolean",
+          "x-ms-summary": "Moat Viewability Enabled",
+          "description": "Source: vast_moat_enabled."
+        },
+        "viewabilitypostbidpartner": {
+          "type": "string",
+          "x-ms-summary": "Viewability Partner",
+          "description": "One of: UNSET, MOAT, DOUBLE_VERIFY, IAS, ZEFR. Source: viewability_postbid_partner."
+        },
+        "viewabilityvasturl": {
+          "type": "string",
+          "x-ms-summary": "Viewability VAST URL",
+          "description": "Source: viewability_vast_url."
+        },
+        "brandsafetypostbidpartner": {
+          "type": "string",
+          "x-ms-summary": "Brand Safety Post-bid Partner",
+          "description": "One of: UNSET, DOUBLE_VERIFY, IAS, ZEFR. Source: brand_safety_postbid_partner."
+        },
+        "brandsafetyvasturl": {
+          "type": "string",
+          "x-ms-summary": "Brand Safety VAST URL",
+          "description": "Source: brand_safety_vast_url."
+        },
+        "impressiontrackingurl": {
+          "type": "string",
+          "x-ms-summary": "Impression Tracking URL",
+          "description": "Source: impression_tracking_url."
+        },
+        "clicktrackingurl": {
+          "type": "string",
+          "x-ms-summary": "Click Tracking URL",
+          "description": "Source: click_tracking_url."
+        },
+        "commentdisabled": {
+          "type": "boolean",
+          "x-ms-summary": "Comments Disabled",
+          "description": "Source: comment_disabled."
+        },
+        "videodownloaddisabled": {
+          "type": "boolean",
+          "x-ms-summary": "Video Download Disabled",
+          "description": "Source: video_download_disabled."
+        },
+        "sharedisabled": {
+          "type": "boolean",
+          "x-ms-summary": "Sharing Disabled",
+          "description": "Source: share_disabled."
+        },
+        "lastsyncedon": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Last Synced On",
+          "description": "When the connector read the data (UTC)."
+        },
+        "rawpayload": {
+          "type": "string",
+          "x-ms-summary": "Raw Payload",
+          "description": "Full TikTok object as JSON."
+        }
+      }
+    },
+    "AdsResponse": {
+      "type": "object",
+      "properties": {
+        "advertiser_id": {
+          "type": "string",
+          "x-ms-summary": "Advertiser ID"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "$ref": "#/definitions/Ad"
+          }
+        }
+      }
+    },
+    "InsightsRow": {
+      "type": "object",
+      "properties": {
+        "campaignid": {
+          "type": "string",
+          "x-ms-summary": "Campaign ID",
+          "description": "Set for level campaign."
+        },
+        "adgroupid": {
+          "type": "string",
+          "x-ms-summary": "Ad Group ID",
+          "description": "Set for level adgroup."
+        },
+        "adid": {
+          "type": "string",
+          "x-ms-summary": "Ad ID",
+          "description": "Set for level ad."
+        },
+        "advertiserid": {
+          "type": "string",
+          "x-ms-summary": "Advertiser ID"
+        },
+        "insightslastsyncedon": {
+          "type": "string",
+          "format": "date-time",
+          "x-ms-summary": "Insights Last Synced On"
+        },
+        "spend": {
+          "type": "number",
+          "x-ms-summary": "Cost",
+          "description": "In the ad account currency. Source: spend."
+        },
+        "billedcost": {
+          "type": "number",
+          "x-ms-summary": "Net cost",
+          "description": "In the ad account currency. Source: billed_cost."
+        },
+        "cashspend": {
+          "type": "number",
+          "x-ms-summary": "Cost Charged by Cash",
+          "description": "In the ad account currency. Source: cash_spend."
+        },
+        "voucherspend": {
+          "type": "number",
+          "x-ms-summary": "Cost Charged by Voucher",
+          "description": "In the ad account currency. Source: voucher_spend."
+        },
+        "cpc": {
+          "type": "number",
+          "x-ms-summary": "CPC (destination)",
+          "description": "In the ad account currency. Source: cpc."
+        },
+        "cpm": {
+          "type": "number",
+          "x-ms-summary": "CPM",
+          "description": "In the ad account currency. Source: cpm."
+        },
+        "impressions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Impressions",
+          "description": "Source: impressions."
+        },
+        "grossimpressions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Gross Impressions (Includes Invalid Impressions)",
+          "description": "Source: gross_impressions."
+        },
+        "clicks": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Clicks (destination)",
+          "description": "Source: clicks."
+        },
+        "ctr": {
+          "type": "number",
+          "x-ms-summary": "CTR (destination)",
+          "description": "Percent. Source: ctr."
+        },
+        "reach": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Reach",
+          "description": "Source: reach."
+        },
+        "costper1000reached": {
+          "type": "number",
+          "x-ms-summary": "Cost per 1,000 people reached",
+          "description": "In the ad account currency. Source: cost_per_1000_reached."
+        },
+        "frequency": {
+          "type": "number",
+          "x-ms-summary": "Frequency",
+          "description": "Source: frequency."
+        },
+        "conversion": {
+          "type": "number",
+          "x-ms-summary": "Conversions",
+          "description": "Source: conversion."
+        },
+        "costperconversion": {
+          "type": "number",
+          "x-ms-summary": "Cost per conversion",
+          "description": "In the ad account currency. Source: cost_per_conversion."
+        },
+        "conversionrate": {
+          "type": "number",
+          "x-ms-summary": "Conversion rate (CVR, clicks)",
+          "description": "Percent. Source: conversion_rate."
+        },
+        "conversionratev2": {
+          "type": "number",
+          "x-ms-summary": "Conversion rate (CVR)",
+          "description": "Percent. Source: conversion_rate_v2."
+        },
+        "realtimeconversion": {
+          "type": "number",
+          "x-ms-summary": "Conversions by conversion time",
+          "description": "Source: real_time_conversion."
+        },
+        "realtimecostperconversion": {
+          "type": "number",
+          "x-ms-summary": "Cost per conversion by conversion time",
+          "description": "In the ad account currency. Source: real_time_cost_per_conversion."
+        },
+        "realtimeconversionrate": {
+          "type": "number",
+          "x-ms-summary": "Real-time conversion rate (CVR, clicks)",
+          "description": "Percent. Source: real_time_conversion_rate."
+        },
+        "realtimeconversionratev2": {
+          "type": "number",
+          "x-ms-summary": "Conversion rate (CVR) by conversion time",
+          "description": "Percent. Source: real_time_conversion_rate_v2."
+        },
+        "result": {
+          "type": "number",
+          "x-ms-summary": "Results",
+          "description": "Source: result."
+        },
+        "costperresult": {
+          "type": "number",
+          "x-ms-summary": "Cost per result",
+          "description": "In the ad account currency. Source: cost_per_result."
+        },
+        "resultrate": {
+          "type": "number",
+          "x-ms-summary": "Result rate",
+          "description": "Percent. Source: result_rate."
+        },
+        "realtimeresult": {
+          "type": "number",
+          "x-ms-summary": "Real-time results",
+          "description": "Source: real_time_result."
+        },
+        "realtimecostperresult": {
+          "type": "number",
+          "x-ms-summary": "Real-time cost per result",
+          "description": "In the ad account currency. Source: real_time_cost_per_result."
+        },
+        "realtimeresultrate": {
+          "type": "number",
+          "x-ms-summary": "Real-time result rate",
+          "description": "Percent. Source: real_time_result_rate."
+        },
+        "secondarygoalresult": {
+          "type": "number",
+          "x-ms-summary": "Deep funnel result",
+          "description": "Source: secondary_goal_result."
+        },
+        "costpersecondarygoalresult": {
+          "type": "number",
+          "x-ms-summary": "Cost per deep funnel result",
+          "description": "In the ad account currency. Source: cost_per_secondary_goal_result."
+        },
+        "secondarygoalresultrate": {
+          "type": "number",
+          "x-ms-summary": "Deep funnel result rate",
+          "description": "Percent. Source: secondary_goal_result_rate."
+        },
+        "videoplayactions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Video views",
+          "description": "Source: video_play_actions."
+        },
+        "videowatched2s": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "2-second video views",
+          "description": "Source: video_watched_2s."
+        },
+        "videowatched6s": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "6-second video views",
+          "description": "Source: video_watched_6s."
+        },
+        "videoviewsp25": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Video views at 25%",
+          "description": "Source: video_views_p25."
+        },
+        "videoviewsp50": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Video views at 50%",
+          "description": "Source: video_views_p50."
+        },
+        "videoviewsp75": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Video views at 75%",
+          "description": "Source: video_views_p75."
+        },
+        "videoviewsp100": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Video views at 100%",
+          "description": "Source: video_views_p100."
+        },
+        "averagevideoplay": {
+          "type": "number",
+          "x-ms-summary": "Average play time per video view",
+          "description": "Source: average_video_play."
+        },
+        "averagevideoplayperuser": {
+          "type": "number",
+          "x-ms-summary": "Average play time per user",
+          "description": "Source: average_video_play_per_user."
+        },
+        "engagedview": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "6-second focused views",
+          "description": "Source: engaged_view."
+        },
+        "paidengagedview": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "6-second focused views (paid views)",
+          "description": "Source: paid_engaged_view."
+        },
+        "paidengagementengagedview": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "6-second focused views (paid interactions)",
+          "description": "Source: paid_engagement_engaged_view."
+        },
+        "engagedview15s": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "15-second focused views",
+          "description": "Source: engaged_view_15s."
+        },
+        "paidengagedview15s": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "15-second focused views (paid views)",
+          "description": "Source: paid_engaged_view_15s."
+        },
+        "paidengagementengagedview15s": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "15-second focused views (paid interactions)",
+          "description": "Source: paid_engagement_engaged_view_15s."
+        },
+        "engagements": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Clicks (all)",
+          "description": "Source: engagements."
+        },
+        "engagementrate": {
+          "type": "number",
+          "x-ms-summary": "CTR (all)",
+          "description": "Percent. Source: engagement_rate."
+        },
+        "clicksonmusicdisc": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Sound clicks",
+          "description": "Source: clicks_on_music_disc."
+        },
+        "duetclicks": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Duet button clicks",
+          "description": "Source: duet_clicks."
+        },
+        "stitchclicks": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Stitch button clicks",
+          "description": "Source: stitch_clicks."
+        },
+        "soundusageclicks": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Use sound button clicks",
+          "description": "Source: sound_usage_clicks."
+        },
+        "anchorclicks": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Anchor clicks",
+          "description": "Source: anchor_clicks."
+        },
+        "anchorclickrate": {
+          "type": "number",
+          "x-ms-summary": "Anchor click rate",
+          "description": "Percent. Source: anchor_click_rate."
+        },
+        "clicksonhashtagchallenge": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Hashtag clicks",
+          "description": "Source: clicks_on_hashtag_challenge."
+        },
+        "follows": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Paid follows",
+          "description": "Source: follows."
+        },
+        "likes": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Paid likes",
+          "description": "Source: likes."
+        },
+        "comments": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Paid comments",
+          "description": "Source: comments."
+        },
+        "shares": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Paid shares",
+          "description": "Source: shares."
+        },
+        "profilevisits": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Paid profile visits",
+          "description": "Source: profile_visits."
+        },
+        "profilevisitsrate": {
+          "type": "number",
+          "x-ms-summary": "Paid profile visit rate",
+          "description": "Percent. Source: profile_visits_rate."
+        },
+        "ttplaylistvisit": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Playlist page visit",
+          "description": "Source: tt_playlist_visit."
+        },
+        "ttplaylistvisitrate": {
+          "type": "number",
+          "x-ms-summary": "Playlist page visit rate",
+          "description": "Percent. Source: tt_playlist_visit_rate."
+        },
+        "costperconsideration": {
+          "type": "number",
+          "x-ms-summary": "Cost per consideration",
+          "description": "In the ad account currency. Source: cost_per_consideration."
+        },
+        "newconsiderationrate": {
+          "type": "number",
+          "x-ms-summary": "New consideration rate",
+          "description": "Percent. Source: new_consideration_rate."
+        },
+        "newconsiderationsize": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "New consideration size",
+          "description": "Source: new_consideration_size."
+        },
+        "completepaymentroas": {
+          "type": "number",
+          "x-ms-summary": "Purchase ROAS (website)",
+          "description": "Source: complete_payment_roas."
+        },
+        "completepayment": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Purchases (website)",
+          "description": "Source: complete_payment."
+        },
+        "costpercompletepayment": {
+          "type": "number",
+          "x-ms-summary": "Cost per purchase (website)",
+          "description": "In the ad account currency. Source: cost_per_complete_payment."
+        },
+        "completepaymentrate": {
+          "type": "number",
+          "x-ms-summary": "Unique purchase rate (website) (%)",
+          "description": "Percent. Source: complete_payment_rate."
+        },
+        "valuepercompletepayment": {
+          "type": "number",
+          "x-ms-summary": "Value per purchase (website)",
+          "description": "In the ad account currency. Source: value_per_complete_payment."
+        },
+        "totalcompletepaymentrate": {
+          "type": "number",
+          "x-ms-summary": "Purchase value (website)",
+          "description": "In the ad account currency. Source: total_complete_payment_rate."
+        },
+        "totallandingpageview": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Landing page views (website)",
+          "description": "Source: total_landing_page_view."
+        },
+        "costperlandingpageview": {
+          "type": "number",
+          "x-ms-summary": "Cost per landing page view (website)",
+          "description": "In the ad account currency. Source: cost_per_landing_page_view."
+        },
+        "landingpageviewrate": {
+          "type": "number",
+          "x-ms-summary": "Landing page view rate (website)",
+          "description": "Percent. Source: landing_page_view_rate."
+        },
+        "totalpageview": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Page views (website)",
+          "description": "Source: total_pageview."
+        },
+        "costperpageview": {
+          "type": "number",
+          "x-ms-summary": "Cost per page view (website)",
+          "description": "In the ad account currency. Source: cost_per_pageview."
+        },
+        "pageviewrate": {
+          "type": "number",
+          "x-ms-summary": "Page view rate (website) (%)",
+          "description": "Percent. Source: pageview_rate."
+        },
+        "avgvalueperpageview": {
+          "type": "number",
+          "x-ms-summary": "Value per page view (website)",
+          "description": "In the ad account currency. Source: avg_value_per_pageview."
+        },
+        "totalvalueperpageview": {
+          "type": "number",
+          "x-ms-summary": "Total page view value (website)",
+          "description": "In the ad account currency. Source: total_value_per_pageview."
+        },
+        "pagebrowseview": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Page Browse",
+          "description": "Source: page_browse_view."
+        },
+        "costperpagebrowseview": {
+          "type": "number",
+          "x-ms-summary": "Cost per Page Browse",
+          "description": "In the ad account currency. Source: cost_per_page_browse_view."
+        },
+        "pagebrowseviewrate": {
+          "type": "number",
+          "x-ms-summary": "Page Browse Rate (%)",
+          "description": "Percent. Source: page_browse_view_rate."
+        },
+        "totalpagebrowseviewvalue": {
+          "type": "number",
+          "x-ms-summary": "Total Page Browse Value",
+          "description": "In the ad account currency. Source: total_page_browse_view_value."
+        },
+        "valueperpagebrowseview": {
+          "type": "number",
+          "x-ms-summary": "Value per Page Browse",
+          "description": "In the ad account currency. Source: value_per_page_browse_view."
+        },
+        "buttonclick": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Button clicks (website)",
+          "description": "Source: button_click."
+        },
+        "costperbuttonclick": {
+          "type": "number",
+          "x-ms-summary": "Cost per button click (website)",
+          "description": "In the ad account currency. Source: cost_per_button_click."
+        },
+        "buttonclickrate": {
+          "type": "number",
+          "x-ms-summary": "Unique button click rate (website)",
+          "description": "Percent. Source: button_click_rate."
+        },
+        "valueperbuttonclick": {
+          "type": "number",
+          "x-ms-summary": "Value per button click (website)",
+          "description": "In the ad account currency. Source: value_per_button_click."
+        },
+        "totalbuttonclickvalue": {
+          "type": "number",
+          "x-ms-summary": "Button click value (website)",
+          "description": "In the ad account currency. Source: total_button_click_value."
+        },
+        "onlineconsult": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Contacts (website)",
+          "description": "Source: online_consult."
+        },
+        "costperonlineconsult": {
+          "type": "number",
+          "x-ms-summary": "Cost per contact (website)",
+          "description": "In the ad account currency. Source: cost_per_online_consult."
+        },
+        "onlineconsultrate": {
+          "type": "number",
+          "x-ms-summary": "Unique contact rate (website)",
+          "description": "Percent. Source: online_consult_rate."
+        },
+        "valueperonlineconsult": {
+          "type": "number",
+          "x-ms-summary": "Value per contact (website)",
+          "description": "In the ad account currency. Source: value_per_online_consult."
+        },
+        "totalonlineconsultvalue": {
+          "type": "number",
+          "x-ms-summary": "Contact value (website)",
+          "description": "In the ad account currency. Source: total_online_consult_value."
+        },
+        "userregistration": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Registrations (website)",
+          "description": "Source: user_registration."
+        },
+        "costperuserregistration": {
+          "type": "number",
+          "x-ms-summary": "Cost per registration (website)",
+          "description": "In the ad account currency. Source: cost_per_user_registration."
+        },
+        "userregistrationrate": {
+          "type": "number",
+          "x-ms-summary": "Unique registration rate (website) (%)",
+          "description": "Percent. Source: user_registration_rate."
+        },
+        "valueperuserregistration": {
+          "type": "number",
+          "x-ms-summary": "Value per registration (website)",
+          "description": "In the ad account currency. Source: value_per_user_registration."
+        },
+        "totaluserregistrationvalue": {
+          "type": "number",
+          "x-ms-summary": "Registration value (website)",
+          "description": "In the ad account currency. Source: total_user_registration_value."
+        },
+        "pagecontentviewevents": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Content views (website)",
+          "description": "Source: page_content_view_events."
+        },
+        "costperpagecontentviewevent": {
+          "type": "number",
+          "x-ms-summary": "Cost per content view (website)",
+          "description": "In the ad account currency. Source: cost_per_page_content_view_event."
+        },
+        "pagecontentvieweventrate": {
+          "type": "number",
+          "x-ms-summary": "Unique content view rate (website) (%)",
+          "description": "Percent. Source: page_content_view_event_rate."
+        },
+        "valueperpagecontentviewevent": {
+          "type": "number",
+          "x-ms-summary": "Value per content view (website)",
+          "description": "In the ad account currency. Source: value_per_page_content_view_event."
+        },
+        "totalpageviewcontenteventsvalue": {
+          "type": "number",
+          "x-ms-summary": "Content view value (website)",
+          "description": "In the ad account currency. Source: total_page_view_content_events_value."
+        },
+        "productdetailspagebrowse": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Product Details Page Browse",
+          "description": "Source: product_details_page_browse."
+        },
+        "costperproductdetailspagebrowse": {
+          "type": "number",
+          "x-ms-summary": "Product Details Page Browse Cost",
+          "description": "In the ad account currency. Source: cost_per_product_details_page_browse."
+        },
+        "productdetailspagebrowserate": {
+          "type": "number",
+          "x-ms-summary": "Product Details Page Browse Rate (%)",
+          "description": "Percent. Source: product_details_page_browse_rate."
+        },
+        "valueperproductdetailspagebrowse": {
+          "type": "number",
+          "x-ms-summary": "Value per Product Details Page Browse",
+          "description": "In the ad account currency. Source: value_per_product_details_page_browse."
+        },
+        "totalproductdetailspagebrowsevalue": {
+          "type": "number",
+          "x-ms-summary": "Total Product Details Page Browse Value",
+          "description": "In the ad account currency. Source: total_product_details_page_browse_value."
+        },
+        "webeventaddtocart": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Adds to cart (website)",
+          "description": "Source: web_event_add_to_cart."
+        },
+        "costperwebeventaddtocart": {
+          "type": "number",
+          "x-ms-summary": "Cost per add to cart (website)",
+          "description": "In the ad account currency. Source: cost_per_web_event_add_to_cart."
+        },
+        "webeventaddtocartrate": {
+          "type": "number",
+          "x-ms-summary": "Unique add to cart rate (website) (%)",
+          "description": "Percent. Source: web_event_add_to_cart_rate."
+        },
+        "valueperwebeventaddtocart": {
+          "type": "number",
+          "x-ms-summary": "Value per add to cart (website)",
+          "description": "In the ad account currency. Source: value_per_web_event_add_to_cart."
+        },
+        "totalwebeventaddtocartvalue": {
+          "type": "number",
+          "x-ms-summary": "Add to cart value (website)",
+          "description": "In the ad account currency. Source: total_web_event_add_to_cart_value."
+        },
+        "onweborder": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Orders placed (website)",
+          "description": "Source: on_web_order."
+        },
+        "costperonweborder": {
+          "type": "number",
+          "x-ms-summary": "Cost per order placed (website)",
+          "description": "In the ad account currency. Source: cost_per_on_web_order."
+        },
+        "onweborderrate": {
+          "type": "number",
+          "x-ms-summary": "Unique orders placed rate (website) (%)",
+          "description": "Percent. Source: on_web_order_rate."
+        },
+        "valueperonweborder": {
+          "type": "number",
+          "x-ms-summary": "Value per order placed (website)",
+          "description": "In the ad account currency. Source: value_per_on_web_order."
+        },
+        "totalonwebordervalue": {
+          "type": "number",
+          "x-ms-summary": "Orders placed value (website)",
+          "description": "In the ad account currency. Source: total_on_web_order_value."
+        },
+        "initiatecheckout": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Checkouts initiated (website)",
+          "description": "Source: initiate_checkout."
+        },
+        "costperinitiatecheckout": {
+          "type": "number",
+          "x-ms-summary": "Cost per checkout initiated (website)",
+          "description": "In the ad account currency. Source: cost_per_initiate_checkout."
+        },
+        "initiatecheckoutrate": {
+          "type": "number",
+          "x-ms-summary": "Unique checkout initiation rate (website) (%)",
+          "description": "Percent. Source: initiate_checkout_rate."
+        },
+        "valueperinitiatecheckout": {
+          "type": "number",
+          "x-ms-summary": "Value per checkout initiated (website)",
+          "description": "In the ad account currency. Source: value_per_initiate_checkout."
+        },
+        "totalinitiatecheckoutvalue": {
+          "type": "number",
+          "x-ms-summary": "Checkout initiation value (website)",
+          "description": "In the ad account currency. Source: total_initiate_checkout_value."
+        },
+        "addbilling": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Payment info added (website)",
+          "description": "Source: add_billing."
+        },
+        "costperaddbilling": {
+          "type": "number",
+          "x-ms-summary": "Cost per payment info added (website)",
+          "description": "In the ad account currency. Source: cost_per_add_billing."
+        },
+        "addbillingrate": {
+          "type": "number",
+          "x-ms-summary": "Unique payment info added rate (%) (website)",
+          "description": "Percent. Source: add_billing_rate."
+        },
+        "valueperaddbilling": {
+          "type": "number",
+          "x-ms-summary": "Value per payment info added (website)",
+          "description": "In the ad account currency. Source: value_per_add_billing."
+        },
+        "totaladdbillingvalue": {
+          "type": "number",
+          "x-ms-summary": "Add payment info value (website)",
+          "description": "In the ad account currency. Source: total_add_billing_value."
+        },
+        "pageeventsearch": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Searches (website)",
+          "description": "Source: page_event_search."
+        },
+        "costperpageeventsearch": {
+          "type": "number",
+          "x-ms-summary": "Cost per search (website)",
+          "description": "In the ad account currency. Source: cost_per_page_event_search."
+        },
+        "pageeventsearchrate": {
+          "type": "number",
+          "x-ms-summary": "Unique search rate (website) (%)",
+          "description": "Percent. Source: page_event_search_rate."
+        },
+        "valueperpageeventsearch": {
+          "type": "number",
+          "x-ms-summary": "Value per search (website)",
+          "description": "In the ad account currency. Source: value_per_page_event_search."
+        },
+        "totalpageeventsearchvalue": {
+          "type": "number",
+          "x-ms-summary": "Search value (website)",
+          "description": "In the ad account currency. Source: total_page_event_search_value."
+        },
+        "form": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Form submissions (website)",
+          "description": "Source: form."
+        },
+        "costperform": {
+          "type": "number",
+          "x-ms-summary": "Cost per form submitted (website)",
+          "description": "In the ad account currency. Source: cost_per_form."
+        },
+        "formrate": {
+          "type": "number",
+          "x-ms-summary": "Unique form submission rate (website) (%)",
+          "description": "Percent. Source: form_rate."
+        },
+        "valueperform": {
+          "type": "number",
+          "x-ms-summary": "Value per form submitted (website)",
+          "description": "In the ad account currency. Source: value_per_form."
+        },
+        "totalformvalue": {
+          "type": "number",
+          "x-ms-summary": "Form submission value (website)",
+          "description": "In the ad account currency. Source: total_form_value."
+        },
+        "downloadstart": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Downloads (website)",
+          "description": "Source: download_start."
+        },
+        "costperdownloadstart": {
+          "type": "number",
+          "x-ms-summary": "Cost per download (website)",
+          "description": "In the ad account currency. Source: cost_per_download_start."
+        },
+        "downloadstartrate": {
+          "type": "number",
+          "x-ms-summary": "Unique download rate (website) (%)",
+          "description": "Percent. Source: download_start_rate."
+        },
+        "valueperdownloadstart": {
+          "type": "number",
+          "x-ms-summary": "Value per download (website)",
+          "description": "In the ad account currency. Source: value_per_download_start."
+        },
+        "totaldownloadstartvalue": {
+          "type": "number",
+          "x-ms-summary": "Download value (website)",
+          "description": "In the ad account currency. Source: total_download_start_value."
+        },
+        "onwebaddtowishlist": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Adds to wishlist (website)",
+          "description": "Source: on_web_add_to_wishlist."
+        },
+        "costperonwebaddtowishlist": {
+          "type": "number",
+          "x-ms-summary": "Cost per add to wishlist (website)",
+          "description": "In the ad account currency. Source: cost_per_on_web_add_to_wishlist."
+        },
+        "onwebaddtowishlistperclick": {
+          "type": "number",
+          "x-ms-summary": "Unique add to wishlist rate (website) (%)",
+          "description": "Percent. Source: on_web_add_to_wishlist_per_click."
+        },
+        "valueperonwebaddtowishlist": {
+          "type": "number",
+          "x-ms-summary": "Value per add to wishlist (website)",
+          "description": "In the ad account currency. Source: value_per_on_web_add_to_wishlist."
+        },
+        "totalonwebaddtowishlistvalue": {
+          "type": "number",
+          "x-ms-summary": "Add to wishlist value (website)",
+          "description": "In the ad account currency. Source: total_on_web_add_to_wishlist_value."
+        },
+        "onwebsubscribe": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Subscriptions (website)",
+          "description": "Source: on_web_subscribe."
+        },
+        "costperonwebsubscribe": {
+          "type": "number",
+          "x-ms-summary": "Cost per subscription (website)",
+          "description": "In the ad account currency. Source: cost_per_on_web_subscribe."
+        },
+        "onwebsubscribeperclick": {
+          "type": "number",
+          "x-ms-summary": "Unique subscription rate (website) (%)",
+          "description": "Percent. Source: on_web_subscribe_per_click."
+        },
+        "valueperonwebsubscribe": {
+          "type": "number",
+          "x-ms-summary": "Value per subscription (website)",
+          "description": "In the ad account currency. Source: value_per_on_web_subscribe."
+        },
+        "totalonwebsubscribevalue": {
+          "type": "number",
+          "x-ms-summary": "Subscription value (website)",
+          "description": "In the ad account currency. Source: total_on_web_subscribe_value."
+        },
+        "websitetotalfindlocation": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Total find location",
+          "description": "Source: website_total_find_location."
+        },
+        "websitecostperfindlocation": {
+          "type": "number",
+          "x-ms-summary": "Cost per find location",
+          "description": "In the ad account currency. Source: website_cost_per_find_location."
+        },
+        "websitefindlocationrate": {
+          "type": "number",
+          "x-ms-summary": "Find location rate",
+          "description": "Percent. Source: website_find_location_rate."
+        },
+        "websitevalueperfindlocation": {
+          "type": "number",
+          "x-ms-summary": "Value per find location",
+          "description": "In the ad account currency. Source: website_value_per_find_location."
+        },
+        "websitetotalfindlocationvalue": {
+          "type": "number",
+          "x-ms-summary": "Total find location value",
+          "description": "In the ad account currency. Source: website_total_find_location_value."
+        },
+        "websitetotalschedule": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Total schedule",
+          "description": "Source: website_total_schedule."
+        },
+        "websitecostperschedule": {
+          "type": "number",
+          "x-ms-summary": "Cost per schedule",
+          "description": "In the ad account currency. Source: website_cost_per_schedule."
+        },
+        "websiteschedulerate": {
+          "type": "number",
+          "x-ms-summary": "Schedule rate",
+          "description": "Percent. Source: website_schedule_rate."
+        },
+        "websitevalueperschedule": {
+          "type": "number",
+          "x-ms-summary": "Value per schedule",
+          "description": "In the ad account currency. Source: website_value_per_schedule."
+        },
+        "websitetotalschedulevalue": {
+          "type": "number",
+          "x-ms-summary": "Total schedule value",
+          "description": "In the ad account currency. Source: website_total_schedule_value."
+        },
+        "websitetotalcustomizeproduct": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Total customize product",
+          "description": "Source: website_total_customize_product."
+        },
+        "websitecostpercustomizeproduct": {
+          "type": "number",
+          "x-ms-summary": "Cost per customize product",
+          "description": "In the ad account currency. Source: website_cost_per_customize_product."
+        },
+        "websitecustomizeproductrate": {
+          "type": "number",
+          "x-ms-summary": "Customize product rate",
+          "description": "Percent. Source: website_customize_product_rate."
+        },
+        "websitevaluepercustomizeproduct": {
+          "type": "number",
+          "x-ms-summary": "Value per customize product",
+          "description": "In the ad account currency. Source: website_value_per_customize_product."
+        },
+        "websitetotalcustomizeproductvalue": {
+          "type": "number",
+          "x-ms-summary": "Total customize product value",
+          "description": "In the ad account currency. Source: website_total_customize_product_value."
+        },
+        "custompageevents": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "Custom events (website)",
+          "description": "Source: custom_page_events."
+        },
+        "costpercustompageevent": {
+          "type": "number",
+          "x-ms-summary": "Cost per custom event (website)",
+          "description": "In the ad account currency. Source: cost_per_custom_page_event."
+        },
+        "custompageeventrate": {
+          "type": "number",
+          "x-ms-summary": "Custom event rate (website) (%)",
+          "description": "Percent. Source: custom_page_event_rate."
+        },
+        "valuepercustompageevent": {
+          "type": "number",
+          "x-ms-summary": "Value per custom event (website)",
+          "description": "In the ad account currency. Source: value_per_custom_page_event."
+        },
+        "custompageeventsvalue": {
+          "type": "number",
+          "x-ms-summary": "Custom event value (website)",
+          "description": "In the ad account currency. Source: custom_page_events_value."
+        },
+        "vtaconversion": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "VTA conversions",
+          "description": "Source: vta_conversion."
+        },
+        "costpervtaconversion": {
+          "type": "number",
+          "x-ms-summary": "Cost per VTA conversion",
+          "description": "In the ad account currency. Source: cost_per_vta_conversion."
+        },
+        "ctaconversion": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "CTA conversions",
+          "description": "Source: cta_conversion."
+        },
+        "costperctaconversion": {
+          "type": "number",
+          "x-ms-summary": "Cost per CTA conversion",
+          "description": "In the ad account currency. Source: cost_per_cta_conversion."
+        },
+        "engagedviewthroughconversions": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "EVTA conversions",
+          "description": "Source: engaged_view_through_conversions."
+        },
+        "costperengagedviewthroughconversion": {
+          "type": "number",
+          "x-ms-summary": "Cost per EVTA conversion",
+          "description": "In the ad account currency. Source: cost_per_engaged_view_through_conversion."
+        },
+        "vtaappinstall": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "VTA app installs",
+          "description": "Source: vta_app_install."
+        },
+        "costpervtaappinstall": {
+          "type": "number",
+          "x-ms-summary": "Cost per VTA app install",
+          "description": "In the ad account currency. Source: cost_per_vta_app_install."
+        },
+        "ctaappinstall": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "CTA app installs",
+          "description": "Source: cta_app_install."
+        },
+        "costperctaappinstall": {
+          "type": "number",
+          "x-ms-summary": "Cost per CTA app install",
+          "description": "In the ad account currency. Source: cost_per_cta_app_install."
+        },
+        "evtaappinstall": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "EVTA app installs",
+          "description": "Source: evta_app_install."
+        },
+        "costperevtaappinstall": {
+          "type": "number",
+          "x-ms-summary": "Cost per EVTA app install",
+          "description": "In the ad account currency. Source: cost_per_evta_app_install."
+        },
+        "vtaregistration": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "VTA registrations",
+          "description": "Source: vta_registration."
+        },
+        "costpervtaregistration": {
+          "type": "number",
+          "x-ms-summary": "Cost per VTA registration",
+          "description": "In the ad account currency. Source: cost_per_vta_registration."
+        },
+        "ctaregistration": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "CTA registrations",
+          "description": "Source: cta_registration."
+        },
+        "costperctaregistration": {
+          "type": "number",
+          "x-ms-summary": "Cost per CTA registration",
+          "description": "In the ad account currency. Source: cost_per_cta_registration."
+        },
+        "evtaregistration": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "EVTA registrations",
+          "description": "Source: evta_registration."
+        },
+        "costperevtaregistration": {
+          "type": "number",
+          "x-ms-summary": "Cost per EVTA registration",
+          "description": "In the ad account currency. Source: cost_per_evta_registration."
+        },
+        "vtapurchase": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "VTA purchases (app)",
+          "description": "Source: vta_purchase."
+        },
+        "costpervtapurchase": {
+          "type": "number",
+          "x-ms-summary": "Cost per VTA purchase (app)",
+          "description": "In the ad account currency. Source: cost_per_vta_purchase."
+        },
+        "ctapurchase": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "CTA purchases (app)",
+          "description": "Source: cta_purchase."
+        },
+        "costperctapurchase": {
+          "type": "number",
+          "x-ms-summary": "Cost per CTA purchase (app)",
+          "description": "In the ad account currency. Source: cost_per_cta_purchase."
+        },
+        "evtapurchase": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "EVTA purchases (app)",
+          "description": "Source: evta_purchase."
+        },
+        "costperevtapurchase": {
+          "type": "number",
+          "x-ms-summary": "Cost per EVTA purchase (app)",
+          "description": "In the ad account currency. Source: cost_per_evta_purchase."
+        },
+        "vtacompletepayment": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "VTA purchases (website)",
+          "description": "Source: vta_complete_payment."
+        },
+        "costpervtapaymentscompleted": {
+          "type": "number",
+          "x-ms-summary": "Cost per VTA purchase (website)",
+          "description": "In the ad account currency. Source: cost_per_vta_payments_completed."
+        },
+        "evtapaymentscompleted": {
+          "type": "integer",
+          "format": "int64",
+          "x-ms-summary": "EVTA purchases (website)",
+          "description": "Source: evta_payments_completed."
+        },
+        "costperevtapaymentscompleted": {
+          "type": "number",
+          "x-ms-summary": "Cost per EVTA purchase (website)",
+          "description": "In the ad account currency. Source: cost_per_evta_payments_completed."
+        },
+        "vtacompletepaymentvalue": {
+          "type": "number",
+          "x-ms-summary": "VTA purchase value",
+          "description": "In the ad account currency. Source: vta_complete_payment_value."
+        },
+        "vtacompletepaymentroas": {
+          "type": "number",
+          "x-ms-summary": "VTA purchase ROAS",
+          "description": "Source: vta_complete_payment_roas."
+        }
+      }
+    },
+    "InsightsResponse": {
+      "type": "object",
+      "properties": {
+        "advertiser_id": {
+          "type": "string",
+          "x-ms-summary": "Advertiser ID"
+        },
+        "level": {
+          "type": "string",
+          "x-ms-summary": "Level"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "metrics_error": {
+          "type": "string",
+          "x-ms-summary": "Metrics error",
+          "description": "Set when TikTok refused some metrics; the other metrics are still returned."
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "$ref": "#/definitions/InsightsRow"
+          }
+        }
+      }
+    },
+    "ReportResponse": {
+      "type": "object",
+      "properties": {
+        "advertiser_id": {
+          "type": "string",
+          "x-ms-summary": "Advertiser ID"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {},
+  "security": [],
+  "tags": [],
+  "x-ms-connector-metadata": [
+    {
+      "propertyName": "Website",
+      "propertyValue": "https://ads.tiktok.com"
+    },
+    {
+      "propertyName": "Privacy policy",
+      "propertyValue": "https://www.tiktok.com/legal/page/global/privacy-policy/en"
+    },
+    {
+      "propertyName": "Categories",
+      "propertyValue": "Marketing"
+    }
+  ]
+}

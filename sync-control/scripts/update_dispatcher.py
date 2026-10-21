@@ -46,6 +46,8 @@ CASES = {
     "snap-100000001":   ("Run_Get_Snap_Insights", "028e8be8-505f-5f70-acc7-85653b1f859f"),
     "google-100000000": ("Run_Get_Google_Ads_Campaigns", "b10505e5-822c-5641-8499-e8324198b469"),
     "google-100000001": ("Run_Get_Google_Ads_Insights", "59399b2c-080a-50b0-afcf-b803145237cf"),
+    "tiktok-100000000": ("Run_Get_TikTok_Campaigns", "de45712c-6cd1-59ff-8546-26bb91f692f4"),
+    "tiktok-100000001": ("Run_Get_TikTok_Insights", "4bcc7027-25a2-51c9-adc4-9c4b5c5ca128"),
 }
 
 NO_FLOW_MSG = "No flow is set up for this platform and sync type."

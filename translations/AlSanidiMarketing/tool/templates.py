@@ -40,4 +40,11 @@ TECH += [
  (re.compile(r'^All-time Snap stat: ([a-z0-9_]+) / 1,000$'), lambda m: f'إحصائية Snap (طوال المدة): {m[1]} / 1,000'),
  (re.compile(r'^Snap: ([a-z0-9_.]+) / 1,000,000$'), lambda m: m[0]),
  (re.compile(r'^Google Ads: [a-z0-9_.]+(, [a-z0-9_.]+)*,? ?[a-z0-9_.]*\.?$'), lambda m: m[0]),
+ (re.compile(r'^TikTok \(all time\): ([a-z0-9_]+)\.$'), lambda m: f'TikTok (طوال المدة): {m[1]}.'),
+ # cost roll-up flow descriptions
+ (re.compile(r'^When ([a-z_]+\.sanidi_(?:spend|cost)) is created or updated, recalculates ([a-z_]+\.sanidi_cost) \(sum of linked Google Ads cost \+ Meta spend \+ Snap spend \+ TikTok spend\) on every (Campaign|Advertisement) linked to it\.$'),
+  lambda m: f'عند إنشاء {m[1]} أو تحديثه، يعيد احتساب {m[2]} (مجموع تكلفة Google Ads المرتبطة + إنفاق Meta + إنفاق Snap + إنفاق TikTok) لكل {"حملة" if m[3] == "Campaign" else "إعلان"} مرتبط به.'),
+ (re.compile(r'^When a platform lookup on ([a-z_]+) is set or changed, recalculates sanidi_cost \(sum of linked Google Ads cost \+ Meta spend \+ Snap spend \+ TikTok spend\)\.$'),
+  lambda m: f'عند تعيين أحد حقول البحث عن المنصات في {m[1]} أو تغييره، يعيد احتساب sanidi_cost (مجموع تكلفة Google Ads المرتبطة + إنفاق Meta + إنفاق Snap + إنفاق TikTok).'),
+ (re.compile(r'^TikTok: /advertiser/info/ ([a-z_]+)\.$'), lambda m: m[0]),
 ]

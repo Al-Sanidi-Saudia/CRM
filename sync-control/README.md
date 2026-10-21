@@ -42,17 +42,21 @@ Sync Control page ──creates──▶ Integration Sync Request (row)
 
 | Component | Name |
 |---|---|
-| Table | `sanidi_integrationplatform` (Integration Platform): one row per platform, with its flows |
+| Table | `sanidi_integrationplatform` (Integration Platform): one row per platform, with its flows and whether its connection is active |
 | Table | `sanidi_integrationsyncrequest` (Integration Sync Request): one row per button press, with status and error |
 | Flow | **Sync Control - Run Sync Request**: runs the matching flow (no retries), writes Running / Succeeded / Failed back, notifies the requester |
 | App setting | In-app notifications on for AlSanidi \| Marketing |
 | Generative page | **Sync Control** (`sync-control.tsx`) |
 
-The six manual flows (Get Meta/Snap/Google Ads Campaigns and Insights) end with a
+The eight manual flows (Get Meta/Snap/Google Ads/TikTok Campaigns and Insights) end with a
 **Respond to a Power App or flow** step and use stored ("embedded") connections. Both are required
 for a flow to be run as a child flow.
 
-## Adding a platform (for example TikTok)
+- **Connection Active** (Integration Platform, Yes/No): No shows a *Connection not active yet* notice on the card
+  and turns its Sync buttons off; empty counts as Yes. TikTok is set to No until its app is approved and its
+  connection works (`scripts/add_tiktok.py`); set it to Yes then.
+
+## Adding a platform
 
 1. Build its manual campaigns flow and insights flow in the solution. Give each a final
    **Respond to a Power App or flow** step and use stored connections, not "Provided by run-only user".
