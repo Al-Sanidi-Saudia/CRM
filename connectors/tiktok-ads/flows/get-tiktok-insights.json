@@ -1,0 +1,1192 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sanidi-5ftiktok-5f43b530b23a0dc933": {
+        "api": {
+          "name": "shared_sanidi-5ftiktok-5f43b530b23a0dc933",
+          "logicalName": "sanidi_tiktok"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "sanidi_sharedsanidi5ftiktok5f43b530b23a0dc933_3e7c1"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_commondataserviceforapps": {
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "sanidi_sharedcommondataserviceforapps_79822"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "TikTok Ads Access Token (sanidi_TikTokAdsAccessToken)": {
+          "defaultValue": "",
+          "type": "String",
+          "metadata": {
+            "schemaName": "sanidi_TikTokAdsAccessToken"
+          }
+        },
+        "TikTok Ads Advertiser IDs (sanidi_TikTokAdsAdvertiserIds)": {
+          "defaultValue": "",
+          "type": "String",
+          "metadata": {
+            "schemaName": "sanidi_TikTokAdsAdvertiserIds"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "Init_Campaigns_insights": {
+          "type": "InitializeVariable",
+          "runAfter": {},
+          "inputs": {
+            "variables": [
+              {
+                "name": "CampaignsInsights",
+                "type": "array",
+                "value": []
+              }
+            ]
+          }
+        },
+        "Init_AdGroups_insights": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_Campaigns_insights": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "AdGroupsInsights",
+                "type": "array",
+                "value": []
+              }
+            ]
+          }
+        },
+        "Init_Ads_insights": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_AdGroups_insights": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "AdsInsights",
+                "type": "array",
+                "value": []
+              }
+            ]
+          }
+        },
+        "Init_merge": {
+          "type": "InitializeVariable",
+          "runAfter": {
+            "Init_Ads_insights": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "variables": [
+              {
+                "name": "Merge",
+                "type": "array",
+                "value": []
+              }
+            ]
+          }
+        },
+        "Advertiser_ID_list": {
+          "type": "Select",
+          "runAfter": {
+            "Init_merge": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "from": "@split(coalesce(parameters('TikTok Ads Advertiser IDs (sanidi_TikTokAdsAdvertiserIds)'), ''), ',')",
+            "select": "@trim(item())"
+          }
+        },
+        "Advertiser_IDs": {
+          "type": "Query",
+          "runAfter": {
+            "Advertiser_ID_list": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "from": "@body('Advertiser_ID_list')",
+            "where": "@not(empty(item()))"
+          }
+        },
+        "For_each_advertiser": {
+          "type": "Foreach",
+          "runAfter": {
+            "Advertiser_IDs": [
+              "Succeeded"
+            ]
+          },
+          "foreach": "@body('Advertiser_IDs')",
+          "actions": {
+            "Get_Campaigns_insights": {
+              "runAfter": {},
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "Access-Token": "@trim(parameters('TikTok Ads Access Token (sanidi_TikTokAdsAccessToken)'))",
+                  "advertiser_id": "@items('For_each_advertiser')",
+                  "level": "campaign"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5ftiktok-5f43b530b23a0dc933",
+                  "operationId": "GetLifetimeInsights",
+                  "connectionName": "shared_sanidi-5ftiktok-5f43b530b23a0dc933"
+                }
+              }
+            },
+            "Merge_Campaigns": {
+              "type": "SetVariable",
+              "runAfter": {
+                "Get_Campaigns_insights": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "name": "Merge",
+                "value": "@union(variables('CampaignsInsights'), coalesce(outputs('Get_Campaigns_insights')?['body/rows'], json('[]')))"
+              }
+            },
+            "Store_Campaigns": {
+              "type": "SetVariable",
+              "runAfter": {
+                "Merge_Campaigns": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "name": "CampaignsInsights",
+                "value": "@variables('Merge')"
+              }
+            },
+            "Get_AdGroups_insights": {
+              "runAfter": {
+                "Store_Campaigns": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "Access-Token": "@trim(parameters('TikTok Ads Access Token (sanidi_TikTokAdsAccessToken)'))",
+                  "advertiser_id": "@items('For_each_advertiser')",
+                  "level": "adgroup"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5ftiktok-5f43b530b23a0dc933",
+                  "operationId": "GetLifetimeInsights",
+                  "connectionName": "shared_sanidi-5ftiktok-5f43b530b23a0dc933"
+                }
+              }
+            },
+            "Merge_AdGroups": {
+              "type": "SetVariable",
+              "runAfter": {
+                "Get_AdGroups_insights": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "name": "Merge",
+                "value": "@union(variables('AdGroupsInsights'), coalesce(outputs('Get_AdGroups_insights')?['body/rows'], json('[]')))"
+              }
+            },
+            "Store_AdGroups": {
+              "type": "SetVariable",
+              "runAfter": {
+                "Merge_AdGroups": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "name": "AdGroupsInsights",
+                "value": "@variables('Merge')"
+              }
+            },
+            "Get_Ads_insights": {
+              "runAfter": {
+                "Store_AdGroups": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "Access-Token": "@trim(parameters('TikTok Ads Access Token (sanidi_TikTokAdsAccessToken)'))",
+                  "advertiser_id": "@items('For_each_advertiser')",
+                  "level": "ad"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5ftiktok-5f43b530b23a0dc933",
+                  "operationId": "GetLifetimeInsights",
+                  "connectionName": "shared_sanidi-5ftiktok-5f43b530b23a0dc933"
+                }
+              }
+            },
+            "Merge_Ads": {
+              "type": "SetVariable",
+              "runAfter": {
+                "Get_Ads_insights": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "name": "Merge",
+                "value": "@union(variables('AdsInsights'), coalesce(outputs('Get_Ads_insights')?['body/rows'], json('[]')))"
+              }
+            },
+            "Store_Ads": {
+              "type": "SetVariable",
+              "runAfter": {
+                "Merge_Ads": [
+                  "Succeeded"
+                ]
+              },
+              "inputs": {
+                "name": "AdsInsights",
+                "value": "@variables('Merge')"
+              }
+            }
+          },
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 1
+            }
+          }
+        },
+        "List_TikTok_Campaigns": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "sanidi_tiktokcampaigns",
+              "$select": "sanidi_tiktokcampaignid,sanidi_campaignid",
+              "$filter": "sanidi_campaignid ne null"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          },
+          "runAfter": {
+            "For_each_advertiser": [
+              "Succeeded"
+            ]
+          },
+          "runtimeConfiguration": {
+            "paginationPolicy": {
+              "minimumItemCount": 100000
+            }
+          }
+        },
+        "For_each_Campaigns": {
+          "type": "Foreach",
+          "runAfter": {
+            "List_TikTok_Campaigns": [
+              "Succeeded"
+            ]
+          },
+          "foreach": "@outputs('List_TikTok_Campaigns')?['body/value']",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 10
+            }
+          },
+          "actions": {
+            "Insights_Campaigns": {
+              "type": "Query",
+              "runAfter": {},
+              "inputs": {
+                "from": "@variables('CampaignsInsights')",
+                "where": "@equals(item()?['campaignid'], items('For_each_Campaigns')?['sanidi_campaignid'])"
+              }
+            },
+            "If_Campaigns_has_insights": {
+              "type": "If",
+              "runAfter": {
+                "Insights_Campaigns": [
+                  "Succeeded"
+                ]
+              },
+              "expression": {
+                "and": [
+                  {
+                    "greater": [
+                      "@length(body('Insights_Campaigns'))",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Update_Campaigns_insights": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "entityName": "sanidi_tiktokcampaigns",
+                      "recordId": "@items('For_each_Campaigns')?['sanidi_tiktokcampaignid']",
+                      "item/sanidi_spend": "@first(body('Insights_Campaigns'))?['spend']",
+                      "item/sanidi_billedcost": "@first(body('Insights_Campaigns'))?['billedcost']",
+                      "item/sanidi_cashspend": "@first(body('Insights_Campaigns'))?['cashspend']",
+                      "item/sanidi_voucherspend": "@first(body('Insights_Campaigns'))?['voucherspend']",
+                      "item/sanidi_cpc": "@first(body('Insights_Campaigns'))?['cpc']",
+                      "item/sanidi_cpm": "@first(body('Insights_Campaigns'))?['cpm']",
+                      "item/sanidi_impressions": "@first(body('Insights_Campaigns'))?['impressions']",
+                      "item/sanidi_grossimpressions": "@first(body('Insights_Campaigns'))?['grossimpressions']",
+                      "item/sanidi_clicks": "@first(body('Insights_Campaigns'))?['clicks']",
+                      "item/sanidi_ctr": "@first(body('Insights_Campaigns'))?['ctr']",
+                      "item/sanidi_reach": "@first(body('Insights_Campaigns'))?['reach']",
+                      "item/sanidi_costper1000reached": "@first(body('Insights_Campaigns'))?['costper1000reached']",
+                      "item/sanidi_frequency": "@first(body('Insights_Campaigns'))?['frequency']",
+                      "item/sanidi_conversion": "@first(body('Insights_Campaigns'))?['conversion']",
+                      "item/sanidi_costperconversion": "@first(body('Insights_Campaigns'))?['costperconversion']",
+                      "item/sanidi_conversionrate": "@first(body('Insights_Campaigns'))?['conversionrate']",
+                      "item/sanidi_conversionratev2": "@first(body('Insights_Campaigns'))?['conversionratev2']",
+                      "item/sanidi_realtimeconversion": "@first(body('Insights_Campaigns'))?['realtimeconversion']",
+                      "item/sanidi_realtimecostperconversion": "@first(body('Insights_Campaigns'))?['realtimecostperconversion']",
+                      "item/sanidi_realtimeconversionrate": "@first(body('Insights_Campaigns'))?['realtimeconversionrate']",
+                      "item/sanidi_realtimeconversionratev2": "@first(body('Insights_Campaigns'))?['realtimeconversionratev2']",
+                      "item/sanidi_result": "@first(body('Insights_Campaigns'))?['result']",
+                      "item/sanidi_costperresult": "@first(body('Insights_Campaigns'))?['costperresult']",
+                      "item/sanidi_resultrate": "@first(body('Insights_Campaigns'))?['resultrate']",
+                      "item/sanidi_realtimeresult": "@first(body('Insights_Campaigns'))?['realtimeresult']",
+                      "item/sanidi_realtimecostperresult": "@first(body('Insights_Campaigns'))?['realtimecostperresult']",
+                      "item/sanidi_realtimeresultrate": "@first(body('Insights_Campaigns'))?['realtimeresultrate']",
+                      "item/sanidi_secondarygoalresult": "@first(body('Insights_Campaigns'))?['secondarygoalresult']",
+                      "item/sanidi_costpersecondarygoalresult": "@first(body('Insights_Campaigns'))?['costpersecondarygoalresult']",
+                      "item/sanidi_secondarygoalresultrate": "@first(body('Insights_Campaigns'))?['secondarygoalresultrate']",
+                      "item/sanidi_videoplayactions": "@first(body('Insights_Campaigns'))?['videoplayactions']",
+                      "item/sanidi_videowatched2s": "@first(body('Insights_Campaigns'))?['videowatched2s']",
+                      "item/sanidi_videowatched6s": "@first(body('Insights_Campaigns'))?['videowatched6s']",
+                      "item/sanidi_videoviewsp25": "@first(body('Insights_Campaigns'))?['videoviewsp25']",
+                      "item/sanidi_videoviewsp50": "@first(body('Insights_Campaigns'))?['videoviewsp50']",
+                      "item/sanidi_videoviewsp75": "@first(body('Insights_Campaigns'))?['videoviewsp75']",
+                      "item/sanidi_videoviewsp100": "@first(body('Insights_Campaigns'))?['videoviewsp100']",
+                      "item/sanidi_averagevideoplay": "@first(body('Insights_Campaigns'))?['averagevideoplay']",
+                      "item/sanidi_averagevideoplayperuser": "@first(body('Insights_Campaigns'))?['averagevideoplayperuser']",
+                      "item/sanidi_engagedview": "@first(body('Insights_Campaigns'))?['engagedview']",
+                      "item/sanidi_paidengagedview": "@first(body('Insights_Campaigns'))?['paidengagedview']",
+                      "item/sanidi_paidengagementengagedview": "@first(body('Insights_Campaigns'))?['paidengagementengagedview']",
+                      "item/sanidi_engagedview15s": "@first(body('Insights_Campaigns'))?['engagedview15s']",
+                      "item/sanidi_paidengagedview15s": "@first(body('Insights_Campaigns'))?['paidengagedview15s']",
+                      "item/sanidi_paidengagementengagedview15s": "@first(body('Insights_Campaigns'))?['paidengagementengagedview15s']",
+                      "item/sanidi_engagements": "@first(body('Insights_Campaigns'))?['engagements']",
+                      "item/sanidi_engagementrate": "@first(body('Insights_Campaigns'))?['engagementrate']",
+                      "item/sanidi_clicksonmusicdisc": "@first(body('Insights_Campaigns'))?['clicksonmusicdisc']",
+                      "item/sanidi_duetclicks": "@first(body('Insights_Campaigns'))?['duetclicks']",
+                      "item/sanidi_stitchclicks": "@first(body('Insights_Campaigns'))?['stitchclicks']",
+                      "item/sanidi_soundusageclicks": "@first(body('Insights_Campaigns'))?['soundusageclicks']",
+                      "item/sanidi_anchorclicks": "@first(body('Insights_Campaigns'))?['anchorclicks']",
+                      "item/sanidi_anchorclickrate": "@first(body('Insights_Campaigns'))?['anchorclickrate']",
+                      "item/sanidi_clicksonhashtagchallenge": "@first(body('Insights_Campaigns'))?['clicksonhashtagchallenge']",
+                      "item/sanidi_follows": "@first(body('Insights_Campaigns'))?['follows']",
+                      "item/sanidi_likes": "@first(body('Insights_Campaigns'))?['likes']",
+                      "item/sanidi_comments": "@first(body('Insights_Campaigns'))?['comments']",
+                      "item/sanidi_shares": "@first(body('Insights_Campaigns'))?['shares']",
+                      "item/sanidi_profilevisits": "@first(body('Insights_Campaigns'))?['profilevisits']",
+                      "item/sanidi_profilevisitsrate": "@first(body('Insights_Campaigns'))?['profilevisitsrate']",
+                      "item/sanidi_ttplaylistvisit": "@first(body('Insights_Campaigns'))?['ttplaylistvisit']",
+                      "item/sanidi_ttplaylistvisitrate": "@first(body('Insights_Campaigns'))?['ttplaylistvisitrate']",
+                      "item/sanidi_costperconsideration": "@first(body('Insights_Campaigns'))?['costperconsideration']",
+                      "item/sanidi_newconsiderationrate": "@first(body('Insights_Campaigns'))?['newconsiderationrate']",
+                      "item/sanidi_newconsiderationsize": "@first(body('Insights_Campaigns'))?['newconsiderationsize']",
+                      "item/sanidi_completepaymentroas": "@first(body('Insights_Campaigns'))?['completepaymentroas']",
+                      "item/sanidi_completepayment": "@first(body('Insights_Campaigns'))?['completepayment']",
+                      "item/sanidi_costpercompletepayment": "@first(body('Insights_Campaigns'))?['costpercompletepayment']",
+                      "item/sanidi_completepaymentrate": "@first(body('Insights_Campaigns'))?['completepaymentrate']",
+                      "item/sanidi_valuepercompletepayment": "@first(body('Insights_Campaigns'))?['valuepercompletepayment']",
+                      "item/sanidi_totalcompletepaymentrate": "@first(body('Insights_Campaigns'))?['totalcompletepaymentrate']",
+                      "item/sanidi_totallandingpageview": "@first(body('Insights_Campaigns'))?['totallandingpageview']",
+                      "item/sanidi_costperlandingpageview": "@first(body('Insights_Campaigns'))?['costperlandingpageview']",
+                      "item/sanidi_landingpageviewrate": "@first(body('Insights_Campaigns'))?['landingpageviewrate']",
+                      "item/sanidi_totalpageview": "@first(body('Insights_Campaigns'))?['totalpageview']",
+                      "item/sanidi_costperpageview": "@first(body('Insights_Campaigns'))?['costperpageview']",
+                      "item/sanidi_pageviewrate": "@first(body('Insights_Campaigns'))?['pageviewrate']",
+                      "item/sanidi_avgvalueperpageview": "@first(body('Insights_Campaigns'))?['avgvalueperpageview']",
+                      "item/sanidi_totalvalueperpageview": "@first(body('Insights_Campaigns'))?['totalvalueperpageview']",
+                      "item/sanidi_pagebrowseview": "@first(body('Insights_Campaigns'))?['pagebrowseview']",
+                      "item/sanidi_costperpagebrowseview": "@first(body('Insights_Campaigns'))?['costperpagebrowseview']",
+                      "item/sanidi_pagebrowseviewrate": "@first(body('Insights_Campaigns'))?['pagebrowseviewrate']",
+                      "item/sanidi_totalpagebrowseviewvalue": "@first(body('Insights_Campaigns'))?['totalpagebrowseviewvalue']",
+                      "item/sanidi_valueperpagebrowseview": "@first(body('Insights_Campaigns'))?['valueperpagebrowseview']",
+                      "item/sanidi_buttonclick": "@first(body('Insights_Campaigns'))?['buttonclick']",
+                      "item/sanidi_costperbuttonclick": "@first(body('Insights_Campaigns'))?['costperbuttonclick']",
+                      "item/sanidi_buttonclickrate": "@first(body('Insights_Campaigns'))?['buttonclickrate']",
+                      "item/sanidi_valueperbuttonclick": "@first(body('Insights_Campaigns'))?['valueperbuttonclick']",
+                      "item/sanidi_totalbuttonclickvalue": "@first(body('Insights_Campaigns'))?['totalbuttonclickvalue']",
+                      "item/sanidi_onlineconsult": "@first(body('Insights_Campaigns'))?['onlineconsult']",
+                      "item/sanidi_costperonlineconsult": "@first(body('Insights_Campaigns'))?['costperonlineconsult']",
+                      "item/sanidi_onlineconsultrate": "@first(body('Insights_Campaigns'))?['onlineconsultrate']",
+                      "item/sanidi_valueperonlineconsult": "@first(body('Insights_Campaigns'))?['valueperonlineconsult']",
+                      "item/sanidi_totalonlineconsultvalue": "@first(body('Insights_Campaigns'))?['totalonlineconsultvalue']",
+                      "item/sanidi_userregistration": "@first(body('Insights_Campaigns'))?['userregistration']",
+                      "item/sanidi_costperuserregistration": "@first(body('Insights_Campaigns'))?['costperuserregistration']",
+                      "item/sanidi_userregistrationrate": "@first(body('Insights_Campaigns'))?['userregistrationrate']",
+                      "item/sanidi_valueperuserregistration": "@first(body('Insights_Campaigns'))?['valueperuserregistration']",
+                      "item/sanidi_totaluserregistrationvalue": "@first(body('Insights_Campaigns'))?['totaluserregistrationvalue']",
+                      "item/sanidi_pagecontentviewevents": "@first(body('Insights_Campaigns'))?['pagecontentviewevents']",
+                      "item/sanidi_costperpagecontentviewevent": "@first(body('Insights_Campaigns'))?['costperpagecontentviewevent']",
+                      "item/sanidi_pagecontentvieweventrate": "@first(body('Insights_Campaigns'))?['pagecontentvieweventrate']",
+                      "item/sanidi_valueperpagecontentviewevent": "@first(body('Insights_Campaigns'))?['valueperpagecontentviewevent']",
+                      "item/sanidi_totalpageviewcontenteventsvalue": "@first(body('Insights_Campaigns'))?['totalpageviewcontenteventsvalue']",
+                      "item/sanidi_productdetailspagebrowse": "@first(body('Insights_Campaigns'))?['productdetailspagebrowse']",
+                      "item/sanidi_costperproductdetailspagebrowse": "@first(body('Insights_Campaigns'))?['costperproductdetailspagebrowse']",
+                      "item/sanidi_productdetailspagebrowserate": "@first(body('Insights_Campaigns'))?['productdetailspagebrowserate']",
+                      "item/sanidi_valueperproductdetailspagebrowse": "@first(body('Insights_Campaigns'))?['valueperproductdetailspagebrowse']",
+                      "item/sanidi_totalproductdetailspagebrowsevalue": "@first(body('Insights_Campaigns'))?['totalproductdetailspagebrowsevalue']",
+                      "item/sanidi_webeventaddtocart": "@first(body('Insights_Campaigns'))?['webeventaddtocart']",
+                      "item/sanidi_costperwebeventaddtocart": "@first(body('Insights_Campaigns'))?['costperwebeventaddtocart']",
+                      "item/sanidi_webeventaddtocartrate": "@first(body('Insights_Campaigns'))?['webeventaddtocartrate']",
+                      "item/sanidi_valueperwebeventaddtocart": "@first(body('Insights_Campaigns'))?['valueperwebeventaddtocart']",
+                      "item/sanidi_totalwebeventaddtocartvalue": "@first(body('Insights_Campaigns'))?['totalwebeventaddtocartvalue']",
+                      "item/sanidi_onweborder": "@first(body('Insights_Campaigns'))?['onweborder']",
+                      "item/sanidi_costperonweborder": "@first(body('Insights_Campaigns'))?['costperonweborder']",
+                      "item/sanidi_onweborderrate": "@first(body('Insights_Campaigns'))?['onweborderrate']",
+                      "item/sanidi_valueperonweborder": "@first(body('Insights_Campaigns'))?['valueperonweborder']",
+                      "item/sanidi_totalonwebordervalue": "@first(body('Insights_Campaigns'))?['totalonwebordervalue']",
+                      "item/sanidi_initiatecheckout": "@first(body('Insights_Campaigns'))?['initiatecheckout']",
+                      "item/sanidi_costperinitiatecheckout": "@first(body('Insights_Campaigns'))?['costperinitiatecheckout']",
+                      "item/sanidi_initiatecheckoutrate": "@first(body('Insights_Campaigns'))?['initiatecheckoutrate']",
+                      "item/sanidi_valueperinitiatecheckout": "@first(body('Insights_Campaigns'))?['valueperinitiatecheckout']",
+                      "item/sanidi_totalinitiatecheckoutvalue": "@first(body('Insights_Campaigns'))?['totalinitiatecheckoutvalue']",
+                      "item/sanidi_addbilling": "@first(body('Insights_Campaigns'))?['addbilling']",
+                      "item/sanidi_costperaddbilling": "@first(body('Insights_Campaigns'))?['costperaddbilling']",
+                      "item/sanidi_addbillingrate": "@first(body('Insights_Campaigns'))?['addbillingrate']",
+                      "item/sanidi_valueperaddbilling": "@first(body('Insights_Campaigns'))?['valueperaddbilling']",
+                      "item/sanidi_totaladdbillingvalue": "@first(body('Insights_Campaigns'))?['totaladdbillingvalue']",
+                      "item/sanidi_pageeventsearch": "@first(body('Insights_Campaigns'))?['pageeventsearch']",
+                      "item/sanidi_costperpageeventsearch": "@first(body('Insights_Campaigns'))?['costperpageeventsearch']",
+                      "item/sanidi_pageeventsearchrate": "@first(body('Insights_Campaigns'))?['pageeventsearchrate']",
+                      "item/sanidi_valueperpageeventsearch": "@first(body('Insights_Campaigns'))?['valueperpageeventsearch']",
+                      "item/sanidi_totalpageeventsearchvalue": "@first(body('Insights_Campaigns'))?['totalpageeventsearchvalue']",
+                      "item/sanidi_form": "@first(body('Insights_Campaigns'))?['form']",
+                      "item/sanidi_costperform": "@first(body('Insights_Campaigns'))?['costperform']",
+                      "item/sanidi_formrate": "@first(body('Insights_Campaigns'))?['formrate']",
+                      "item/sanidi_valueperform": "@first(body('Insights_Campaigns'))?['valueperform']",
+                      "item/sanidi_totalformvalue": "@first(body('Insights_Campaigns'))?['totalformvalue']",
+                      "item/sanidi_downloadstart": "@first(body('Insights_Campaigns'))?['downloadstart']",
+                      "item/sanidi_costperdownloadstart": "@first(body('Insights_Campaigns'))?['costperdownloadstart']",
+                      "item/sanidi_downloadstartrate": "@first(body('Insights_Campaigns'))?['downloadstartrate']",
+                      "item/sanidi_valueperdownloadstart": "@first(body('Insights_Campaigns'))?['valueperdownloadstart']",
+                      "item/sanidi_totaldownloadstartvalue": "@first(body('Insights_Campaigns'))?['totaldownloadstartvalue']",
+                      "item/sanidi_onwebaddtowishlist": "@first(body('Insights_Campaigns'))?['onwebaddtowishlist']",
+                      "item/sanidi_costperonwebaddtowishlist": "@first(body('Insights_Campaigns'))?['costperonwebaddtowishlist']",
+                      "item/sanidi_onwebaddtowishlistperclick": "@first(body('Insights_Campaigns'))?['onwebaddtowishlistperclick']",
+                      "item/sanidi_valueperonwebaddtowishlist": "@first(body('Insights_Campaigns'))?['valueperonwebaddtowishlist']",
+                      "item/sanidi_totalonwebaddtowishlistvalue": "@first(body('Insights_Campaigns'))?['totalonwebaddtowishlistvalue']",
+                      "item/sanidi_onwebsubscribe": "@first(body('Insights_Campaigns'))?['onwebsubscribe']",
+                      "item/sanidi_costperonwebsubscribe": "@first(body('Insights_Campaigns'))?['costperonwebsubscribe']",
+                      "item/sanidi_onwebsubscribeperclick": "@first(body('Insights_Campaigns'))?['onwebsubscribeperclick']",
+                      "item/sanidi_valueperonwebsubscribe": "@first(body('Insights_Campaigns'))?['valueperonwebsubscribe']",
+                      "item/sanidi_totalonwebsubscribevalue": "@first(body('Insights_Campaigns'))?['totalonwebsubscribevalue']",
+                      "item/sanidi_websitetotalfindlocation": "@first(body('Insights_Campaigns'))?['websitetotalfindlocation']",
+                      "item/sanidi_websitecostperfindlocation": "@first(body('Insights_Campaigns'))?['websitecostperfindlocation']",
+                      "item/sanidi_websitefindlocationrate": "@first(body('Insights_Campaigns'))?['websitefindlocationrate']",
+                      "item/sanidi_websitevalueperfindlocation": "@first(body('Insights_Campaigns'))?['websitevalueperfindlocation']",
+                      "item/sanidi_websitetotalfindlocationvalue": "@first(body('Insights_Campaigns'))?['websitetotalfindlocationvalue']",
+                      "item/sanidi_websitetotalschedule": "@first(body('Insights_Campaigns'))?['websitetotalschedule']",
+                      "item/sanidi_websitecostperschedule": "@first(body('Insights_Campaigns'))?['websitecostperschedule']",
+                      "item/sanidi_websiteschedulerate": "@first(body('Insights_Campaigns'))?['websiteschedulerate']",
+                      "item/sanidi_websitevalueperschedule": "@first(body('Insights_Campaigns'))?['websitevalueperschedule']",
+                      "item/sanidi_websitetotalschedulevalue": "@first(body('Insights_Campaigns'))?['websitetotalschedulevalue']",
+                      "item/sanidi_websitetotalcustomizeproduct": "@first(body('Insights_Campaigns'))?['websitetotalcustomizeproduct']",
+                      "item/sanidi_websitecostpercustomizeproduct": "@first(body('Insights_Campaigns'))?['websitecostpercustomizeproduct']",
+                      "item/sanidi_websitecustomizeproductrate": "@first(body('Insights_Campaigns'))?['websitecustomizeproductrate']",
+                      "item/sanidi_websitevaluepercustomizeproduct": "@first(body('Insights_Campaigns'))?['websitevaluepercustomizeproduct']",
+                      "item/sanidi_websitetotalcustomizeproductvalue": "@first(body('Insights_Campaigns'))?['websitetotalcustomizeproductvalue']",
+                      "item/sanidi_custompageevents": "@first(body('Insights_Campaigns'))?['custompageevents']",
+                      "item/sanidi_costpercustompageevent": "@first(body('Insights_Campaigns'))?['costpercustompageevent']",
+                      "item/sanidi_custompageeventrate": "@first(body('Insights_Campaigns'))?['custompageeventrate']",
+                      "item/sanidi_valuepercustompageevent": "@first(body('Insights_Campaigns'))?['valuepercustompageevent']",
+                      "item/sanidi_custompageeventsvalue": "@first(body('Insights_Campaigns'))?['custompageeventsvalue']",
+                      "item/sanidi_vtaconversion": "@first(body('Insights_Campaigns'))?['vtaconversion']",
+                      "item/sanidi_costpervtaconversion": "@first(body('Insights_Campaigns'))?['costpervtaconversion']",
+                      "item/sanidi_ctaconversion": "@first(body('Insights_Campaigns'))?['ctaconversion']",
+                      "item/sanidi_costperctaconversion": "@first(body('Insights_Campaigns'))?['costperctaconversion']",
+                      "item/sanidi_engagedviewthroughconversions": "@first(body('Insights_Campaigns'))?['engagedviewthroughconversions']",
+                      "item/sanidi_costperengagedviewthroughconversion": "@first(body('Insights_Campaigns'))?['costperengagedviewthroughconversion']",
+                      "item/sanidi_vtaappinstall": "@first(body('Insights_Campaigns'))?['vtaappinstall']",
+                      "item/sanidi_costpervtaappinstall": "@first(body('Insights_Campaigns'))?['costpervtaappinstall']",
+                      "item/sanidi_ctaappinstall": "@first(body('Insights_Campaigns'))?['ctaappinstall']",
+                      "item/sanidi_costperctaappinstall": "@first(body('Insights_Campaigns'))?['costperctaappinstall']",
+                      "item/sanidi_evtaappinstall": "@first(body('Insights_Campaigns'))?['evtaappinstall']",
+                      "item/sanidi_costperevtaappinstall": "@first(body('Insights_Campaigns'))?['costperevtaappinstall']",
+                      "item/sanidi_vtaregistration": "@first(body('Insights_Campaigns'))?['vtaregistration']",
+                      "item/sanidi_costpervtaregistration": "@first(body('Insights_Campaigns'))?['costpervtaregistration']",
+                      "item/sanidi_ctaregistration": "@first(body('Insights_Campaigns'))?['ctaregistration']",
+                      "item/sanidi_costperctaregistration": "@first(body('Insights_Campaigns'))?['costperctaregistration']",
+                      "item/sanidi_evtaregistration": "@first(body('Insights_Campaigns'))?['evtaregistration']",
+                      "item/sanidi_costperevtaregistration": "@first(body('Insights_Campaigns'))?['costperevtaregistration']",
+                      "item/sanidi_vtapurchase": "@first(body('Insights_Campaigns'))?['vtapurchase']",
+                      "item/sanidi_costpervtapurchase": "@first(body('Insights_Campaigns'))?['costpervtapurchase']",
+                      "item/sanidi_ctapurchase": "@first(body('Insights_Campaigns'))?['ctapurchase']",
+                      "item/sanidi_costperctapurchase": "@first(body('Insights_Campaigns'))?['costperctapurchase']",
+                      "item/sanidi_evtapurchase": "@first(body('Insights_Campaigns'))?['evtapurchase']",
+                      "item/sanidi_costperevtapurchase": "@first(body('Insights_Campaigns'))?['costperevtapurchase']",
+                      "item/sanidi_vtacompletepayment": "@first(body('Insights_Campaigns'))?['vtacompletepayment']",
+                      "item/sanidi_costpervtapaymentscompleted": "@first(body('Insights_Campaigns'))?['costpervtapaymentscompleted']",
+                      "item/sanidi_evtapaymentscompleted": "@first(body('Insights_Campaigns'))?['evtapaymentscompleted']",
+                      "item/sanidi_costperevtapaymentscompleted": "@first(body('Insights_Campaigns'))?['costperevtapaymentscompleted']",
+                      "item/sanidi_vtacompletepaymentvalue": "@first(body('Insights_Campaigns'))?['vtacompletepaymentvalue']",
+                      "item/sanidi_vtacompletepaymentroas": "@first(body('Insights_Campaigns'))?['vtacompletepaymentroas']",
+                      "item/sanidi_insightslastsyncedon": "@first(body('Insights_Campaigns'))?['insightslastsyncedon']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "UpdateOnlyRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                    }
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              }
+            }
+          }
+        },
+        "List_TikTok_AdGroups": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "sanidi_tiktokadgroups",
+              "$select": "sanidi_tiktokadgroupid,sanidi_adgroupid",
+              "$filter": "sanidi_adgroupid ne null"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          },
+          "runAfter": {
+            "For_each_Campaigns": [
+              "Succeeded"
+            ]
+          },
+          "runtimeConfiguration": {
+            "paginationPolicy": {
+              "minimumItemCount": 100000
+            }
+          }
+        },
+        "For_each_AdGroups": {
+          "type": "Foreach",
+          "runAfter": {
+            "List_TikTok_AdGroups": [
+              "Succeeded"
+            ]
+          },
+          "foreach": "@outputs('List_TikTok_AdGroups')?['body/value']",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 10
+            }
+          },
+          "actions": {
+            "Insights_AdGroups": {
+              "type": "Query",
+              "runAfter": {},
+              "inputs": {
+                "from": "@variables('AdGroupsInsights')",
+                "where": "@equals(item()?['adgroupid'], items('For_each_AdGroups')?['sanidi_adgroupid'])"
+              }
+            },
+            "If_AdGroups_has_insights": {
+              "type": "If",
+              "runAfter": {
+                "Insights_AdGroups": [
+                  "Succeeded"
+                ]
+              },
+              "expression": {
+                "and": [
+                  {
+                    "greater": [
+                      "@length(body('Insights_AdGroups'))",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Update_AdGroups_insights": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "entityName": "sanidi_tiktokadgroups",
+                      "recordId": "@items('For_each_AdGroups')?['sanidi_tiktokadgroupid']",
+                      "item/sanidi_spend": "@first(body('Insights_AdGroups'))?['spend']",
+                      "item/sanidi_billedcost": "@first(body('Insights_AdGroups'))?['billedcost']",
+                      "item/sanidi_cashspend": "@first(body('Insights_AdGroups'))?['cashspend']",
+                      "item/sanidi_voucherspend": "@first(body('Insights_AdGroups'))?['voucherspend']",
+                      "item/sanidi_cpc": "@first(body('Insights_AdGroups'))?['cpc']",
+                      "item/sanidi_cpm": "@first(body('Insights_AdGroups'))?['cpm']",
+                      "item/sanidi_impressions": "@first(body('Insights_AdGroups'))?['impressions']",
+                      "item/sanidi_grossimpressions": "@first(body('Insights_AdGroups'))?['grossimpressions']",
+                      "item/sanidi_clicks": "@first(body('Insights_AdGroups'))?['clicks']",
+                      "item/sanidi_ctr": "@first(body('Insights_AdGroups'))?['ctr']",
+                      "item/sanidi_reach": "@first(body('Insights_AdGroups'))?['reach']",
+                      "item/sanidi_costper1000reached": "@first(body('Insights_AdGroups'))?['costper1000reached']",
+                      "item/sanidi_frequency": "@first(body('Insights_AdGroups'))?['frequency']",
+                      "item/sanidi_conversion": "@first(body('Insights_AdGroups'))?['conversion']",
+                      "item/sanidi_costperconversion": "@first(body('Insights_AdGroups'))?['costperconversion']",
+                      "item/sanidi_conversionrate": "@first(body('Insights_AdGroups'))?['conversionrate']",
+                      "item/sanidi_conversionratev2": "@first(body('Insights_AdGroups'))?['conversionratev2']",
+                      "item/sanidi_realtimeconversion": "@first(body('Insights_AdGroups'))?['realtimeconversion']",
+                      "item/sanidi_realtimecostperconversion": "@first(body('Insights_AdGroups'))?['realtimecostperconversion']",
+                      "item/sanidi_realtimeconversionrate": "@first(body('Insights_AdGroups'))?['realtimeconversionrate']",
+                      "item/sanidi_realtimeconversionratev2": "@first(body('Insights_AdGroups'))?['realtimeconversionratev2']",
+                      "item/sanidi_result": "@first(body('Insights_AdGroups'))?['result']",
+                      "item/sanidi_costperresult": "@first(body('Insights_AdGroups'))?['costperresult']",
+                      "item/sanidi_resultrate": "@first(body('Insights_AdGroups'))?['resultrate']",
+                      "item/sanidi_realtimeresult": "@first(body('Insights_AdGroups'))?['realtimeresult']",
+                      "item/sanidi_realtimecostperresult": "@first(body('Insights_AdGroups'))?['realtimecostperresult']",
+                      "item/sanidi_realtimeresultrate": "@first(body('Insights_AdGroups'))?['realtimeresultrate']",
+                      "item/sanidi_secondarygoalresult": "@first(body('Insights_AdGroups'))?['secondarygoalresult']",
+                      "item/sanidi_costpersecondarygoalresult": "@first(body('Insights_AdGroups'))?['costpersecondarygoalresult']",
+                      "item/sanidi_secondarygoalresultrate": "@first(body('Insights_AdGroups'))?['secondarygoalresultrate']",
+                      "item/sanidi_videoplayactions": "@first(body('Insights_AdGroups'))?['videoplayactions']",
+                      "item/sanidi_videowatched2s": "@first(body('Insights_AdGroups'))?['videowatched2s']",
+                      "item/sanidi_videowatched6s": "@first(body('Insights_AdGroups'))?['videowatched6s']",
+                      "item/sanidi_videoviewsp25": "@first(body('Insights_AdGroups'))?['videoviewsp25']",
+                      "item/sanidi_videoviewsp50": "@first(body('Insights_AdGroups'))?['videoviewsp50']",
+                      "item/sanidi_videoviewsp75": "@first(body('Insights_AdGroups'))?['videoviewsp75']",
+                      "item/sanidi_videoviewsp100": "@first(body('Insights_AdGroups'))?['videoviewsp100']",
+                      "item/sanidi_averagevideoplay": "@first(body('Insights_AdGroups'))?['averagevideoplay']",
+                      "item/sanidi_averagevideoplayperuser": "@first(body('Insights_AdGroups'))?['averagevideoplayperuser']",
+                      "item/sanidi_engagedview": "@first(body('Insights_AdGroups'))?['engagedview']",
+                      "item/sanidi_paidengagedview": "@first(body('Insights_AdGroups'))?['paidengagedview']",
+                      "item/sanidi_paidengagementengagedview": "@first(body('Insights_AdGroups'))?['paidengagementengagedview']",
+                      "item/sanidi_engagedview15s": "@first(body('Insights_AdGroups'))?['engagedview15s']",
+                      "item/sanidi_paidengagedview15s": "@first(body('Insights_AdGroups'))?['paidengagedview15s']",
+                      "item/sanidi_paidengagementengagedview15s": "@first(body('Insights_AdGroups'))?['paidengagementengagedview15s']",
+                      "item/sanidi_engagements": "@first(body('Insights_AdGroups'))?['engagements']",
+                      "item/sanidi_engagementrate": "@first(body('Insights_AdGroups'))?['engagementrate']",
+                      "item/sanidi_clicksonmusicdisc": "@first(body('Insights_AdGroups'))?['clicksonmusicdisc']",
+                      "item/sanidi_duetclicks": "@first(body('Insights_AdGroups'))?['duetclicks']",
+                      "item/sanidi_stitchclicks": "@first(body('Insights_AdGroups'))?['stitchclicks']",
+                      "item/sanidi_soundusageclicks": "@first(body('Insights_AdGroups'))?['soundusageclicks']",
+                      "item/sanidi_anchorclicks": "@first(body('Insights_AdGroups'))?['anchorclicks']",
+                      "item/sanidi_anchorclickrate": "@first(body('Insights_AdGroups'))?['anchorclickrate']",
+                      "item/sanidi_clicksonhashtagchallenge": "@first(body('Insights_AdGroups'))?['clicksonhashtagchallenge']",
+                      "item/sanidi_follows": "@first(body('Insights_AdGroups'))?['follows']",
+                      "item/sanidi_likes": "@first(body('Insights_AdGroups'))?['likes']",
+                      "item/sanidi_comments": "@first(body('Insights_AdGroups'))?['comments']",
+                      "item/sanidi_shares": "@first(body('Insights_AdGroups'))?['shares']",
+                      "item/sanidi_profilevisits": "@first(body('Insights_AdGroups'))?['profilevisits']",
+                      "item/sanidi_profilevisitsrate": "@first(body('Insights_AdGroups'))?['profilevisitsrate']",
+                      "item/sanidi_ttplaylistvisit": "@first(body('Insights_AdGroups'))?['ttplaylistvisit']",
+                      "item/sanidi_ttplaylistvisitrate": "@first(body('Insights_AdGroups'))?['ttplaylistvisitrate']",
+                      "item/sanidi_costperconsideration": "@first(body('Insights_AdGroups'))?['costperconsideration']",
+                      "item/sanidi_newconsiderationrate": "@first(body('Insights_AdGroups'))?['newconsiderationrate']",
+                      "item/sanidi_newconsiderationsize": "@first(body('Insights_AdGroups'))?['newconsiderationsize']",
+                      "item/sanidi_completepaymentroas": "@first(body('Insights_AdGroups'))?['completepaymentroas']",
+                      "item/sanidi_completepayment": "@first(body('Insights_AdGroups'))?['completepayment']",
+                      "item/sanidi_costpercompletepayment": "@first(body('Insights_AdGroups'))?['costpercompletepayment']",
+                      "item/sanidi_completepaymentrate": "@first(body('Insights_AdGroups'))?['completepaymentrate']",
+                      "item/sanidi_valuepercompletepayment": "@first(body('Insights_AdGroups'))?['valuepercompletepayment']",
+                      "item/sanidi_totalcompletepaymentrate": "@first(body('Insights_AdGroups'))?['totalcompletepaymentrate']",
+                      "item/sanidi_totallandingpageview": "@first(body('Insights_AdGroups'))?['totallandingpageview']",
+                      "item/sanidi_costperlandingpageview": "@first(body('Insights_AdGroups'))?['costperlandingpageview']",
+                      "item/sanidi_landingpageviewrate": "@first(body('Insights_AdGroups'))?['landingpageviewrate']",
+                      "item/sanidi_totalpageview": "@first(body('Insights_AdGroups'))?['totalpageview']",
+                      "item/sanidi_costperpageview": "@first(body('Insights_AdGroups'))?['costperpageview']",
+                      "item/sanidi_pageviewrate": "@first(body('Insights_AdGroups'))?['pageviewrate']",
+                      "item/sanidi_avgvalueperpageview": "@first(body('Insights_AdGroups'))?['avgvalueperpageview']",
+                      "item/sanidi_totalvalueperpageview": "@first(body('Insights_AdGroups'))?['totalvalueperpageview']",
+                      "item/sanidi_pagebrowseview": "@first(body('Insights_AdGroups'))?['pagebrowseview']",
+                      "item/sanidi_costperpagebrowseview": "@first(body('Insights_AdGroups'))?['costperpagebrowseview']",
+                      "item/sanidi_pagebrowseviewrate": "@first(body('Insights_AdGroups'))?['pagebrowseviewrate']",
+                      "item/sanidi_totalpagebrowseviewvalue": "@first(body('Insights_AdGroups'))?['totalpagebrowseviewvalue']",
+                      "item/sanidi_valueperpagebrowseview": "@first(body('Insights_AdGroups'))?['valueperpagebrowseview']",
+                      "item/sanidi_buttonclick": "@first(body('Insights_AdGroups'))?['buttonclick']",
+                      "item/sanidi_costperbuttonclick": "@first(body('Insights_AdGroups'))?['costperbuttonclick']",
+                      "item/sanidi_buttonclickrate": "@first(body('Insights_AdGroups'))?['buttonclickrate']",
+                      "item/sanidi_valueperbuttonclick": "@first(body('Insights_AdGroups'))?['valueperbuttonclick']",
+                      "item/sanidi_totalbuttonclickvalue": "@first(body('Insights_AdGroups'))?['totalbuttonclickvalue']",
+                      "item/sanidi_onlineconsult": "@first(body('Insights_AdGroups'))?['onlineconsult']",
+                      "item/sanidi_costperonlineconsult": "@first(body('Insights_AdGroups'))?['costperonlineconsult']",
+                      "item/sanidi_onlineconsultrate": "@first(body('Insights_AdGroups'))?['onlineconsultrate']",
+                      "item/sanidi_valueperonlineconsult": "@first(body('Insights_AdGroups'))?['valueperonlineconsult']",
+                      "item/sanidi_totalonlineconsultvalue": "@first(body('Insights_AdGroups'))?['totalonlineconsultvalue']",
+                      "item/sanidi_userregistration": "@first(body('Insights_AdGroups'))?['userregistration']",
+                      "item/sanidi_costperuserregistration": "@first(body('Insights_AdGroups'))?['costperuserregistration']",
+                      "item/sanidi_userregistrationrate": "@first(body('Insights_AdGroups'))?['userregistrationrate']",
+                      "item/sanidi_valueperuserregistration": "@first(body('Insights_AdGroups'))?['valueperuserregistration']",
+                      "item/sanidi_totaluserregistrationvalue": "@first(body('Insights_AdGroups'))?['totaluserregistrationvalue']",
+                      "item/sanidi_pagecontentviewevents": "@first(body('Insights_AdGroups'))?['pagecontentviewevents']",
+                      "item/sanidi_costperpagecontentviewevent": "@first(body('Insights_AdGroups'))?['costperpagecontentviewevent']",
+                      "item/sanidi_pagecontentvieweventrate": "@first(body('Insights_AdGroups'))?['pagecontentvieweventrate']",
+                      "item/sanidi_valueperpagecontentviewevent": "@first(body('Insights_AdGroups'))?['valueperpagecontentviewevent']",
+                      "item/sanidi_totalpageviewcontenteventsvalue": "@first(body('Insights_AdGroups'))?['totalpageviewcontenteventsvalue']",
+                      "item/sanidi_productdetailspagebrowse": "@first(body('Insights_AdGroups'))?['productdetailspagebrowse']",
+                      "item/sanidi_costperproductdetailspagebrowse": "@first(body('Insights_AdGroups'))?['costperproductdetailspagebrowse']",
+                      "item/sanidi_productdetailspagebrowserate": "@first(body('Insights_AdGroups'))?['productdetailspagebrowserate']",
+                      "item/sanidi_valueperproductdetailspagebrowse": "@first(body('Insights_AdGroups'))?['valueperproductdetailspagebrowse']",
+                      "item/sanidi_totalproductdetailspagebrowsevalue": "@first(body('Insights_AdGroups'))?['totalproductdetailspagebrowsevalue']",
+                      "item/sanidi_webeventaddtocart": "@first(body('Insights_AdGroups'))?['webeventaddtocart']",
+                      "item/sanidi_costperwebeventaddtocart": "@first(body('Insights_AdGroups'))?['costperwebeventaddtocart']",
+                      "item/sanidi_webeventaddtocartrate": "@first(body('Insights_AdGroups'))?['webeventaddtocartrate']",
+                      "item/sanidi_valueperwebeventaddtocart": "@first(body('Insights_AdGroups'))?['valueperwebeventaddtocart']",
+                      "item/sanidi_totalwebeventaddtocartvalue": "@first(body('Insights_AdGroups'))?['totalwebeventaddtocartvalue']",
+                      "item/sanidi_onweborder": "@first(body('Insights_AdGroups'))?['onweborder']",
+                      "item/sanidi_costperonweborder": "@first(body('Insights_AdGroups'))?['costperonweborder']",
+                      "item/sanidi_onweborderrate": "@first(body('Insights_AdGroups'))?['onweborderrate']",
+                      "item/sanidi_valueperonweborder": "@first(body('Insights_AdGroups'))?['valueperonweborder']",
+                      "item/sanidi_totalonwebordervalue": "@first(body('Insights_AdGroups'))?['totalonwebordervalue']",
+                      "item/sanidi_initiatecheckout": "@first(body('Insights_AdGroups'))?['initiatecheckout']",
+                      "item/sanidi_costperinitiatecheckout": "@first(body('Insights_AdGroups'))?['costperinitiatecheckout']",
+                      "item/sanidi_initiatecheckoutrate": "@first(body('Insights_AdGroups'))?['initiatecheckoutrate']",
+                      "item/sanidi_valueperinitiatecheckout": "@first(body('Insights_AdGroups'))?['valueperinitiatecheckout']",
+                      "item/sanidi_totalinitiatecheckoutvalue": "@first(body('Insights_AdGroups'))?['totalinitiatecheckoutvalue']",
+                      "item/sanidi_addbilling": "@first(body('Insights_AdGroups'))?['addbilling']",
+                      "item/sanidi_costperaddbilling": "@first(body('Insights_AdGroups'))?['costperaddbilling']",
+                      "item/sanidi_addbillingrate": "@first(body('Insights_AdGroups'))?['addbillingrate']",
+                      "item/sanidi_valueperaddbilling": "@first(body('Insights_AdGroups'))?['valueperaddbilling']",
+                      "item/sanidi_totaladdbillingvalue": "@first(body('Insights_AdGroups'))?['totaladdbillingvalue']",
+                      "item/sanidi_pageeventsearch": "@first(body('Insights_AdGroups'))?['pageeventsearch']",
+                      "item/sanidi_costperpageeventsearch": "@first(body('Insights_AdGroups'))?['costperpageeventsearch']",
+                      "item/sanidi_pageeventsearchrate": "@first(body('Insights_AdGroups'))?['pageeventsearchrate']",
+                      "item/sanidi_valueperpageeventsearch": "@first(body('Insights_AdGroups'))?['valueperpageeventsearch']",
+                      "item/sanidi_totalpageeventsearchvalue": "@first(body('Insights_AdGroups'))?['totalpageeventsearchvalue']",
+                      "item/sanidi_form": "@first(body('Insights_AdGroups'))?['form']",
+                      "item/sanidi_costperform": "@first(body('Insights_AdGroups'))?['costperform']",
+                      "item/sanidi_formrate": "@first(body('Insights_AdGroups'))?['formrate']",
+                      "item/sanidi_valueperform": "@first(body('Insights_AdGroups'))?['valueperform']",
+                      "item/sanidi_totalformvalue": "@first(body('Insights_AdGroups'))?['totalformvalue']",
+                      "item/sanidi_downloadstart": "@first(body('Insights_AdGroups'))?['downloadstart']",
+                      "item/sanidi_costperdownloadstart": "@first(body('Insights_AdGroups'))?['costperdownloadstart']",
+                      "item/sanidi_downloadstartrate": "@first(body('Insights_AdGroups'))?['downloadstartrate']",
+                      "item/sanidi_valueperdownloadstart": "@first(body('Insights_AdGroups'))?['valueperdownloadstart']",
+                      "item/sanidi_totaldownloadstartvalue": "@first(body('Insights_AdGroups'))?['totaldownloadstartvalue']",
+                      "item/sanidi_onwebaddtowishlist": "@first(body('Insights_AdGroups'))?['onwebaddtowishlist']",
+                      "item/sanidi_costperonwebaddtowishlist": "@first(body('Insights_AdGroups'))?['costperonwebaddtowishlist']",
+                      "item/sanidi_onwebaddtowishlistperclick": "@first(body('Insights_AdGroups'))?['onwebaddtowishlistperclick']",
+                      "item/sanidi_valueperonwebaddtowishlist": "@first(body('Insights_AdGroups'))?['valueperonwebaddtowishlist']",
+                      "item/sanidi_totalonwebaddtowishlistvalue": "@first(body('Insights_AdGroups'))?['totalonwebaddtowishlistvalue']",
+                      "item/sanidi_onwebsubscribe": "@first(body('Insights_AdGroups'))?['onwebsubscribe']",
+                      "item/sanidi_costperonwebsubscribe": "@first(body('Insights_AdGroups'))?['costperonwebsubscribe']",
+                      "item/sanidi_onwebsubscribeperclick": "@first(body('Insights_AdGroups'))?['onwebsubscribeperclick']",
+                      "item/sanidi_valueperonwebsubscribe": "@first(body('Insights_AdGroups'))?['valueperonwebsubscribe']",
+                      "item/sanidi_totalonwebsubscribevalue": "@first(body('Insights_AdGroups'))?['totalonwebsubscribevalue']",
+                      "item/sanidi_websitetotalfindlocation": "@first(body('Insights_AdGroups'))?['websitetotalfindlocation']",
+                      "item/sanidi_websitecostperfindlocation": "@first(body('Insights_AdGroups'))?['websitecostperfindlocation']",
+                      "item/sanidi_websitefindlocationrate": "@first(body('Insights_AdGroups'))?['websitefindlocationrate']",
+                      "item/sanidi_websitevalueperfindlocation": "@first(body('Insights_AdGroups'))?['websitevalueperfindlocation']",
+                      "item/sanidi_websitetotalfindlocationvalue": "@first(body('Insights_AdGroups'))?['websitetotalfindlocationvalue']",
+                      "item/sanidi_websitetotalschedule": "@first(body('Insights_AdGroups'))?['websitetotalschedule']",
+                      "item/sanidi_websitecostperschedule": "@first(body('Insights_AdGroups'))?['websitecostperschedule']",
+                      "item/sanidi_websiteschedulerate": "@first(body('Insights_AdGroups'))?['websiteschedulerate']",
+                      "item/sanidi_websitevalueperschedule": "@first(body('Insights_AdGroups'))?['websitevalueperschedule']",
+                      "item/sanidi_websitetotalschedulevalue": "@first(body('Insights_AdGroups'))?['websitetotalschedulevalue']",
+                      "item/sanidi_websitetotalcustomizeproduct": "@first(body('Insights_AdGroups'))?['websitetotalcustomizeproduct']",
+                      "item/sanidi_websitecostpercustomizeproduct": "@first(body('Insights_AdGroups'))?['websitecostpercustomizeproduct']",
+                      "item/sanidi_websitecustomizeproductrate": "@first(body('Insights_AdGroups'))?['websitecustomizeproductrate']",
+                      "item/sanidi_websitevaluepercustomizeproduct": "@first(body('Insights_AdGroups'))?['websitevaluepercustomizeproduct']",
+                      "item/sanidi_websitetotalcustomizeproductvalue": "@first(body('Insights_AdGroups'))?['websitetotalcustomizeproductvalue']",
+                      "item/sanidi_custompageevents": "@first(body('Insights_AdGroups'))?['custompageevents']",
+                      "item/sanidi_costpercustompageevent": "@first(body('Insights_AdGroups'))?['costpercustompageevent']",
+                      "item/sanidi_custompageeventrate": "@first(body('Insights_AdGroups'))?['custompageeventrate']",
+                      "item/sanidi_valuepercustompageevent": "@first(body('Insights_AdGroups'))?['valuepercustompageevent']",
+                      "item/sanidi_custompageeventsvalue": "@first(body('Insights_AdGroups'))?['custompageeventsvalue']",
+                      "item/sanidi_vtaconversion": "@first(body('Insights_AdGroups'))?['vtaconversion']",
+                      "item/sanidi_costpervtaconversion": "@first(body('Insights_AdGroups'))?['costpervtaconversion']",
+                      "item/sanidi_ctaconversion": "@first(body('Insights_AdGroups'))?['ctaconversion']",
+                      "item/sanidi_costperctaconversion": "@first(body('Insights_AdGroups'))?['costperctaconversion']",
+                      "item/sanidi_engagedviewthroughconversions": "@first(body('Insights_AdGroups'))?['engagedviewthroughconversions']",
+                      "item/sanidi_costperengagedviewthroughconversion": "@first(body('Insights_AdGroups'))?['costperengagedviewthroughconversion']",
+                      "item/sanidi_vtaappinstall": "@first(body('Insights_AdGroups'))?['vtaappinstall']",
+                      "item/sanidi_costpervtaappinstall": "@first(body('Insights_AdGroups'))?['costpervtaappinstall']",
+                      "item/sanidi_ctaappinstall": "@first(body('Insights_AdGroups'))?['ctaappinstall']",
+                      "item/sanidi_costperctaappinstall": "@first(body('Insights_AdGroups'))?['costperctaappinstall']",
+                      "item/sanidi_evtaappinstall": "@first(body('Insights_AdGroups'))?['evtaappinstall']",
+                      "item/sanidi_costperevtaappinstall": "@first(body('Insights_AdGroups'))?['costperevtaappinstall']",
+                      "item/sanidi_vtaregistration": "@first(body('Insights_AdGroups'))?['vtaregistration']",
+                      "item/sanidi_costpervtaregistration": "@first(body('Insights_AdGroups'))?['costpervtaregistration']",
+                      "item/sanidi_ctaregistration": "@first(body('Insights_AdGroups'))?['ctaregistration']",
+                      "item/sanidi_costperctaregistration": "@first(body('Insights_AdGroups'))?['costperctaregistration']",
+                      "item/sanidi_evtaregistration": "@first(body('Insights_AdGroups'))?['evtaregistration']",
+                      "item/sanidi_costperevtaregistration": "@first(body('Insights_AdGroups'))?['costperevtaregistration']",
+                      "item/sanidi_vtapurchase": "@first(body('Insights_AdGroups'))?['vtapurchase']",
+                      "item/sanidi_costpervtapurchase": "@first(body('Insights_AdGroups'))?['costpervtapurchase']",
+                      "item/sanidi_ctapurchase": "@first(body('Insights_AdGroups'))?['ctapurchase']",
+                      "item/sanidi_costperctapurchase": "@first(body('Insights_AdGroups'))?['costperctapurchase']",
+                      "item/sanidi_evtapurchase": "@first(body('Insights_AdGroups'))?['evtapurchase']",
+                      "item/sanidi_costperevtapurchase": "@first(body('Insights_AdGroups'))?['costperevtapurchase']",
+                      "item/sanidi_vtacompletepayment": "@first(body('Insights_AdGroups'))?['vtacompletepayment']",
+                      "item/sanidi_costpervtapaymentscompleted": "@first(body('Insights_AdGroups'))?['costpervtapaymentscompleted']",
+                      "item/sanidi_evtapaymentscompleted": "@first(body('Insights_AdGroups'))?['evtapaymentscompleted']",
+                      "item/sanidi_costperevtapaymentscompleted": "@first(body('Insights_AdGroups'))?['costperevtapaymentscompleted']",
+                      "item/sanidi_vtacompletepaymentvalue": "@first(body('Insights_AdGroups'))?['vtacompletepaymentvalue']",
+                      "item/sanidi_vtacompletepaymentroas": "@first(body('Insights_AdGroups'))?['vtacompletepaymentroas']",
+                      "item/sanidi_insightslastsyncedon": "@first(body('Insights_AdGroups'))?['insightslastsyncedon']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "UpdateOnlyRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                    }
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              }
+            }
+          }
+        },
+        "List_TikTok_Ads": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "sanidi_tiktokadvertisements",
+              "$select": "sanidi_tiktokadvertisementid,sanidi_adid",
+              "$filter": "sanidi_adid ne null"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          },
+          "runAfter": {
+            "For_each_AdGroups": [
+              "Succeeded"
+            ]
+          },
+          "runtimeConfiguration": {
+            "paginationPolicy": {
+              "minimumItemCount": 100000
+            }
+          }
+        },
+        "For_each_Ads": {
+          "type": "Foreach",
+          "runAfter": {
+            "List_TikTok_Ads": [
+              "Succeeded"
+            ]
+          },
+          "foreach": "@outputs('List_TikTok_Ads')?['body/value']",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 10
+            }
+          },
+          "actions": {
+            "Insights_Ads": {
+              "type": "Query",
+              "runAfter": {},
+              "inputs": {
+                "from": "@variables('AdsInsights')",
+                "where": "@equals(item()?['adid'], items('For_each_Ads')?['sanidi_adid'])"
+              }
+            },
+            "If_Ads_has_insights": {
+              "type": "If",
+              "runAfter": {
+                "Insights_Ads": [
+                  "Succeeded"
+                ]
+              },
+              "expression": {
+                "and": [
+                  {
+                    "greater": [
+                      "@length(body('Insights_Ads'))",
+                      0
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Update_Ads_insights": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "entityName": "sanidi_tiktokadvertisements",
+                      "recordId": "@items('For_each_Ads')?['sanidi_tiktokadvertisementid']",
+                      "item/sanidi_spend": "@first(body('Insights_Ads'))?['spend']",
+                      "item/sanidi_billedcost": "@first(body('Insights_Ads'))?['billedcost']",
+                      "item/sanidi_cashspend": "@first(body('Insights_Ads'))?['cashspend']",
+                      "item/sanidi_voucherspend": "@first(body('Insights_Ads'))?['voucherspend']",
+                      "item/sanidi_cpc": "@first(body('Insights_Ads'))?['cpc']",
+                      "item/sanidi_cpm": "@first(body('Insights_Ads'))?['cpm']",
+                      "item/sanidi_impressions": "@first(body('Insights_Ads'))?['impressions']",
+                      "item/sanidi_grossimpressions": "@first(body('Insights_Ads'))?['grossimpressions']",
+                      "item/sanidi_clicks": "@first(body('Insights_Ads'))?['clicks']",
+                      "item/sanidi_ctr": "@first(body('Insights_Ads'))?['ctr']",
+                      "item/sanidi_reach": "@first(body('Insights_Ads'))?['reach']",
+                      "item/sanidi_costper1000reached": "@first(body('Insights_Ads'))?['costper1000reached']",
+                      "item/sanidi_frequency": "@first(body('Insights_Ads'))?['frequency']",
+                      "item/sanidi_conversion": "@first(body('Insights_Ads'))?['conversion']",
+                      "item/sanidi_costperconversion": "@first(body('Insights_Ads'))?['costperconversion']",
+                      "item/sanidi_conversionrate": "@first(body('Insights_Ads'))?['conversionrate']",
+                      "item/sanidi_conversionratev2": "@first(body('Insights_Ads'))?['conversionratev2']",
+                      "item/sanidi_realtimeconversion": "@first(body('Insights_Ads'))?['realtimeconversion']",
+                      "item/sanidi_realtimecostperconversion": "@first(body('Insights_Ads'))?['realtimecostperconversion']",
+                      "item/sanidi_realtimeconversionrate": "@first(body('Insights_Ads'))?['realtimeconversionrate']",
+                      "item/sanidi_realtimeconversionratev2": "@first(body('Insights_Ads'))?['realtimeconversionratev2']",
+                      "item/sanidi_result": "@first(body('Insights_Ads'))?['result']",
+                      "item/sanidi_costperresult": "@first(body('Insights_Ads'))?['costperresult']",
+                      "item/sanidi_resultrate": "@first(body('Insights_Ads'))?['resultrate']",
+                      "item/sanidi_realtimeresult": "@first(body('Insights_Ads'))?['realtimeresult']",
+                      "item/sanidi_realtimecostperresult": "@first(body('Insights_Ads'))?['realtimecostperresult']",
+                      "item/sanidi_realtimeresultrate": "@first(body('Insights_Ads'))?['realtimeresultrate']",
+                      "item/sanidi_secondarygoalresult": "@first(body('Insights_Ads'))?['secondarygoalresult']",
+                      "item/sanidi_costpersecondarygoalresult": "@first(body('Insights_Ads'))?['costpersecondarygoalresult']",
+                      "item/sanidi_secondarygoalresultrate": "@first(body('Insights_Ads'))?['secondarygoalresultrate']",
+                      "item/sanidi_videoplayactions": "@first(body('Insights_Ads'))?['videoplayactions']",
+                      "item/sanidi_videowatched2s": "@first(body('Insights_Ads'))?['videowatched2s']",
+                      "item/sanidi_videowatched6s": "@first(body('Insights_Ads'))?['videowatched6s']",
+                      "item/sanidi_videoviewsp25": "@first(body('Insights_Ads'))?['videoviewsp25']",
+                      "item/sanidi_videoviewsp50": "@first(body('Insights_Ads'))?['videoviewsp50']",
+                      "item/sanidi_videoviewsp75": "@first(body('Insights_Ads'))?['videoviewsp75']",
+                      "item/sanidi_videoviewsp100": "@first(body('Insights_Ads'))?['videoviewsp100']",
+                      "item/sanidi_averagevideoplay": "@first(body('Insights_Ads'))?['averagevideoplay']",
+                      "item/sanidi_averagevideoplayperuser": "@first(body('Insights_Ads'))?['averagevideoplayperuser']",
+                      "item/sanidi_engagedview": "@first(body('Insights_Ads'))?['engagedview']",
+                      "item/sanidi_paidengagedview": "@first(body('Insights_Ads'))?['paidengagedview']",
+                      "item/sanidi_paidengagementengagedview": "@first(body('Insights_Ads'))?['paidengagementengagedview']",
+                      "item/sanidi_engagedview15s": "@first(body('Insights_Ads'))?['engagedview15s']",
+                      "item/sanidi_paidengagedview15s": "@first(body('Insights_Ads'))?['paidengagedview15s']",
+                      "item/sanidi_paidengagementengagedview15s": "@first(body('Insights_Ads'))?['paidengagementengagedview15s']",
+                      "item/sanidi_engagements": "@first(body('Insights_Ads'))?['engagements']",
+                      "item/sanidi_engagementrate": "@first(body('Insights_Ads'))?['engagementrate']",
+                      "item/sanidi_clicksonmusicdisc": "@first(body('Insights_Ads'))?['clicksonmusicdisc']",
+                      "item/sanidi_duetclicks": "@first(body('Insights_Ads'))?['duetclicks']",
+                      "item/sanidi_stitchclicks": "@first(body('Insights_Ads'))?['stitchclicks']",
+                      "item/sanidi_soundusageclicks": "@first(body('Insights_Ads'))?['soundusageclicks']",
+                      "item/sanidi_anchorclicks": "@first(body('Insights_Ads'))?['anchorclicks']",
+                      "item/sanidi_anchorclickrate": "@first(body('Insights_Ads'))?['anchorclickrate']",
+                      "item/sanidi_clicksonhashtagchallenge": "@first(body('Insights_Ads'))?['clicksonhashtagchallenge']",
+                      "item/sanidi_follows": "@first(body('Insights_Ads'))?['follows']",
+                      "item/sanidi_likes": "@first(body('Insights_Ads'))?['likes']",
+                      "item/sanidi_comments": "@first(body('Insights_Ads'))?['comments']",
+                      "item/sanidi_shares": "@first(body('Insights_Ads'))?['shares']",
+                      "item/sanidi_profilevisits": "@first(body('Insights_Ads'))?['profilevisits']",
+                      "item/sanidi_profilevisitsrate": "@first(body('Insights_Ads'))?['profilevisitsrate']",
+                      "item/sanidi_ttplaylistvisit": "@first(body('Insights_Ads'))?['ttplaylistvisit']",
+                      "item/sanidi_ttplaylistvisitrate": "@first(body('Insights_Ads'))?['ttplaylistvisitrate']",
+                      "item/sanidi_costperconsideration": "@first(body('Insights_Ads'))?['costperconsideration']",
+                      "item/sanidi_newconsiderationrate": "@first(body('Insights_Ads'))?['newconsiderationrate']",
+                      "item/sanidi_newconsiderationsize": "@first(body('Insights_Ads'))?['newconsiderationsize']",
+                      "item/sanidi_completepaymentroas": "@first(body('Insights_Ads'))?['completepaymentroas']",
+                      "item/sanidi_completepayment": "@first(body('Insights_Ads'))?['completepayment']",
+                      "item/sanidi_costpercompletepayment": "@first(body('Insights_Ads'))?['costpercompletepayment']",
+                      "item/sanidi_completepaymentrate": "@first(body('Insights_Ads'))?['completepaymentrate']",
+                      "item/sanidi_valuepercompletepayment": "@first(body('Insights_Ads'))?['valuepercompletepayment']",
+                      "item/sanidi_totalcompletepaymentrate": "@first(body('Insights_Ads'))?['totalcompletepaymentrate']",
+                      "item/sanidi_totallandingpageview": "@first(body('Insights_Ads'))?['totallandingpageview']",
+                      "item/sanidi_costperlandingpageview": "@first(body('Insights_Ads'))?['costperlandingpageview']",
+                      "item/sanidi_landingpageviewrate": "@first(body('Insights_Ads'))?['landingpageviewrate']",
+                      "item/sanidi_totalpageview": "@first(body('Insights_Ads'))?['totalpageview']",
+                      "item/sanidi_costperpageview": "@first(body('Insights_Ads'))?['costperpageview']",
+                      "item/sanidi_pageviewrate": "@first(body('Insights_Ads'))?['pageviewrate']",
+                      "item/sanidi_avgvalueperpageview": "@first(body('Insights_Ads'))?['avgvalueperpageview']",
+                      "item/sanidi_totalvalueperpageview": "@first(body('Insights_Ads'))?['totalvalueperpageview']",
+                      "item/sanidi_pagebrowseview": "@first(body('Insights_Ads'))?['pagebrowseview']",
+                      "item/sanidi_costperpagebrowseview": "@first(body('Insights_Ads'))?['costperpagebrowseview']",
+                      "item/sanidi_pagebrowseviewrate": "@first(body('Insights_Ads'))?['pagebrowseviewrate']",
+                      "item/sanidi_totalpagebrowseviewvalue": "@first(body('Insights_Ads'))?['totalpagebrowseviewvalue']",
+                      "item/sanidi_valueperpagebrowseview": "@first(body('Insights_Ads'))?['valueperpagebrowseview']",
+                      "item/sanidi_buttonclick": "@first(body('Insights_Ads'))?['buttonclick']",
+                      "item/sanidi_costperbuttonclick": "@first(body('Insights_Ads'))?['costperbuttonclick']",
+                      "item/sanidi_buttonclickrate": "@first(body('Insights_Ads'))?['buttonclickrate']",
+                      "item/sanidi_valueperbuttonclick": "@first(body('Insights_Ads'))?['valueperbuttonclick']",
+                      "item/sanidi_totalbuttonclickvalue": "@first(body('Insights_Ads'))?['totalbuttonclickvalue']",
+                      "item/sanidi_onlineconsult": "@first(body('Insights_Ads'))?['onlineconsult']",
+                      "item/sanidi_costperonlineconsult": "@first(body('Insights_Ads'))?['costperonlineconsult']",
+                      "item/sanidi_onlineconsultrate": "@first(body('Insights_Ads'))?['onlineconsultrate']",
+                      "item/sanidi_valueperonlineconsult": "@first(body('Insights_Ads'))?['valueperonlineconsult']",
+                      "item/sanidi_totalonlineconsultvalue": "@first(body('Insights_Ads'))?['totalonlineconsultvalue']",
+                      "item/sanidi_userregistration": "@first(body('Insights_Ads'))?['userregistration']",
+                      "item/sanidi_costperuserregistration": "@first(body('Insights_Ads'))?['costperuserregistration']",
+                      "item/sanidi_userregistrationrate": "@first(body('Insights_Ads'))?['userregistrationrate']",
+                      "item/sanidi_valueperuserregistration": "@first(body('Insights_Ads'))?['valueperuserregistration']",
+                      "item/sanidi_totaluserregistrationvalue": "@first(body('Insights_Ads'))?['totaluserregistrationvalue']",
+                      "item/sanidi_pagecontentviewevents": "@first(body('Insights_Ads'))?['pagecontentviewevents']",
+                      "item/sanidi_costperpagecontentviewevent": "@first(body('Insights_Ads'))?['costperpagecontentviewevent']",
+                      "item/sanidi_pagecontentvieweventrate": "@first(body('Insights_Ads'))?['pagecontentvieweventrate']",
+                      "item/sanidi_valueperpagecontentviewevent": "@first(body('Insights_Ads'))?['valueperpagecontentviewevent']",
+                      "item/sanidi_totalpageviewcontenteventsvalue": "@first(body('Insights_Ads'))?['totalpageviewcontenteventsvalue']",
+                      "item/sanidi_productdetailspagebrowse": "@first(body('Insights_Ads'))?['productdetailspagebrowse']",
+                      "item/sanidi_costperproductdetailspagebrowse": "@first(body('Insights_Ads'))?['costperproductdetailspagebrowse']",
+                      "item/sanidi_productdetailspagebrowserate": "@first(body('Insights_Ads'))?['productdetailspagebrowserate']",
+                      "item/sanidi_valueperproductdetailspagebrowse": "@first(body('Insights_Ads'))?['valueperproductdetailspagebrowse']",
+                      "item/sanidi_totalproductdetailspagebrowsevalue": "@first(body('Insights_Ads'))?['totalproductdetailspagebrowsevalue']",
+                      "item/sanidi_webeventaddtocart": "@first(body('Insights_Ads'))?['webeventaddtocart']",
+                      "item/sanidi_costperwebeventaddtocart": "@first(body('Insights_Ads'))?['costperwebeventaddtocart']",
+                      "item/sanidi_webeventaddtocartrate": "@first(body('Insights_Ads'))?['webeventaddtocartrate']",
+                      "item/sanidi_valueperwebeventaddtocart": "@first(body('Insights_Ads'))?['valueperwebeventaddtocart']",
+                      "item/sanidi_totalwebeventaddtocartvalue": "@first(body('Insights_Ads'))?['totalwebeventaddtocartvalue']",
+                      "item/sanidi_onweborder": "@first(body('Insights_Ads'))?['onweborder']",
+                      "item/sanidi_costperonweborder": "@first(body('Insights_Ads'))?['costperonweborder']",
+                      "item/sanidi_onweborderrate": "@first(body('Insights_Ads'))?['onweborderrate']",
+                      "item/sanidi_valueperonweborder": "@first(body('Insights_Ads'))?['valueperonweborder']",
+                      "item/sanidi_totalonwebordervalue": "@first(body('Insights_Ads'))?['totalonwebordervalue']",
+                      "item/sanidi_initiatecheckout": "@first(body('Insights_Ads'))?['initiatecheckout']",
+                      "item/sanidi_costperinitiatecheckout": "@first(body('Insights_Ads'))?['costperinitiatecheckout']",
+                      "item/sanidi_initiatecheckoutrate": "@first(body('Insights_Ads'))?['initiatecheckoutrate']",
+                      "item/sanidi_valueperinitiatecheckout": "@first(body('Insights_Ads'))?['valueperinitiatecheckout']",
+                      "item/sanidi_totalinitiatecheckoutvalue": "@first(body('Insights_Ads'))?['totalinitiatecheckoutvalue']",
+                      "item/sanidi_addbilling": "@first(body('Insights_Ads'))?['addbilling']",
+                      "item/sanidi_costperaddbilling": "@first(body('Insights_Ads'))?['costperaddbilling']",
+                      "item/sanidi_addbillingrate": "@first(body('Insights_Ads'))?['addbillingrate']",
+                      "item/sanidi_valueperaddbilling": "@first(body('Insights_Ads'))?['valueperaddbilling']",
+                      "item/sanidi_totaladdbillingvalue": "@first(body('Insights_Ads'))?['totaladdbillingvalue']",
+                      "item/sanidi_pageeventsearch": "@first(body('Insights_Ads'))?['pageeventsearch']",
+                      "item/sanidi_costperpageeventsearch": "@first(body('Insights_Ads'))?['costperpageeventsearch']",
+                      "item/sanidi_pageeventsearchrate": "@first(body('Insights_Ads'))?['pageeventsearchrate']",
+                      "item/sanidi_valueperpageeventsearch": "@first(body('Insights_Ads'))?['valueperpageeventsearch']",
+                      "item/sanidi_totalpageeventsearchvalue": "@first(body('Insights_Ads'))?['totalpageeventsearchvalue']",
+                      "item/sanidi_form": "@first(body('Insights_Ads'))?['form']",
+                      "item/sanidi_costperform": "@first(body('Insights_Ads'))?['costperform']",
+                      "item/sanidi_formrate": "@first(body('Insights_Ads'))?['formrate']",
+                      "item/sanidi_valueperform": "@first(body('Insights_Ads'))?['valueperform']",
+                      "item/sanidi_totalformvalue": "@first(body('Insights_Ads'))?['totalformvalue']",
+                      "item/sanidi_downloadstart": "@first(body('Insights_Ads'))?['downloadstart']",
+                      "item/sanidi_costperdownloadstart": "@first(body('Insights_Ads'))?['costperdownloadstart']",
+                      "item/sanidi_downloadstartrate": "@first(body('Insights_Ads'))?['downloadstartrate']",
+                      "item/sanidi_valueperdownloadstart": "@first(body('Insights_Ads'))?['valueperdownloadstart']",
+                      "item/sanidi_totaldownloadstartvalue": "@first(body('Insights_Ads'))?['totaldownloadstartvalue']",
+                      "item/sanidi_onwebaddtowishlist": "@first(body('Insights_Ads'))?['onwebaddtowishlist']",
+                      "item/sanidi_costperonwebaddtowishlist": "@first(body('Insights_Ads'))?['costperonwebaddtowishlist']",
+                      "item/sanidi_onwebaddtowishlistperclick": "@first(body('Insights_Ads'))?['onwebaddtowishlistperclick']",
+                      "item/sanidi_valueperonwebaddtowishlist": "@first(body('Insights_Ads'))?['valueperonwebaddtowishlist']",
+                      "item/sanidi_totalonwebaddtowishlistvalue": "@first(body('Insights_Ads'))?['totalonwebaddtowishlistvalue']",
+                      "item/sanidi_onwebsubscribe": "@first(body('Insights_Ads'))?['onwebsubscribe']",
+                      "item/sanidi_costperonwebsubscribe": "@first(body('Insights_Ads'))?['costperonwebsubscribe']",
+                      "item/sanidi_onwebsubscribeperclick": "@first(body('Insights_Ads'))?['onwebsubscribeperclick']",
+                      "item/sanidi_valueperonwebsubscribe": "@first(body('Insights_Ads'))?['valueperonwebsubscribe']",
+                      "item/sanidi_totalonwebsubscribevalue": "@first(body('Insights_Ads'))?['totalonwebsubscribevalue']",
+                      "item/sanidi_websitetotalfindlocation": "@first(body('Insights_Ads'))?['websitetotalfindlocation']",
+                      "item/sanidi_websitecostperfindlocation": "@first(body('Insights_Ads'))?['websitecostperfindlocation']",
+                      "item/sanidi_websitefindlocationrate": "@first(body('Insights_Ads'))?['websitefindlocationrate']",
+                      "item/sanidi_websitevalueperfindlocation": "@first(body('Insights_Ads'))?['websitevalueperfindlocation']",
+                      "item/sanidi_websitetotalfindlocationvalue": "@first(body('Insights_Ads'))?['websitetotalfindlocationvalue']",
+                      "item/sanidi_websitetotalschedule": "@first(body('Insights_Ads'))?['websitetotalschedule']",
+                      "item/sanidi_websitecostperschedule": "@first(body('Insights_Ads'))?['websitecostperschedule']",
+                      "item/sanidi_websiteschedulerate": "@first(body('Insights_Ads'))?['websiteschedulerate']",
+                      "item/sanidi_websitevalueperschedule": "@first(body('Insights_Ads'))?['websitevalueperschedule']",
+                      "item/sanidi_websitetotalschedulevalue": "@first(body('Insights_Ads'))?['websitetotalschedulevalue']",
+                      "item/sanidi_websitetotalcustomizeproduct": "@first(body('Insights_Ads'))?['websitetotalcustomizeproduct']",
+                      "item/sanidi_websitecostpercustomizeproduct": "@first(body('Insights_Ads'))?['websitecostpercustomizeproduct']",
+                      "item/sanidi_websitecustomizeproductrate": "@first(body('Insights_Ads'))?['websitecustomizeproductrate']",
+                      "item/sanidi_websitevaluepercustomizeproduct": "@first(body('Insights_Ads'))?['websitevaluepercustomizeproduct']",
+                      "item/sanidi_websitetotalcustomizeproductvalue": "@first(body('Insights_Ads'))?['websitetotalcustomizeproductvalue']",
+                      "item/sanidi_custompageevents": "@first(body('Insights_Ads'))?['custompageevents']",
+                      "item/sanidi_costpercustompageevent": "@first(body('Insights_Ads'))?['costpercustompageevent']",
+                      "item/sanidi_custompageeventrate": "@first(body('Insights_Ads'))?['custompageeventrate']",
+                      "item/sanidi_valuepercustompageevent": "@first(body('Insights_Ads'))?['valuepercustompageevent']",
+                      "item/sanidi_custompageeventsvalue": "@first(body('Insights_Ads'))?['custompageeventsvalue']",
+                      "item/sanidi_vtaconversion": "@first(body('Insights_Ads'))?['vtaconversion']",
+                      "item/sanidi_costpervtaconversion": "@first(body('Insights_Ads'))?['costpervtaconversion']",
+                      "item/sanidi_ctaconversion": "@first(body('Insights_Ads'))?['ctaconversion']",
+                      "item/sanidi_costperctaconversion": "@first(body('Insights_Ads'))?['costperctaconversion']",
+                      "item/sanidi_engagedviewthroughconversions": "@first(body('Insights_Ads'))?['engagedviewthroughconversions']",
+                      "item/sanidi_costperengagedviewthroughconversion": "@first(body('Insights_Ads'))?['costperengagedviewthroughconversion']",
+                      "item/sanidi_vtaappinstall": "@first(body('Insights_Ads'))?['vtaappinstall']",
+                      "item/sanidi_costpervtaappinstall": "@first(body('Insights_Ads'))?['costpervtaappinstall']",
+                      "item/sanidi_ctaappinstall": "@first(body('Insights_Ads'))?['ctaappinstall']",
+                      "item/sanidi_costperctaappinstall": "@first(body('Insights_Ads'))?['costperctaappinstall']",
+                      "item/sanidi_evtaappinstall": "@first(body('Insights_Ads'))?['evtaappinstall']",
+                      "item/sanidi_costperevtaappinstall": "@first(body('Insights_Ads'))?['costperevtaappinstall']",
+                      "item/sanidi_vtaregistration": "@first(body('Insights_Ads'))?['vtaregistration']",
+                      "item/sanidi_costpervtaregistration": "@first(body('Insights_Ads'))?['costpervtaregistration']",
+                      "item/sanidi_ctaregistration": "@first(body('Insights_Ads'))?['ctaregistration']",
+                      "item/sanidi_costperctaregistration": "@first(body('Insights_Ads'))?['costperctaregistration']",
+                      "item/sanidi_evtaregistration": "@first(body('Insights_Ads'))?['evtaregistration']",
+                      "item/sanidi_costperevtaregistration": "@first(body('Insights_Ads'))?['costperevtaregistration']",
+                      "item/sanidi_vtapurchase": "@first(body('Insights_Ads'))?['vtapurchase']",
+                      "item/sanidi_costpervtapurchase": "@first(body('Insights_Ads'))?['costpervtapurchase']",
+                      "item/sanidi_ctapurchase": "@first(body('Insights_Ads'))?['ctapurchase']",
+                      "item/sanidi_costperctapurchase": "@first(body('Insights_Ads'))?['costperctapurchase']",
+                      "item/sanidi_evtapurchase": "@first(body('Insights_Ads'))?['evtapurchase']",
+                      "item/sanidi_costperevtapurchase": "@first(body('Insights_Ads'))?['costperevtapurchase']",
+                      "item/sanidi_vtacompletepayment": "@first(body('Insights_Ads'))?['vtacompletepayment']",
+                      "item/sanidi_costpervtapaymentscompleted": "@first(body('Insights_Ads'))?['costpervtapaymentscompleted']",
+                      "item/sanidi_evtapaymentscompleted": "@first(body('Insights_Ads'))?['evtapaymentscompleted']",
+                      "item/sanidi_costperevtapaymentscompleted": "@first(body('Insights_Ads'))?['costperevtapaymentscompleted']",
+                      "item/sanidi_vtacompletepaymentvalue": "@first(body('Insights_Ads'))?['vtacompletepaymentvalue']",
+                      "item/sanidi_vtacompletepaymentroas": "@first(body('Insights_Ads'))?['vtacompletepaymentroas']",
+                      "item/sanidi_insightslastsyncedon": "@first(body('Insights_Ads'))?['insightslastsyncedon']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "UpdateOnlyRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                    }
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              }
+            }
+          }
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "For_each_Ads": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "statusCode": 200,
+            "body": {},
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

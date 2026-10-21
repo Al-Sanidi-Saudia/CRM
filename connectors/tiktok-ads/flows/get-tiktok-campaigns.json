@@ -1,0 +1,545 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sanidi-5ftiktok-5f43b530b23a0dc933": {
+        "api": {
+          "name": "shared_sanidi-5ftiktok-5f43b530b23a0dc933",
+          "logicalName": "sanidi_tiktok"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "sanidi_sharedsanidi5ftiktok5f43b530b23a0dc933_3e7c1"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_commondataserviceforapps": {
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "sanidi_sharedcommondataserviceforapps_79822"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "TikTok Ads Access Token (sanidi_TikTokAdsAccessToken)": {
+          "defaultValue": "",
+          "type": "String",
+          "metadata": {
+            "schemaName": "sanidi_TikTokAdsAccessToken"
+          }
+        },
+        "TikTok Ads Advertiser IDs (sanidi_TikTokAdsAdvertiserIds)": {
+          "defaultValue": "",
+          "type": "String",
+          "metadata": {
+            "schemaName": "sanidi_TikTokAdsAdvertiserIds"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "Choice_maps": {
+          "runAfter": {},
+          "type": "Compose",
+          "inputs": {
+            "sanidi_campaignsystemorigin": {
+              "PROMOTE": 1
+            },
+            "sanidi_operationstatus": {
+              "ENABLE": 1,
+              "DISABLE": 2
+            },
+            "sanidi_secondarystatus": {
+              "CAMPAIGN_STATUS_DELETE": 1,
+              "ADVERTISER_CONTRACT_PENDING": 2,
+              "ADVERTISER_ACCOUNT_PUNISH": 3,
+              "CAMPAIGN_STATUS_BUDGET_EXCEED": 4,
+              "CAMPAIGN_STATUS_DISABLE": 5,
+              "CAMPAIGN_STATUS_AWAITING_RELEASE": 6,
+              "CAMPAIGN_STATUS_IDENTITY_USED_BY_GMV_MAX_AD": 7,
+              "CAMPAIGN_STATUS_ENABLE": 8,
+              "CAMPAIGN_STATUS_ALL": 9,
+              "CAMPAIGN_STATUS_NOT_DELETE": 10,
+              "CAMPAIGN_STATUS_TTS_TT_ASSET_UNAVAILABLE": 11,
+              "CAMPAIGN_STATUS_TTS_TT_IDENTITY_UNAVAILABLE": 12,
+              "CAMPAIGN_STATUS_TIKTOK_SHOP_UNAVAILABLE": 13,
+              "CAMPAIGN_STATUS_REVIEW_DISAPPROVED": 14,
+              "CAMPAIGN_STATUS_AD_UNAVAILABLE": 15,
+              "CAMPAIGN_STATUS_PRODUCT_UNAVAILABLE": 16,
+              "CAMPAIGN_STATUS_LIVE_GMV_MAX_AUTHORIZATION_CANCEL": 17,
+              "CAMPAIGN_STATUS_PRODUCT_GMV_MAX_AUTHORIZATION_CANCEL": 18,
+              "CAMPAIGN_STATUS_IDENTITY_USED_BY_LIVE_GMV_MAX": 19,
+              "CAMPAIGN_STATUS_PRODUCT_USED_BY_PRODUCT_GMV_MAX": 20
+            },
+            "sanidi_objectivetype": {
+              "APP_PROMOTION": 1,
+              "WEB_CONVERSIONS": 2,
+              "REACH": 3,
+              "BRAND_CONSIDERATION": 4,
+              "TRAFFIC": 5,
+              "VIDEO_VIEWS": 6,
+              "PRODUCT_SALES": 7,
+              "ENGAGEMENT": 8,
+              "LEAD_GENERATION": 9,
+              "TOPVIEW_REACH": 10
+            },
+            "sanidi_virtualobjectivetype": {
+              "SALES": 1
+            },
+            "sanidi_objective": {
+              "APP": 1,
+              "LANDING_PAGE": 2
+            },
+            "sanidi_apppromotiontype": {
+              "APP_INSTALL": 1,
+              "APP_RETARGETING": 2,
+              "APP_PREREGISTRATION": 3,
+              "APP_POSTS_PROMOTION": 4
+            },
+            "sanidi_salesdestination": {
+              "TIKTOK_SHOP": 1,
+              "WEBSITE": 2,
+              "APP": 3,
+              "WEB_AND_APP": 4
+            },
+            "sanidi_campaigntype": {
+              "REGULAR_CAMPAIGN": 1,
+              "IOS14_CAMPAIGN": 2
+            },
+            "sanidi_campaignautomationtype": {
+              "MANUAL": 1,
+              "SMART_PLUS": 2,
+              "UPGRADED_SMART_PLUS": 3
+            },
+            "sanidi_rfcampaigntype": {
+              "STANDARD": 1,
+              "PULSE": 2,
+              "TOPVIEW": 3
+            },
+            "sanidi_campaignproductsource": {
+              "CATALOG": 1,
+              "STORE": 2
+            },
+            "sanidi_specialindustries": {
+              "HOUSING": 1,
+              "EMPLOYMENT": 2,
+              "CREDIT": 3
+            },
+            "sanidi_campaignappprofilepagestate": {
+              "INVALID": 1,
+              "UNSET": 2,
+              "ON": 3,
+              "OFF": 4
+            },
+            "sanidi_bidaligntype": {
+              "SAN": 1,
+              "SKAN": 2
+            },
+            "sanidi_postbackwindowmode": {
+              "POSTBACK_WINDOW_MODE1": 1,
+              "POSTBACK_WINDOW_MODE2": 2,
+              "POSTBACK_WINDOW_MODE3": 3
+            },
+            "sanidi_budgetmode": {
+              "BUDGET_MODE_DAY": 1,
+              "BUDGET_MODE_TOTAL": 2,
+              "BUDGET_MODE_INFINITE": 3,
+              "BUDGET_MODE_DYNAMIC_DAILY_BUDGET": 4
+            },
+            "sanidi_bidtype": {
+              "BID_TYPE_CUSTOM": 1,
+              "BID_TYPE_NO_BID": 2
+            },
+            "sanidi_deepbidtype": {
+              "DEFAULT": 1,
+              "MIN": 2,
+              "PACING": 3,
+              "VO_MIN_ROAS": 4,
+              "VO_HIGHEST_VALUE": 5,
+              "AEO": 6
+            },
+            "sanidi_optimizationgoal": {
+              "CLICK": 1,
+              "CONVERT": 2,
+              "INSTALL": 3,
+              "IN_APP_EVENT": 4,
+              "SHOW": 5,
+              "REACH": 6,
+              "LEAD_GENERATION": 7,
+              "LEADS": 8,
+              "WEBSITE_ENGAGEMENT": 9,
+              "CONVERSATION": 10,
+              "FOLLOWERS": 11,
+              "PAGE_VISIT": 12,
+              "VALUE": 13,
+              "AUTOMATIC_VALUE_OPTIMIZATION": 14,
+              "GMV": 15,
+              "PURCHASES": 16,
+              "INITIATE_CHECKOUTS": 17,
+              "MT_LIVE_ROOM": 18,
+              "PRODUCT_CLICK_IN_LIVE": 19,
+              "ENGAGED_VIEW": 20,
+              "ENGAGED_VIEW_FIFTEEN": 21,
+              "TRAFFIC_LANDING_PAGE_VIEW": 22,
+              "DESTINATION_VISIT": 23,
+              "PREFERRED_LEAD": 24
+            }
+          },
+          "description": "TikTok value -> Dataverse option value for every choice column"
+        },
+        "Base_currency": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "entityName": "organizations",
+              "$select": "_basecurrencyid_value",
+              "$top": 1
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "connectionName": "shared_commondataserviceforapps"
+            }
+          },
+          "runAfter": {
+            "Choice_maps": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Advertiser_ID_list": {
+          "type": "Select",
+          "runAfter": {
+            "Base_currency": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "from": "@split(coalesce(parameters('TikTok Ads Advertiser IDs (sanidi_TikTokAdsAdvertiserIds)'), ''), ',')",
+            "select": "@trim(item())"
+          }
+        },
+        "Advertiser_IDs": {
+          "type": "Query",
+          "runAfter": {
+            "Advertiser_ID_list": [
+              "Succeeded"
+            ]
+          },
+          "inputs": {
+            "from": "@body('Advertiser_ID_list')",
+            "where": "@not(empty(item()))"
+          }
+        },
+        "For_each_advertiser": {
+          "type": "Foreach",
+          "runAfter": {
+            "Advertiser_IDs": [
+              "Succeeded"
+            ]
+          },
+          "foreach": "@body('Advertiser_IDs')",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 1
+            }
+          },
+          "actions": {
+            "Get_advertiser_info": {
+              "runAfter": {},
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "Access-Token": "@trim(parameters('TikTok Ads Access Token (sanidi_TikTokAdsAccessToken)'))",
+                  "advertiser_id": "@items('For_each_advertiser')"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5ftiktok-5f43b530b23a0dc933",
+                  "operationId": "GetAdvertiserInfo",
+                  "connectionName": "shared_sanidi-5ftiktok-5f43b530b23a0dc933"
+                }
+              }
+            },
+            "Advertiser_currency": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "entityName": "transactioncurrencies",
+                  "$select": "transactioncurrencyid",
+                  "$filter": "isocurrencycode eq '@{outputs('Get_advertiser_info')?['body/currency']}'",
+                  "$top": 1
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                  "operationId": "ListRecords",
+                  "connectionName": "shared_commondataserviceforapps"
+                }
+              },
+              "runAfter": {
+                "Get_advertiser_info": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "List_campaigns": {
+              "runAfter": {
+                "Advertiser_currency": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "Access-Token": "@trim(parameters('TikTok Ads Access Token (sanidi_TikTokAdsAccessToken)'))",
+                  "advertiser_id": "@items('For_each_advertiser')",
+                  "include_deleted": true
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5ftiktok-5f43b530b23a0dc933",
+                  "operationId": "ListCampaigns",
+                  "connectionName": "shared_sanidi-5ftiktok-5f43b530b23a0dc933"
+                }
+              }
+            },
+            "For_each_campaign": {
+              "type": "Foreach",
+              "foreach": "@coalesce(outputs('List_campaigns')?['body/rows'], json('[]'))",
+              "runAfter": {
+                "List_campaigns": [
+                  "Succeeded"
+                ]
+              },
+              "actions": {
+                "Known_specialindustries_values": {
+                  "type": "Select",
+                  "inputs": {
+                    "from": "@coalesce(items('For_each_campaign')?['specialindustries'], json('[]'))",
+                    "select": "@outputs('Choice_maps')?['sanidi_specialindustries']?[item()]"
+                  },
+                  "runAfter": {}
+                },
+                "Known_specialindustries": {
+                  "type": "Query",
+                  "inputs": {
+                    "from": "@body('Known_specialindustries_values')",
+                    "where": "@not(equals(item(), null))"
+                  },
+                  "runAfter": {
+                    "Known_specialindustries_values": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Find_existing_campaign": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "entityName": "sanidi_tiktokcampaigns",
+                      "$select": "sanidi_tiktokcampaignid",
+                      "$filter": "sanidi_campaignid eq '@{items('For_each_campaign')?['campaignid']}'",
+                      "$top": 1
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "ListRecords",
+                      "connectionName": "shared_commondataserviceforapps"
+                    }
+                  },
+                  "runAfter": {
+                    "Known_specialindustries": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "If_campaign_exists": {
+                  "type": "If",
+                  "runAfter": {
+                    "Find_existing_campaign": [
+                      "Succeeded"
+                    ]
+                  },
+                  "expression": {
+                    "and": [
+                      {
+                        "greater": [
+                          "@length(outputs('Find_existing_campaign')?['body/value'])",
+                          0
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "Update_campaign": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "entityName": "sanidi_tiktokcampaigns",
+                          "recordId": "@first(outputs('Find_existing_campaign')?['body/value'])?['sanidi_tiktokcampaignid']",
+                          "item/sanidi_campaignname": "@coalesce(items('For_each_campaign')?['campaignname'], concat('TikTok Campaign ', items('For_each_campaign')?['campaignid']))",
+                          "item/sanidi_campaignid": "@items('For_each_campaign')?['campaignid']",
+                          "item/sanidi_advertiserid": "@items('For_each_campaign')?['advertiserid']",
+                          "item/sanidi_advertisername": "@items('For_each_campaign')?['advertisername']",
+                          "item/sanidi_currency": "@items('For_each_campaign')?['currency']",
+                          "item/sanidi_accounttimezone": "@items('For_each_campaign')?['accounttimezone']",
+                          "item/sanidi_campaignsystemorigin": "@outputs('Choice_maps')?['sanidi_campaignsystemorigin']?[string(items('For_each_campaign')?['campaignsystemorigin'])]",
+                          "item/sanidi_createtime": "@items('For_each_campaign')?['createtime']",
+                          "item/sanidi_modifytime": "@items('For_each_campaign')?['modifytime']",
+                          "item/sanidi_ponumber": "@items('For_each_campaign')?['ponumber']",
+                          "item/sanidi_isnewstructure": "@items('For_each_campaign')?['isnewstructure']",
+                          "item/sanidi_operationstatus": "@outputs('Choice_maps')?['sanidi_operationstatus']?[string(items('For_each_campaign')?['operationstatus'])]",
+                          "item/sanidi_secondarystatus": "@outputs('Choice_maps')?['sanidi_secondarystatus']?[string(items('For_each_campaign')?['secondarystatus'])]",
+                          "item/sanidi_objectivetype": "@outputs('Choice_maps')?['sanidi_objectivetype']?[string(items('For_each_campaign')?['objectivetype'])]",
+                          "item/sanidi_virtualobjectivetype": "@outputs('Choice_maps')?['sanidi_virtualobjectivetype']?[string(items('For_each_campaign')?['virtualobjectivetype'])]",
+                          "item/sanidi_objective": "@outputs('Choice_maps')?['sanidi_objective']?[string(items('For_each_campaign')?['objective'])]",
+                          "item/sanidi_apppromotiontype": "@outputs('Choice_maps')?['sanidi_apppromotiontype']?[string(items('For_each_campaign')?['apppromotiontype'])]",
+                          "item/sanidi_salesdestination": "@outputs('Choice_maps')?['sanidi_salesdestination']?[string(items('For_each_campaign')?['salesdestination'])]",
+                          "item/sanidi_campaigntype": "@outputs('Choice_maps')?['sanidi_campaigntype']?[string(items('For_each_campaign')?['campaigntype'])]",
+                          "item/sanidi_campaignautomationtype": "@outputs('Choice_maps')?['sanidi_campaignautomationtype']?[string(items('For_each_campaign')?['campaignautomationtype'])]",
+                          "item/sanidi_issmartperformancecampaign": "@items('For_each_campaign')?['issmartperformancecampaign']",
+                          "item/sanidi_issearchcampaign": "@items('For_each_campaign')?['issearchcampaign']",
+                          "item/sanidi_isadvanceddedicatedcampaign": "@items('For_each_campaign')?['isadvanceddedicatedcampaign']",
+                          "item/sanidi_rfcampaigntype": "@outputs('Choice_maps')?['sanidi_rfcampaigntype']?[string(items('For_each_campaign')?['rfcampaigntype'])]",
+                          "item/sanidi_campaignproductsource": "@outputs('Choice_maps')?['sanidi_campaignproductsource']?[string(items('For_each_campaign')?['campaignproductsource'])]",
+                          "item/sanidi_catalogenabled": "@items('For_each_campaign')?['catalogenabled']",
+                          "item/sanidi_specialindustries": "@if(empty(body('Known_specialindustries')), null, join(body('Known_specialindustries'), ','))",
+                          "item/sanidi_appid": "@items('For_each_campaign')?['appid']",
+                          "item/sanidi_campaignappprofilepagestate": "@outputs('Choice_maps')?['sanidi_campaignappprofilepagestate']?[string(items('For_each_campaign')?['campaignappprofilepagestate'])]",
+                          "item/sanidi_disableskancampaign": "@items('For_each_campaign')?['disableskancampaign']",
+                          "item/sanidi_bidaligntype": "@outputs('Choice_maps')?['sanidi_bidaligntype']?[string(items('For_each_campaign')?['bidaligntype'])]",
+                          "item/sanidi_postbackwindowmode": "@outputs('Choice_maps')?['sanidi_postbackwindowmode']?[string(items('For_each_campaign')?['postbackwindowmode'])]",
+                          "item/sanidi_budgetmode": "@outputs('Choice_maps')?['sanidi_budgetmode']?[string(items('For_each_campaign')?['budgetmode'])]",
+                          "item/sanidi_budget": "@items('For_each_campaign')?['budget']",
+                          "item/sanidi_budgetoptimizeon": "@items('For_each_campaign')?['budgetoptimizeon']",
+                          "item/sanidi_bidtype": "@outputs('Choice_maps')?['sanidi_bidtype']?[string(items('For_each_campaign')?['bidtype'])]",
+                          "item/sanidi_deepbidtype": "@outputs('Choice_maps')?['sanidi_deepbidtype']?[string(items('For_each_campaign')?['deepbidtype'])]",
+                          "item/sanidi_roasbid": "@items('For_each_campaign')?['roasbid']",
+                          "item/sanidi_optimizationgoal": "@outputs('Choice_maps')?['sanidi_optimizationgoal']?[string(items('For_each_campaign')?['optimizationgoal'])]",
+                          "item/sanidi_rtaid": "@items('For_each_campaign')?['rtaid']",
+                          "item/sanidi_rtabidenabled": "@items('For_each_campaign')?['rtabidenabled']",
+                          "item/sanidi_rtaproductselectionenabled": "@items('For_each_campaign')?['rtaproductselectionenabled']",
+                          "item/sanidi_lastsyncedon": "@items('For_each_campaign')?['lastsyncedon']",
+                          "item/sanidi_rawpayload": "@items('For_each_campaign')?['rawpayload']",
+                          "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(first(outputs('Advertiser_currency')?['body/value'])?['transactioncurrencyid'], first(outputs('Base_currency')?['body/value'])?['_basecurrencyid_value'])})"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                          "operationId": "UpdateOnlyRecord",
+                          "connectionName": "shared_commondataserviceforapps"
+                        }
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Add_campaign": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "entityName": "sanidi_tiktokcampaigns",
+                            "item/sanidi_campaignname": "@coalesce(items('For_each_campaign')?['campaignname'], concat('TikTok Campaign ', items('For_each_campaign')?['campaignid']))",
+                            "item/sanidi_campaignid": "@items('For_each_campaign')?['campaignid']",
+                            "item/sanidi_advertiserid": "@items('For_each_campaign')?['advertiserid']",
+                            "item/sanidi_advertisername": "@items('For_each_campaign')?['advertisername']",
+                            "item/sanidi_currency": "@items('For_each_campaign')?['currency']",
+                            "item/sanidi_accounttimezone": "@items('For_each_campaign')?['accounttimezone']",
+                            "item/sanidi_campaignsystemorigin": "@outputs('Choice_maps')?['sanidi_campaignsystemorigin']?[string(items('For_each_campaign')?['campaignsystemorigin'])]",
+                            "item/sanidi_createtime": "@items('For_each_campaign')?['createtime']",
+                            "item/sanidi_modifytime": "@items('For_each_campaign')?['modifytime']",
+                            "item/sanidi_ponumber": "@items('For_each_campaign')?['ponumber']",
+                            "item/sanidi_isnewstructure": "@items('For_each_campaign')?['isnewstructure']",
+                            "item/sanidi_operationstatus": "@outputs('Choice_maps')?['sanidi_operationstatus']?[string(items('For_each_campaign')?['operationstatus'])]",
+                            "item/sanidi_secondarystatus": "@outputs('Choice_maps')?['sanidi_secondarystatus']?[string(items('For_each_campaign')?['secondarystatus'])]",
+                            "item/sanidi_objectivetype": "@outputs('Choice_maps')?['sanidi_objectivetype']?[string(items('For_each_campaign')?['objectivetype'])]",
+                            "item/sanidi_virtualobjectivetype": "@outputs('Choice_maps')?['sanidi_virtualobjectivetype']?[string(items('For_each_campaign')?['virtualobjectivetype'])]",
+                            "item/sanidi_objective": "@outputs('Choice_maps')?['sanidi_objective']?[string(items('For_each_campaign')?['objective'])]",
+                            "item/sanidi_apppromotiontype": "@outputs('Choice_maps')?['sanidi_apppromotiontype']?[string(items('For_each_campaign')?['apppromotiontype'])]",
+                            "item/sanidi_salesdestination": "@outputs('Choice_maps')?['sanidi_salesdestination']?[string(items('For_each_campaign')?['salesdestination'])]",
+                            "item/sanidi_campaigntype": "@outputs('Choice_maps')?['sanidi_campaigntype']?[string(items('For_each_campaign')?['campaigntype'])]",
+                            "item/sanidi_campaignautomationtype": "@outputs('Choice_maps')?['sanidi_campaignautomationtype']?[string(items('For_each_campaign')?['campaignautomationtype'])]",
+                            "item/sanidi_issmartperformancecampaign": "@items('For_each_campaign')?['issmartperformancecampaign']",
+                            "item/sanidi_issearchcampaign": "@items('For_each_campaign')?['issearchcampaign']",
+                            "item/sanidi_isadvanceddedicatedcampaign": "@items('For_each_campaign')?['isadvanceddedicatedcampaign']",
+                            "item/sanidi_rfcampaigntype": "@outputs('Choice_maps')?['sanidi_rfcampaigntype']?[string(items('For_each_campaign')?['rfcampaigntype'])]",
+                            "item/sanidi_campaignproductsource": "@outputs('Choice_maps')?['sanidi_campaignproductsource']?[string(items('For_each_campaign')?['campaignproductsource'])]",
+                            "item/sanidi_catalogenabled": "@items('For_each_campaign')?['catalogenabled']",
+                            "item/sanidi_specialindustries": "@if(empty(body('Known_specialindustries')), null, join(body('Known_specialindustries'), ','))",
+                            "item/sanidi_appid": "@items('For_each_campaign')?['appid']",
+                            "item/sanidi_campaignappprofilepagestate": "@outputs('Choice_maps')?['sanidi_campaignappprofilepagestate']?[string(items('For_each_campaign')?['campaignappprofilepagestate'])]",
+                            "item/sanidi_disableskancampaign": "@items('For_each_campaign')?['disableskancampaign']",
+                            "item/sanidi_bidaligntype": "@outputs('Choice_maps')?['sanidi_bidaligntype']?[string(items('For_each_campaign')?['bidaligntype'])]",
+                            "item/sanidi_postbackwindowmode": "@outputs('Choice_maps')?['sanidi_postbackwindowmode']?[string(items('For_each_campaign')?['postbackwindowmode'])]",
+                            "item/sanidi_budgetmode": "@outputs('Choice_maps')?['sanidi_budgetmode']?[string(items('For_each_campaign')?['budgetmode'])]",
+                            "item/sanidi_budget": "@items('For_each_campaign')?['budget']",
+                            "item/sanidi_budgetoptimizeon": "@items('For_each_campaign')?['budgetoptimizeon']",
+                            "item/sanidi_bidtype": "@outputs('Choice_maps')?['sanidi_bidtype']?[string(items('For_each_campaign')?['bidtype'])]",
+                            "item/sanidi_deepbidtype": "@outputs('Choice_maps')?['sanidi_deepbidtype']?[string(items('For_each_campaign')?['deepbidtype'])]",
+                            "item/sanidi_roasbid": "@items('For_each_campaign')?['roasbid']",
+                            "item/sanidi_optimizationgoal": "@outputs('Choice_maps')?['sanidi_optimizationgoal']?[string(items('For_each_campaign')?['optimizationgoal'])]",
+                            "item/sanidi_rtaid": "@items('For_each_campaign')?['rtaid']",
+                            "item/sanidi_rtabidenabled": "@items('For_each_campaign')?['rtabidenabled']",
+                            "item/sanidi_rtaproductselectionenabled": "@items('For_each_campaign')?['rtaproductselectionenabled']",
+                            "item/sanidi_lastsyncedon": "@items('For_each_campaign')?['lastsyncedon']",
+                            "item/sanidi_rawpayload": "@items('For_each_campaign')?['rawpayload']",
+                            "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(first(outputs('Advertiser_currency')?['body/value'])?['transactioncurrencyid'], first(outputs('Base_currency')?['body/value'])?['_basecurrencyid_value'])})"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                            "operationId": "CreateRecord",
+                            "connectionName": "shared_commondataserviceforapps"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "For_each_advertiser": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "statusCode": 200,
+            "body": {},
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      }
+    },
+    "templateName": ""
+  },
+  "schemaVersion": "1.0.0.0"
+}

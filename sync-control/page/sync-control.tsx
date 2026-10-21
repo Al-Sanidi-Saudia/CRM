@@ -11,6 +11,7 @@ import {
     DialogTitle,
     MessageBar,
     MessageBarBody,
+    MessageBarTitle,
     Spinner,
     Text,
     makeStyles,
@@ -64,6 +65,8 @@ interface Platform {
     name: string;
     key: string;
     configured: boolean;
+    // False while the platform's connection isn't working yet: the card shows a notice and no sync can start.
+    connectionActive: boolean;
     dataFlows: FlowRef[];
     insightsFlowName: string;
     insightsFlowId: string;
@@ -394,7 +397,7 @@ function canCurrentUserSync(): boolean {
 async function loadSnapshot(dataApi: GeneratedComponentProps["dataApi"]): Promise<Snapshot> {
     const platformResult = await dataApi.queryTable("sanidi_integrationplatform", {
         select: ["sanidi_name", "sanidi_platformkey", "sanidi_sortorder", "sanidi_isconfigured",
-            "sanidi_dataflows", "sanidi_insightsflowname", "sanidi_insightsflowid"],
+            "sanidi_connectionactive", "sanidi_dataflows", "sanidi_insightsflowname", "sanidi_insightsflowid"],
         filter: "statecode eq 0",
         orderBy: "sanidi_sortorder asc",
         pageSize: 50,
@@ -404,6 +407,8 @@ async function loadSnapshot(dataApi: GeneratedComponentProps["dataApi"]): Promis
         name: String(r.sanidi_name || ""),
         key: String(r.sanidi_platformkey || "").toLowerCase(),
         configured: r.sanidi_isconfigured === true || r.sanidi_isconfigured === 1,
+        // Empty counts as active, so only a platform explicitly set to No shows the notice.
+        connectionActive: r.sanidi_connectionactive !== false && r.sanidi_connectionactive !== 0,
         dataFlows: parseFlows(r.sanidi_dataflows),
         insightsFlowName: String(r.sanidi_insightsflowname || ""),
         insightsFlowId: String(r.sanidi_insightsflowid || "").toLowerCase(),
@@ -716,6 +721,8 @@ function SyncSection(props: {
     busy: boolean;
     // The platform's other sync is running.
     blockedBy: string | null;
+    // Set when no sync can start at all (connection not active yet).
+    disabledReason: string | null;
     buttonLabel: string;
     divider: boolean;
     onSync: () => void;
@@ -773,8 +780,9 @@ function SyncSection(props: {
                 <Button
                     appearance="primary"
                     icon={<ArrowSyncRegular />}
-                    disabled={view.active || props.busy || !!props.blockedBy}
-                    title={!view.active && props.blockedBy ? `Waiting for the ${props.blockedBy} sync to finish` : undefined}
+                    disabled={view.active || props.busy || !!props.blockedBy || !!props.disabledReason}
+                    title={props.disabledReason
+                        ?? (!view.active && props.blockedBy ? `Waiting for the ${props.blockedBy} sync to finish` : undefined)}
                     onClick={props.onSync}
                 >
                     {view.active ? "Running…" : props.buttonLabel}
@@ -797,6 +805,7 @@ function PlatformCard(props: {
     const headingId = `platform-${platform.id}`;
     const dataView = platform.configured ? buildDataSection(platform, snap) : null;
     const insightsView = platform.configured ? buildInsightsSection(platform, snap) : null;
+    const disabledReason = platform.connectionActive ? null : `The ${platform.name} connection is not active yet`;
     return (
         <article className={styles.card} aria-labelledby={headingId}>
             <div className={styles.cardHeader}>
@@ -805,6 +814,14 @@ function PlatformCard(props: {
             </div>
             {platform.configured ? (
                 <>
+                    {!platform.connectionActive && (
+                        <MessageBar intent="warning">
+                            <MessageBarBody>
+                                <MessageBarTitle>Connection not active yet</MessageBarTitle>
+                                {" "}Sync is turned off until the {platform.name} connection is set up.
+                            </MessageBarBody>
+                        </MessageBar>
+                    )}
                     <SyncSection
                         title="Data"
                         subtitle=""
@@ -814,6 +831,7 @@ function PlatformCard(props: {
                         canSync={props.canSync}
                         busy={props.busy}
                         blockedBy={insightsView?.active ? `${platform.name} insights` : null}
+                        disabledReason={disabledReason}
                         buttonLabel="Sync Data"
                         divider={true}
                         onSync={() => props.onSync(platform, "data")}
@@ -827,6 +845,7 @@ function PlatformCard(props: {
                         canSync={props.canSync}
                         busy={props.busy}
                         blockedBy={dataView?.active ? `${platform.name} data` : null}
+                        disabledReason={disabledReason}
                         buttonLabel="Sync Insights"
                         divider={false}
                         onSync={() => props.onSync(platform, "insights")}

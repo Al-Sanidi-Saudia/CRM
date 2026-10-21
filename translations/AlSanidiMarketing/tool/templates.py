@@ -40,4 +40,6 @@ TECH += [
  (re.compile(r'^All-time Snap stat: ([a-z0-9_]+) / 1,000$'), lambda m: f'إحصائية Snap (طوال المدة): {m[1]} / 1,000'),
  (re.compile(r'^Snap: ([a-z0-9_.]+) / 1,000,000$'), lambda m: m[0]),
  (re.compile(r'^Google Ads: [a-z0-9_.]+(, [a-z0-9_.]+)*,? ?[a-z0-9_.]*\.?$'), lambda m: m[0]),
+ (re.compile(r'^TikTok \(all time\): ([a-z0-9_]+)\.$'), lambda m: f'TikTok (طوال المدة): {m[1]}.'),
+ (re.compile(r'^TikTok: /advertiser/info/ ([a-z_]+)\.$'), lambda m: m[0]),
 ]
