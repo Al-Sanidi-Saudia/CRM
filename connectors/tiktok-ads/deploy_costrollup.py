@@ -10,7 +10,8 @@
             hidden like the others: the form scripts show it when the channel is TikTok.
 3. Scripts  webresources/sanidi_/scripts/campaign.form.js and advertisement.form.js (TikTok = channel 4).
 4. Flows    new: Map TikTok Campaign Spend to Campaign, Map TikTok Advertisement Spend to Advertisement
-            (copies of the Snap ones, triggered by sanidi_spend of the TikTok record);
+            (copies of the Snap ones, triggered by sanidi_spend of the TikTok record; created off, and
+            turned on by the owner of the Dataverse connection);
             changed: the 8 existing roll-up flows add TikTok spend to the sum (and the two Social Media flows
             also trigger on the TikTok lookup). Each changed flow stays on. Safe to re-run: flows that already
             include TikTok are left alone.
@@ -146,10 +147,10 @@ def main(apply):
         for conn in clientdata["properties"]["connectionReferences"].values():
             conn["connection"].pop("name", None)  # bind through the connection reference only
         description = (f"When {tiktok}.sanidi_spend is created or updated, recalculates {table}.sanidi_cost "
-                       f"({SUM_TEXT[1]}) on every {display.split()[-1]} linked to it.")
+                       f"(sum of linked {SUM_TEXT[1]}) on every {display.split()[-1]} linked to it.")
         (out / (new_name.lower().replace(" ", "-") + ".json")).write_text(json.dumps(clientdata, indent=2) + "\n")
         existing = dv.first(f"workflows?$select=workflowid&$filter=name eq '{new_name}' and category eq 5")
-        print(f"  flow '{new_name}': {'exists' if existing else 'create (turned on after the lookups are published)'}")
+        print(f"  flow '{new_name}': {'exists' if existing else 'create'}")
         if apply and not existing:
             wid = str(uuid.uuid5(NS, new_name))
             dv.request("POST", "workflows", {"workflowid": wid, "category": 5, "type": 1, "primaryentity": "none",
@@ -200,8 +201,14 @@ def main(apply):
         for _, (_, _, _, _, _, new_name) in LEVELS.items():
             w = dv.first(f"workflows?$select=workflowid,statecode&$filter=name eq '{new_name}' and category eq 5")
             if w and w["statecode"] != 1:
-                dv.request("PATCH", f"workflows({w['workflowid']})", {"statecode": 1, "statuscode": 2})
-                print(f"turned on '{new_name}'")
+                try:
+                    dv.request("PATCH", f"workflows({w['workflowid']})", {"statecode": 1, "statuscode": 2})
+                    print(f"turned on '{new_name}'")
+                except RuntimeError as e:
+                    # A flow can only be turned on by someone who can use its Dataverse connection.
+                    if "ConnectionAuthorizationFailed" not in str(e):
+                        raise
+                    print(f"'{new_name}' is off: turn it on in Power Automate as the owner of the Dataverse connection")
 
 
 if __name__ == "__main__":

@@ -7,12 +7,19 @@ flow/business-rule names.
 Imported into **UAT** (`operations-alsenidiuat.crm4.dynamics.com`) on 2026-10-11 and
 published. A re-export afterwards matched the imported file exactly.
 
+**2026-10-21, TikTok:** the TikTok tables, columns, choices, forms, views, site map group, environment variables
+and flows, the new Campaign / Advertisement lookups, Sync Control's *Connection Active* column, the cost roll-up
+flows, and Campaign / Advertisement labels that were still empty. Texts added for TikTok never replace existing
+Arabic on other components. Imported into UAT and published; `changes_ar-SA_tiktok.csv` lists every label.
+
 ## Contents
 
 | Path | What it is |
 |---|---|
 | `files/CrmTranslations_ar-SA.zip` | The translation file that was imported. Import it into another environment (e.g. production) with **Solutions → AlSanidi \| Marketing → Translations → Import translations**, then **Publish all customizations**. |
 | `files/CrmTranslations_original_export.zip` | The export taken before any change (rollback / reference). |
+| `files/CrmTranslations_before_tiktok_export.zip` | The export taken before the TikTok round (rollback / reference). |
+| `changes_ar-SA_tiktok.csv` | Labels added or changed in the TikTok round. |
 | `changes_ar-SA.csv` | Every label that was added or changed: English, previous Arabic, new Arabic (opens in Excel). |
 | `tool/` | Glossary and build script used to produce the file (see below). |
 
@@ -21,6 +28,7 @@ published. A re-export afterwards matched the imported file exactly.
 - **Translated:** all components of the solution, including AlSanidi's own columns on
   the standard Product table (`GM`, `L CM`, `Classification Level 1`, …).
 - **Left as is:** Microsoft's own Arabic on the standard Product table and its ribbon.
+- **TikTok:** `dict_tiktok.py` (labels) and `dict_tiktok_caps.py` (choice values).
 - **Skipped (retired tables):** `sanidi_meta_*`, `sanidi_snap_*`, `sanidi_google_*`
   (the underscore set). The tables in use are `sanidi_metacampaign`,
   `sanidi_metaadset`, `sanidi_metaadvertisement`, `sanidi_snapcampaign`,
@@ -92,6 +100,9 @@ published. A re-export afterwards matched the imported file exactly.
    no translation is reported as `missing` and left unchanged.
 4. Zip `out/CrmTranslations.xml` with the exported `[Content_Types].xml`, import it, then
    publish all customizations.
+
+`tool/uat.py export <zip>` / `tool/uat.py import <zip>` do steps 1 and 4 (import + publish) through the
+Organization service with the service principal (`DATAVERSE_*` variables).
 
 `tool/build.py <in.xml> <scratch.xml> <changes.csv>` writes the change report (CSV) only.
 Always import the output of `build_text.py`, which keeps the exported file's layout exactly as it was.

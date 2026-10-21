@@ -1,8 +1,9 @@
 # TikTok Ads integration: plan (AlSanidi-UAT)
 
-Status: **decisions agreed (2026-10-21), ready to implement once you confirm.** Nothing has been created in UAT yet.
-The TikTok developer app is still waiting for TikTok's approval. Everything that doesn't need a live TikTok call is
-built now. The live check and the test runs wait for the approval (see §10).
+Status: **steps 1–9 done in UAT (2026-10-21)**; steps 10–12 wait for TikTok's approval of the developer app.
+Left for activation (step 11): turn on the four Get TikTok flows and the two Map TikTok flows (as the owner of the
+connections), then add the two TikTok cases to *Sync Control - Run Sync Request* (`update_dispatcher.py`): a child
+flow has to have been turned on once before the dispatcher can call it.
 
 Environment: `https://operations-alsenidiuat.crm4.dynamics.com`
 Solution: **AlSanidi | Marketing** (`AlSanidiMarketing`), publisher **AlSanidi Development**, prefix **`sanidi`**

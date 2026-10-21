@@ -13,7 +13,6 @@ D = {
     "إعلانات TikTok المتزامنة من TikTok API for Business بواسطة مسار Get TikTok Advertisements.",
 "TikTok": "TikTok",
 # sync columns and their descriptions
-"Insights Last Synced On": "آخر مزامنة لمؤشرات الأداء",
 "When the TikTok sync last wrote this record.": "وقت آخر كتابة لهذا السجل بواسطة مزامنة TikTok.",
 "When the Get TikTok Insights flow last wrote the insight columns of this record.":
     "وقت آخر كتابة لأعمدة مؤشرات الأداء في هذا السجل بواسطة مسار Get TikTok Insights.",
@@ -51,6 +50,15 @@ D = {
 "Get TikTok Insights": "جلب مؤشرات أداء TikTok",
 "Map TikTok Campaign Spend to Campaign": "ربط إنفاق حملة TikTok بالحملة",
 "Map TikTok Advertisement Spend to Advertisement": "ربط إنفاق إعلان TikTok بالإعلان",
+# cost roll-up flows (Google Ads / Meta / Snap ones now also add TikTok spend)
+"Map Google Ads Campaign Cost to Campaign": "ربط تكلفة حملة Google Ads بالحملة",
+"Map Meta Campaign Spend to Campaign": "ربط إنفاق حملة Meta بالحملة",
+"Map Snap Campaign Spend to Campaign": "ربط إنفاق حملة Snap بالحملة",
+"Map Social Media Cost to Campaign": "ربط تكلفة منصات التواصل الاجتماعي بالحملة",
+"Map Google Ads Advertisement Cost to Advertisement": "ربط تكلفة إعلان Google Ads بالإعلان",
+"Map Meta Advertisement Spend to Advertisement": "ربط إنفاق إعلان Meta بالإعلان",
+"Map Snap Advertisement Spend to Advertisement": "ربط إنفاق إعلان Snap بالإعلان",
+"Map Social Media Cost to Advertisement": "ربط تكلفة منصات التواصل الاجتماعي بالإعلان",
 "Instant: syncs all TikTok campaigns (including deleted) of every advertiser in TikTok Ads Advertiser IDs into TikTok Campaign records.":
     "فوري: يزامن جميع حملات TikTok (بما فيها المحذوفة) لكل معلن في معرّفات المعلنين في TikTok Ads إلى سجلات حملات TikTok.",
 "When a TikTok Campaign is added or modified: syncs its ad groups (including deleted) into TikTok Ad Group records.":

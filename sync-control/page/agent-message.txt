@@ -1,1 +1,1 @@
-Version 4 of Sync Control from the approved design: run history recorded Get Meta Campaigns about four minutes after it finished, so the flow rows now use the sync request first and fill in automatically once run history catches up.
+Version 5 of Sync Control: a platform whose Connection Active is No (TikTok until its app is approved) shows a "Connection not active yet" notice on its card and its Sync buttons are turned off. Empty counts as active, so Meta, Snap and Google Ads are unchanged.

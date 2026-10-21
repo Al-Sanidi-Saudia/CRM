@@ -1,6 +1,8 @@
 """Sync Control for TikTok: adds the Connection Active column to Integration Platform and sets up the TikTok row.
 
-Usage: python3 add_tiktok.py <dir containing dv.py> [--apply]
+Usage: python3 add_tiktok.py <dir containing dv.py> [--apply] [--column-only]
+Create the column first (--column-only), redeploy the page (v5 knows the column), then run without
+--column-only: the current page would otherwise show the TikTok buttons as soon as Set Up is Yes.
 
 - sanidi_connectionactive (Connection Active, Yes/No): empty counts as Yes. No shows the card's
   "Connection not active yet" notice and turns its Sync buttons off. Set it to Yes once the platform's
@@ -56,6 +58,8 @@ if APPLY and not exists:
                        "sanidi_integrationplatform</entity></entities></importexportxml>"}, solution=None)
     print("  published", st)
 
+if "--column-only" in sys.argv:
+    sys.exit()
 st, b, _ = dv.call('GET', "sanidi_integrationplatforms?$select=sanidi_integrationplatformid&$filter=sanidi_platformkey%20eq%20'tiktok'",
                    solution=None)
 row = b["value"][0]

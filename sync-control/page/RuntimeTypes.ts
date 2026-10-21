@@ -7,6 +7,7 @@ export interface TableRegistrations extends BaseTableRegistrations {
 export interface EnumRegistrations extends BaseEnumRegistrations {
     "flowrun-isprimary": flowrun_isprimary,
     "flowrun-modernflowtype": flowrun_modernflowtype,
+    "sanidi_integrationplatform-sanidi_connectionactive": sanidi_integrationplatform_sanidi_connectionactive,
     "sanidi_integrationplatform-sanidi_isconfigured": sanidi_integrationplatform_sanidi_isconfigured,
     "sanidi_integrationplatform-statecode": sanidi_integrationplatform_statecode,
     "sanidi_integrationplatform-statuscode": sanidi_integrationplatform_statuscode,
@@ -67,6 +68,7 @@ export type sanidi_integrationplatform = TableRow<{
     // Foreign Key Column
     readonly _organizationid_value: `/organization(${string})`,
     readonly organizationidname: string,
+    sanidi_connectionactive: sanidi_integrationplatform_sanidi_connectionactive,
     sanidi_dataflows: string,
     sanidi_insightsflowid: string,
     sanidi_insightsflowname: string,
@@ -111,6 +113,10 @@ const enum flowrun_modernflowtype {
 "PowerAutomateFlow" = 0,
 "CopilotStudioFlow" = 1,
 "M365CopilotAgentFlow" = 2,
+}
+const enum sanidi_integrationplatform_sanidi_connectionactive {
+"No" = 0,
+"Yes" = 1,
 }
 const enum sanidi_integrationplatform_sanidi_isconfigured {
 "No" = 0,
