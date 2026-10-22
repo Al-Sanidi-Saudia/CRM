@@ -12,6 +12,11 @@ and flows, the new Campaign / Advertisement lookups, Sync Control's *Connection 
 flows, and Campaign / Advertisement labels that were still empty. Texts added for TikTok never replace existing
 Arabic on other components. Imported into UAT and published; `changes_ar-SA_tiktok.csv` lists every label.
 
+**2026-10-22, Season Calendar:** the new `sanidi_seasoncalendar` table (see `seasons/README.md`). Its table,
+column, form and site map labels were created in Arabic by `seasons/deploy.py`. This round added the names
+Dataverse generates (views, forms, Advanced Find, …) and aligned its system column labels with the glossary.
+Only Season Calendar labels changed. Imported into UAT and published; `changes_ar-SA_seasons.csv` lists every label.
+
 ## Contents
 
 | Path | What it is |
@@ -19,6 +24,8 @@ Arabic on other components. Imported into UAT and published; `changes_ar-SA_tikt
 | `files/CrmTranslations_ar-SA.zip` | The translation file that was imported. Import it into another environment (e.g. production) with **Solutions → AlSanidi \| Marketing → Translations → Import translations**, then **Publish all customizations**. |
 | `files/CrmTranslations_original_export.zip` | The export taken before any change (rollback / reference). |
 | `files/CrmTranslations_before_tiktok_export.zip` | The export taken before the TikTok round (rollback / reference). |
+| `files/CrmTranslations_before_seasons_export.zip` | The export taken before the Season Calendar round (rollback / reference). |
+| `changes_ar-SA_seasons.csv` | Labels added or changed in the Season Calendar round. |
 | `changes_ar-SA_tiktok.csv` | Labels added or changed in the TikTok round. |
 | `changes_ar-SA.csv` | Every label that was added or changed: English, previous Arabic, new Arabic (opens in Excel). |
 | `tool/` | Glossary and build script used to produce the file (see below). |
@@ -29,6 +36,7 @@ Arabic on other components. Imported into UAT and published; `changes_ar-SA_tikt
   the standard Product table (`GM`, `L CM`, `Classification Level 1`, …).
 - **Left as is:** Microsoft's own Arabic on the standard Product table and its ribbon.
 - **TikTok:** `dict_tiktok.py` (labels) and `dict_tiktok_caps.py` (choice values).
+- **Season Calendar:** `dict_seasons.py` (names Dataverse generates from the table name).
 - **Skipped (retired tables):** `sanidi_meta_*`, `sanidi_snap_*`, `sanidi_google_*`
   (the underscore set). The tables in use are `sanidi_metacampaign`,
   `sanidi_metaadset`, `sanidi_metaadvertisement`, `sanidi_snapcampaign`,
