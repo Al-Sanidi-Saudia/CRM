@@ -1,0 +1,25 @@
+﻿Table / Component,Object ID,Label Type,English,Previous Arabic,New Arabic,Change
+sanidi_seasoncalendar,b7390934-f37c-4e99-80a5-85f4d9af5bca,DisplayName,Time Zone Rule Version Number,رقم إصدار قاعدة المنطقة الزمنية‬,رقم إصدار قاعدة المنطقة الزمنية,Updated
+sanidi_seasoncalendar,58b551e6-36cb-4ca3-ae77-ab21934d7b3b,Description,Time zone code that was in use when the record was created.,‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏رمز المنطقة الزمنية الذي كان قيد الاستخدام عند إنشاء السجل.‬,رمز المنطقة الزمنية الذي كان قيد الاستخدام عند إنشاء السجل.,Updated
+sanidi_seasoncalendar,58b551e6-36cb-4ca3-ae77-ab21934d7b3b,DisplayName,UTC Conversion Time Zone Code,رمز المنطقة الزمنية للتحويل بتنسيق التوقيت العالمي المتفق عليه (UTC),رمز المنطقة الزمنية للتحويل إلى التوقيت العالمي المنسق (UTC),Updated
+sanidi_seasoncalendar,1e5ede0b-b76d-4d6a-ad22-b135ad977047,Description,Date and time when the record was modified.,‏‏‏‏تاريخ ووقت تعديل السجل.‬,تاريخ ووقت تعديل السجل.,Updated
+sanidi_seasoncalendar,8326ba11-19ea-4797-b234-153a8f1e0bf6,Description,Unique identifier of the user who created the record.,‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏‏المعرف الفريد للمستخدم الذي أنشأ السجل.‬,المعرف الفريد للمستخدم الذي أنشأ السجل.,Updated
+sanidi_seasoncalendar,8326ba11-19ea-4797-b234-153a8f1e0bf6,DisplayName,Created By,منشأ بواسطة,أنشأه,Updated
+sanidi_seasoncalendar,01a11a37-6727-4a81-8995-d022124b07f4,Description,Unique identifier of the user who modified the record.,‏‏المعرف الفريد للمستخدم الذي عدّل السجل.‬,المعرف الفريد للمستخدم الذي عدّل السجل.,Updated
+sanidi_seasoncalendar,01a11a37-6727-4a81-8995-d022124b07f4,DisplayName,Modified By,تعديل بواسطة,عدّله,Updated
+sanidi_seasoncalendar,bbc5bc64-6129-4f10-a4fe-33142f01996d,displayname,ColorStrip,,شريط الألوان,New
+sanidi_seasoncalendar,5987c1d5-36d1-48d4-8516-2a63440c57e3,displayname,Header,الرأس,الترويسة,Updated
+sanidi_seasoncalendar,195a9f12-2011-4ba0-ad6f-29e468b3f1b8,displayname,Footer,تذييل الصفحة,التذييل,Updated
+sanidi_seasoncalendar,1bd9a9bf-ff53-4802-b3f0-49f6fac49741,description,A form for this entity.,,نموذج لهذا الجدول.,New
+sanidi_seasoncalendar,1bd9a9bf-ff53-4802-b3f0-49f6fac49741,name,Information,,المعلومات,New
+sanidi_seasoncalendar,4d7f92bd-cc70-437a-96a9-08cfbb7c303c,name,Information,,المعلومات,New
+sanidi_seasoncalendar,52f2739b-fd2b-4796-90db-21dd6a870291,description,A card form for this entity.,,نموذج بطاقة لهذا الجدول.,New
+sanidi_seasoncalendar,52f2739b-fd2b-4796-90db-21dd6a870291,name,Information,,المعلومات,New
+sanidi_seasoncalendar,5392af2a-5134-4db1-b15f-576b97d3d971,name,Active Season Calendar,,تقويم المواسم النشطة,New
+sanidi_seasoncalendar,9bd47fca-fd91-42b7-be54-ab5a6b5dae28,name,Inactive Season Calendar,,تقويم المواسم غير النشطة,New
+sanidi_seasoncalendar,face8b2b-e452-4c2d-bba1-6fc21cc078be,name,Season Calendar Day Advanced Find View,,عرض البحث المتقدم - يوم في تقويم المواسم,New
+sanidi_seasoncalendar,28106d1b-05ac-479e-8608-c55bd1003f0e,name,Season Calendar Day Associated View,,العرض المرتبط - يوم في تقويم المواسم,New
+sanidi_seasoncalendar,b205587b-d1f5-4365-a19d-f3d10b12e295,name,Quick Find Active Season Calendar,,بحث سريع - تقويم المواسم النشطة,New
+sanidi_seasoncalendar,81dee935-82a7-4edd-883c-399e9cbd2e05,name,Season Calendar Day Lookup View,,عرض البحث - يوم في تقويم المواسم,New
+sanidi_seasoncalendar,5a9279c5-f0cd-f111-a05a-6045bdddd79d,name,Season Calendar,,تقويم المواسم,New
+sanidi_seasoncalendar,5a9279c5-f0cd-f111-a05a-6045bdddd79d,description,All active Season Calendar,,جميع أيام تقويم المواسم النشطة,New
