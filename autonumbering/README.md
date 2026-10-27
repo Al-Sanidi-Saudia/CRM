@@ -35,6 +35,10 @@ access to the settings table. Only administrators see it unless a role is given 
 - `sanidi_metanumber`, `sanidi_snapnumber`, `sanidi_tiktoknumber`, `sanidi_googleadsnumber`: read-only. Each
   is shown above its platform campaign lookup only while its channel is ticked.
 - Name is read-only on the forms and no longer required (the plug-in fills it).
+- Start Date and End Date are Recommended instead of required.
+- Main form layout (changed in UAT on 2026-10-27): General 30% and Social Media Channel 70% in two columns, with
+  each channel number beside its platform campaign. The Finance section (Cost) was removed from the body; Cost
+  is still in the header. Start Date and End Date appear twice in the General section, as saved.
 
 **Advertisement (`sanidi_advertisement`)**: Name is read-only on the main form.
 
@@ -51,12 +55,12 @@ existing flow creates campaigns or advertisements, and no flow is triggered by t
 
 Production runs **AlSanidi | Marketing 1.0.0 managed**. Everything above is in a **patch** of that solution,
 **AlSanidi | Marketing | Auto Numbering** (`AlSanidiMarketing_Patch_facc1073`, 1.0.1.0), exported as managed.
-It holds 24 components:
+It holds 26 components:
 
 | Type | Components |
 |---|---|
 | Tables | Auto Numbering Setting (complete); Campaign and Advertisement with **only** the changed parts |
-| Columns | Campaign: 9 new columns + Name (required level) |
+| Columns | Campaign: 9 new columns + Name, Start Date, End Date (required level) |
 | Forms | Campaign Information and Quick Create, Advertisement Information |
 | Other | Channel choice, 2 form scripts, site map, plug-in assembly and 3 steps |
 

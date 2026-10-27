@@ -63,6 +63,10 @@ CHANNEL_COLUMNS = [
      "sanidi_googleadscampaign"),
 ]
 
+# Existing campaign columns changed for this release: Name (no longer required, the plug-in sets it) and
+# Start Date / End Date (made Recommended instead of required in UAT).
+CHANGED_CAMPAIGN_COLUMNS = ["sanidi_name", "sanidi_startdate", "sanidi_enddate"]
+
 STEPS = [  # (name, message, table, filtering attributes)
     ("AutoNumbering: Create of sanidi_campaign", "Create", CAMPAIGN, None),
     ("AutoNumbering: Update of sanidi_campaign (channels)", "Update", CAMPAIGN, CHOICE),
@@ -539,7 +543,8 @@ def deploy_components(dv, patch, choice_id, form_ids, script_ids, assembly_id, s
     add_component(dv, patch, ENTITY, entity_ids[ADVERTISEMENT])
     for name, _ in campaign_columns():
         add_component(dv, patch, ATTRIBUTE, campaign_attrs[name])
-    add_component(dv, patch, ATTRIBUTE, campaign_attrs["sanidi_name"])
+    for name in CHANGED_CAMPAIGN_COLUMNS:
+        add_component(dv, patch, ATTRIBUTE, campaign_attrs[name])
     add_component(dv, patch, OPTIONSET, choice_id)
     for form_id in form_ids:
         add_component(dv, patch, FORM, form_id)
