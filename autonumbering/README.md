@@ -15,7 +15,7 @@ built from that campaign's name.
 Deployed to **UAT** (`operations-alsenidiuat.crm4.dynamics.com`) and **Production**
 (`operations-alsanidi.crm4.dynamics.com`) on 2026-10-27. In Production the managed patch was imported with
 `import_patch.py` (no warnings), then `migrate_channels.py --apply` moved campaign C-2026-001 from Instagram to
-Meta and removed the 5 old options. On 2026-10-28 patch 1.0.1.1 fixed the campaign forms: 1.0.1.0 added
+Meta and removed the 5 old options. Later the same day patch 1.0.1.1 fixed the campaign forms: 1.0.1.0 added
 Description 3 rows tall without the 2 empty rows after it, so it hid Start/End Date on the main form and
 Type/Start Date on quick create (and Start/End Date had been added a second time to make them show). See [Deploying to Production](#deploying-to-production) for the steps.
 
