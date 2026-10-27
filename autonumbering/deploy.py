@@ -20,6 +20,7 @@ Safe to re-run: existing components are kept and only missing pieces are added.
 - Site map: a Settings group at the end of the General area of AlSanidi | Marketing.
 """
 import base64
+import re
 import sys
 import time
 import urllib.error
@@ -303,10 +304,41 @@ def lbl(en, ar):
 
 
 def row(form, field, en, ar, classid, disabled, visible=True, rowspan=1):
+    """A cell taller than one row needs an empty <row /> for each extra row, or it covers the rows after it."""
     hidden = "" if visible else ' visible="false"'
     return (f'<row><cell id="{gid(form, field)}" locklevel="0" colspan="1" rowspan="{rowspan}"{hidden}>{lbl(en, ar)}'
             f'<control id="{field}" classid="{classid}" datafieldname="{field}" '
-            f'disabled="{"true" if disabled else "false"}" /></cell></row>')
+            f'disabled="{"true" if disabled else "false"}" /></cell></row>' + "<row />" * (rowspan - 1))
+
+
+def section_bounds(xml, field):
+    """Start and end of the <rows> of the section holding field."""
+    at = xml.find(f'datafieldname="{field}"')
+    return xml.rfind("<rows>", 0, at), xml.find("</rows>", at)
+
+
+def description_spacers(xml):
+    """Description spans 3 rows; versions 1.0.1.0 shipped it without the 2 empty rows after it, so it hid the
+    next 2 rows (Start/End Date on the main form, Type/Start Date on quick create)."""
+    end = row_end(xml, "sanidi_description")
+    rest = xml[end:]
+    if rest.startswith("<row /><row />"):
+        return xml
+    return xml[:end] + "<row /><row />" + rest
+
+
+def drop_duplicate_rows(xml, field):
+    """Keeps the first row bound to field in its section and removes later single-cell rows bound to it."""
+    start, end = section_bounds(xml, field)
+    rows = re.findall(r"<row\s*/>|<row>.*?</row>", xml[start + len("<rows>"):end], re.S)
+    seen, kept = False, []
+    for r in rows:
+        if f'datafieldname="{field}"' in r and r.count("<cell") == 1:
+            if seen:
+                continue
+            seen = True
+        kept.append(r)
+    return xml[:start + len("<rows>")] + "".join(kept) + xml[end:]
 
 
 def row_start(xml, field):
@@ -337,6 +369,9 @@ def edit_campaign_form(key, xml, numbers):
     if 'datafieldname="sanidi_description"' not in xml:
         at = row_end(xml, "sanidi_name")
         xml = xml[:at] + row(key, "sanidi_description", "Description", "الوصف", MEMO_CLASS, False, rowspan=3) + xml[at:]
+    xml = description_spacers(xml)
+    for field in ("sanidi_startdate", "sanidi_enddate", "sanidi_type"):
+        xml = drop_duplicate_rows(xml, field)
     if numbers:
         for en, ar, number, _, lookup in CHANNEL_COLUMNS:
             if f'datafieldname="{number}"' in xml:

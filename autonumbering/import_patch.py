@@ -16,7 +16,9 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE.parent / "scripts"))
 from dv import Dataverse  # noqa: E402
 
-PACKAGE = HERE / "solution" / "AlSanidiMarketing_AutoNumbering_1_0_1_0_managed.zip"
+# Newest managed export in solution/ (the version is in the file name)
+PACKAGE = max((HERE / "solution").glob("AlSanidiMarketing_AutoNumbering_*_managed.zip"),
+              key=lambda p: [int(n) for n in p.name.split("_")[2:6]])
 
 
 def main():

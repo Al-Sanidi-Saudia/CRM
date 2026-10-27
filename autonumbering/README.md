@@ -15,7 +15,9 @@ built from that campaign's name.
 Deployed to **UAT** (`operations-alsenidiuat.crm4.dynamics.com`) and **Production**
 (`operations-alsanidi.crm4.dynamics.com`) on 2026-10-27. In Production the managed patch was imported with
 `import_patch.py` (no warnings), then `migrate_channels.py --apply` moved campaign C-2026-001 from Instagram to
-Meta and removed the 5 old options. See [Deploying to Production](#deploying-to-production) for the steps.
+Meta and removed the 5 old options. On 2026-10-28 patch 1.0.1.1 fixed the campaign forms: 1.0.1.0 added
+Description 3 rows tall without the 2 empty rows after it, so it hid Start/End Date on the main form and
+Type/Start Date on quick create (and Start/End Date had been added a second time to make them show). See [Deploying to Production](#deploying-to-production) for the steps.
 
 ## Where the counters live
 
@@ -40,7 +42,7 @@ access to the settings table. Only administrators see it unless a role is given 
 - Start Date and End Date are Recommended instead of required.
 - Main form layout (changed in UAT on 2026-10-27): General 30% and Social Media Channel 70% in two columns, with
   each channel number beside its platform campaign. The Finance section (Cost) was removed from the body; Cost
-  is still in the header. Start Date and End Date appear twice in the General section, as saved.
+  is still in the header. General: Name, Description (3 rows), Start Date, End Date, Type.
 
 **Advertisement (`sanidi_advertisement`)**: Name is read-only on the main form.
 
@@ -56,7 +58,7 @@ existing flow creates campaigns or advertisements, and no flow is triggered by t
 ## Packaging: a patch, not a new version
 
 Production runs **AlSanidi | Marketing 1.0.0 managed**. Everything above is in a **patch** of that solution,
-**AlSanidi | Marketing | Auto Numbering** (`AlSanidiMarketing_Patch_facc1073`, 1.0.1.0), exported as managed.
+**AlSanidi | Marketing | Auto Numbering** (`AlSanidiMarketing_Patch_facc1073`, 1.0.1.1), exported as managed.
 It holds 26 components:
 
 | Type | Components |
@@ -88,7 +90,7 @@ same service account as 1.0.0 (# CRM-Claude).
 
 1. **Check** that Solutions in Production shows *AlSanidi | Marketing* 1.0.0 managed, and that no Microsoft
    update is running (the 1.0.0 import was rolled back once because of one).
-2. **Import** `solution/AlSanidiMarketing_AutoNumbering_1_0_1_0_managed.zip` (Solutions > Import). Keep
+2. **Import** `solution/AlSanidiMarketing_AutoNumbering_<version>_managed.zip` (newest) (Solutions > Import). Keep
    *Enable plug-in steps and flows included in the solution* ticked. The page says it is a patch for
    AlSanidi | Marketing.
 3. **Move channel data and remove the old options** in Production:
@@ -117,6 +119,6 @@ and the channel data moved in step 3 stays moved.
 | `deploy.py` | Builds everything in UAT inside the patch. Dry run by default, `--apply` to make changes. Safe to re-run. |
 | `migrate_channels.py` | Moves channel data to the 4 options and deletes the others. Dry run by default. Targets `DATAVERSE_URL`. |
 | `test_numbering.py` | End-to-end test in UAT: numbers, channel numbers, blocking, year restart, 8 parallel saves, prefix/code change, 3-digit counter. Deletes its rows and restores the counters. |
-| `import_patch.py` | Imports the managed patch into `DATAVERSE_URL` and waits for the result. |
+| `import_patch.py` | Imports the newest managed export into `DATAVERSE_URL` and waits for the result. For an update, raise the patch version in UAT first (Production only accepts a higher version), then run `export.py`. |
 | `export.py` | Exports the patch, managed and unmanaged, to `solution/`. |
 | `solution/` | The exported patch. `_managed.zip` is the one for Production. |
