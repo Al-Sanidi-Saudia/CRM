@@ -12,8 +12,10 @@ The numbers are set in real time, inside the save, by a synchronous plug-in. Rec
 27 October 2026 keep their names. If an advertisement is added to an older campaign, the channel number is
 built from that campaign's name.
 
-Deployed to **UAT** (`operations-alsenidiuat.crm4.dynamics.com`) on 2026-10-27. Production: see
-[Deploying to Production](#deploying-to-production).
+Deployed to **UAT** (`operations-alsenidiuat.crm4.dynamics.com`) and **Production**
+(`operations-alsanidi.crm4.dynamics.com`) on 2026-10-27. In Production the managed patch was imported with
+`import_patch.py` (no warnings), then `migrate_channels.py --apply` moved campaign C-2026-001 from Instagram to
+Meta and removed the 5 old options. See [Deploying to Production](#deploying-to-production) for the steps.
 
 ## Where the counters live
 
@@ -115,5 +117,6 @@ and the channel data moved in step 3 stays moved.
 | `deploy.py` | Builds everything in UAT inside the patch. Dry run by default, `--apply` to make changes. Safe to re-run. |
 | `migrate_channels.py` | Moves channel data to the 4 options and deletes the others. Dry run by default. Targets `DATAVERSE_URL`. |
 | `test_numbering.py` | End-to-end test in UAT: numbers, channel numbers, blocking, year restart, 8 parallel saves, prefix/code change, 3-digit counter. Deletes its rows and restores the counters. |
+| `import_patch.py` | Imports the managed patch into `DATAVERSE_URL` and waits for the result. |
 | `export.py` | Exports the patch, managed and unmanaged, to `solution/`. |
 | `solution/` | The exported patch. `_managed.zip` is the one for Production. |
