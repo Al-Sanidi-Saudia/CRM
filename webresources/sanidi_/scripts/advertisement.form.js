@@ -19,13 +19,13 @@ Sanidi.Advertisement = (function () {
     var PLATFORMS = [
         {
             field: "sanidi_metaadvertisement", entity: "sanidi_metaadvertisement",
-            channels: [1, 2],                       // Facebook, Instagram
+            channels: [1],                          // Meta
             campaignField: "sanidi_metacampaign",   // on sanidi_campaign
             via: "sanidi_metacampaignid"
         },
         {
             field: "sanidi_snapadvertisement", entity: "sanidi_snapadvertisement",
-            channels: [5],                          // Snapchat
+            channels: [5],                          // Snap
             campaignField: "sanidi_snapcampaign",
             parentField: "sanidi_snapadsquad",
             parentTable: "sanidi_snapadsquad",
@@ -33,7 +33,7 @@ Sanidi.Advertisement = (function () {
         },
         {
             field: "sanidi_googleadsadvertisement", entity: "sanidi_googleadsadvertisement",
-            channels: [6, 7],                       // Google, YouTube
+            channels: [6],                          // Google Ads
             campaignField: "sanidi_googleadscampaign",
             parentField: "sanidi_googleadsadgroup",
             parentTable: "sanidi_googleadsadgroup",
