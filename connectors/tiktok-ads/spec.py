@@ -28,6 +28,37 @@ API_VERSION = "v1.3"
 PREFIX = "sanidi_"
 CATALOG = json.loads((HERE / "fields_v1.3.json").read_text())
 
+# Checked live (2026-10-28, both ad accounts): fields TikTok returns that the v1.3 docs don't list, and enum values
+# it sends that the docs don't list. Added to the catalog here so fetch_docs.py can still regenerate it.
+UNDOCUMENTED_FIELDS = {  # level -> field -> (TikTok type, form section, label)
+    "adgroup": {
+        "category_id": ("string", "promotion", "Category ID"),
+        "package": ("string", "promotion", "App Package"),
+        "adgroup_app_profile_page_type": ("string", "promotion", "App Profile Page Type"),
+        "keywords": ("object[]", "placements", "Keywords"),
+    },
+    "ad": {
+        "ad_ref_pixel_id": ("number", "tracking", "Reference Pixel ID"),
+        "carousel_image_labels": ("object[]", "format", "Carousel Image Labels"),
+        "landing_page_urls": ("string[]", "destination", "Landing Page URLs"),
+        "product_info": ("object", "products", "Product Info"),
+    },
+}
+UNDOCUMENTED_ENUM_VALUES = {  # (level, field) -> values appended after the documented ones (keeps option numbers)
+    ("campaign", "app_promotion_type"): ["UNSET"],
+    ("adgroup", "placements"): ["PLACEMENT_TOPBUZZ"],
+    ("adgroup", "budget_mode"): ["BUDGET_MODE_DYNAMIC_DAILY_BUDGET"],
+    ("adgroup", "creative_material_mode"): ["CATALOG_SALES"],
+    ("ad", "identity_type"): ["UNSET"],
+    ("ad", "creative_type"): ["SHOPPING_CATALOG_PAGE"],
+}
+for _level, _fields in UNDOCUMENTED_FIELDS.items():
+    for _field, (_type, _, _) in _fields.items():
+        CATALOG[_level][_field] = {"type": _type, "enum": [], "undocumented": True,
+                                   "description": "Returned by the API, not in the v1.3 docs."}
+for (_level, _field), _values in UNDOCUMENTED_ENUM_VALUES.items():
+    CATALOG[_level][_field]["enum"] += [v for v in _values if v not in CATALOG[_level][_field]["enum"]]
+
 ACRONYMS = {
     "id": "ID", "ids": "IDs", "url": "URL", "urls": "URLs", "rta": "RTA", "roas": "ROAS", "skan": "SKAN",
     "cpa": "CPA", "cpm": "CPM", "cpv": "CPV", "cpc": "CPC", "cpr": "CPR", "bc": "BC", "ios": "iOS", "ios14": "iOS 14",
@@ -215,6 +246,12 @@ METRIC_LABELS = {
     "value_per_page_browse_view": "Value per Page Browse",
 }
 METRIC_MONEY_OVERRIDE = {"total_complete_payment_rate"}  # a value, despite the name
+# Refused by TikTok at campaign, ad group and ad level on both ad accounts (checked live 2026-10-28): cash/voucher
+# spend are "invalid metric fields", custom page events have "no relation" to these levels. Their columns stay
+# (the tables are already in production and a patch can't remove columns) but they are not requested, not written
+# and not shown on forms or views.
+REFUSED_METRICS = {"cash_spend", "voucher_spend", "custom_page_events", "cost_per_custom_page_event",
+                   "custom_page_event_rate", "value_per_custom_page_event", "custom_page_events_value"}
 
 
 def metric_kind(name):
@@ -236,6 +273,9 @@ def metric_kind(name):
 
 
 def label_for(field):
+    for fields in UNDOCUMENTED_FIELDS.values():
+        if field in fields:
+            return fields[field][2]
     if field in LABELS:
         return LABELS[field]
     words = field[3:].split("_") if field.startswith("is_") else field.split("_")
@@ -277,6 +317,15 @@ SYNC = [
 ]
 
 
+def is_refused(column):
+    """True for the column of a metric TikTok refuses (see REFUSED_METRICS)."""
+    return column[2].startswith("insights") and column[4] in REFUSED_METRICS
+
+
+def synced_metrics():
+    return [c for c in metrics() if c[4] not in REFUSED_METRICS]
+
+
 def metrics():
     out = []
     for group, section, _ in METRIC_SECTIONS:
@@ -288,7 +337,10 @@ def metrics():
 
 def level_columns(level):
     cols = []
-    for section, fields in SECTIONS[level].items():
+    sections = {s: list(f) for s, f in SECTIONS[level].items()}
+    for field, (_, section, _) in UNDOCUMENTED_FIELDS.get(level, {}).items():
+        sections[section].append(field)
+    for section, fields in sections.items():
         for f in fields:
             if f in ADVERTISER_INFO:
                 col, lbl, src = ADVERTISER_INFO[f]

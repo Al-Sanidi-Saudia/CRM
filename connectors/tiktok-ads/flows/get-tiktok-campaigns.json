@@ -118,7 +118,8 @@
               "APP_INSTALL": 1,
               "APP_RETARGETING": 2,
               "APP_PREREGISTRATION": 3,
-              "APP_POSTS_PROMOTION": 4
+              "APP_POSTS_PROMOTION": 4,
+              "UNSET": 5
             },
             "sanidi_salesdestination": {
               "TIKTOK_SHOP": 1,

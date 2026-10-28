@@ -68,8 +68,10 @@ def subgrid(table, child, display, view_id):
 def form_xml(table, active_view_ids):
     t = spec.TABLES[table]
     by_section = {}
-    for col, display, section, kind, _ in t["columns"]:
-        by_section.setdefault(section, []).append((spec.PREFIX + col, display, KIND_CLASS[kind]))
+    for c in t["columns"]:
+        col, display, section, kind, _ = c
+        if not spec.is_refused(c):  # metrics TikTok refuses: column kept, not shown
+            by_section.setdefault(section, []).append((spec.PREFIX + col, display, KIND_CLASS[kind]))
     tabs = []
     for tab_label, sections in spec.FORMS[table]:
         bodies = []
@@ -114,8 +116,9 @@ def view_columns(table):
     names = []
     for c in spec.VIEW_MAIN[table]:
         names.append(spec.PREFIX + (t["parent"][0] if c == "@lookup" else c))
-    for col, _, _, kind, _ in t["columns"]:
-        if kind != "raw" and spec.PREFIX + col not in names:
+    for c in t["columns"]:
+        col, _, _, kind, _ = c
+        if kind != "raw" and not spec.is_refused(c) and spec.PREFIX + col not in names:
             names.append(spec.PREFIX + col)
     return names
 

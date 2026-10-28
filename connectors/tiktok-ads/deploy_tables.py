@@ -6,6 +6,7 @@
 Safe to re-run: existing tables and columns are skipped (never changed or deleted).
 Lookups between the tables are created by deploy_relationships.py.
 """
+import os
 import sys
 import time
 import urllib.error
@@ -16,7 +17,9 @@ sys.path.insert(0, str(HERE.parent.parent / "scripts"))
 import spec  # noqa: E402
 from dv import Dataverse  # noqa: E402
 
-SOLUTION = "AlSanidiMarketing"
+# Target solution for every write. The parent AlSanidiMarketing is in production and has patches, so changes go to
+# the current patch, "AlSanidi | Marketing | TikTok Integration" (1.0.2.0). Override with TIKTOK_SOLUTION.
+SOLUTION = os.environ.get("TIKTOK_SOLUTION", "AlSanidiMarketing_Patch_5b266c1a")
 LANG = 1033
 
 
@@ -108,6 +111,26 @@ def add_column(dv, logical, metadata):
                 return
 
 
+def add_missing_options(dv, table, t, apply):
+    """Choice values added to spec.py after the column was created (e.g. undocumented ones seen live)."""
+    logical = spec.PREFIX + table
+    for column, _, _, kind, src in t["columns"]:
+        if kind not in ("enum", "enums"):
+            continue
+        cast = "PicklistAttributeMetadata" if kind == "enum" else "MultiSelectPicklistAttributeMetadata"
+        attr = dv.get(f"EntityDefinitions(LogicalName='{logical}')/Attributes(LogicalName='{spec.PREFIX + column}')"
+                      f"/Microsoft.Dynamics.CRM.{cast}?$select=LogicalName&$expand=OptionSet($select=Options)")
+        have = {o["Value"] for o in attr["OptionSet"]["Options"]}
+        for o in spec.enum_options(t["level"], src):
+            if o["value"] in have:
+                continue
+            print(f"  {logical}.{spec.PREFIX + column}: add option {o['value']} {o['label']}")
+            if apply:
+                dv.request("POST", "InsertOptionValue", {
+                    "EntityLogicalName": logical, "AttributeLogicalName": spec.PREFIX + column,
+                    "Value": o["value"], "Label": label(o["label"]), "SolutionUniqueName": SOLUTION})
+
+
 def main(apply, only=None):
     dv = Dataverse()
     for table, t in spec.TABLES.items():
@@ -122,6 +145,8 @@ def main(apply, only=None):
         todo = [c for c in t["columns"] if c[0] != t["primary"] and spec.PREFIX + c[0] not in existing_cols]
         print(f"{logical}: table {'exists' if exists else 'create'}; {len(todo)} columns to add")
         if not apply:
+            if exists:
+                add_missing_options(dv, table, t, False)
             continue
         if not exists:
             dv.request("POST", "EntityDefinitions", entity_metadata(table, t), solution=SOLUTION)
@@ -131,6 +156,8 @@ def main(apply, only=None):
             add_column(dv, logical, column_metadata(t["level"], column, display, section, kind, src))
             if i % 20 == 0 or i == len(todo):
                 print(f"  {i}/{len(todo)} columns")
+        if exists:
+            add_missing_options(dv, table, t, apply)
     if apply:
         tables = "".join(f"<entity>{spec.PREFIX + t}</entity>" for t in spec.TABLES if not only or t in only)
         dv.request("POST", "PublishXml", idempotent=True, body=

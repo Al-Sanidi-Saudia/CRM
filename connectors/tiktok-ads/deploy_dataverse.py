@@ -22,7 +22,10 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE.parent.parent / "scripts"))
 from dv import Dataverse  # noqa: E402
 
-SOLUTION = "AlSanidiMarketing"
+from deploy_tables import SOLUTION  # noqa: E402  (the current patch of AlSanidiMarketing)
+
+# The connector moved to the "AlSanidi | Marketing | Connectors" solution (2026-10-25); updates are saved there.
+CONNECTOR_SOLUTION = "AlSanidiMarketingConnectors"
 CONNECTOR_NAME = "sanidi_tiktok"
 
 ENV_VARS = [
@@ -129,11 +132,11 @@ def connector(dv, apply):
     if not apply:
         return
     if existing:
-        dv.request("PATCH", f"connectors({existing['connectorid']})", body, solution=SOLUTION)
+        dv.request("PATCH", f"connectors({existing['connectorid']})", body, solution=CONNECTOR_SOLUTION)
         connector_id = existing["connectorid"]
     else:
         connector_id = str(uuid.uuid4())
-        dv.request("POST", "connectors", {"connectorid": connector_id, **body}, solution=SOLUTION)
+        dv.request("POST", "connectors", {"connectorid": connector_id, **body}, solution=CONNECTOR_SOLUTION)
     row = dv.get(f"connectors({connector_id})?$select=name,displayname,connectorinternalid,scriptoperations")
     print(f"  connector {row['name']} / {row['displayname']} / internal id {row['connectorinternalid']}")
 
