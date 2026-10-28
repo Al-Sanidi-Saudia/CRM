@@ -57,10 +57,15 @@ def env_vars(dv, apply):
 
 
 def get_value(dv, schema):
+    """Current value, else the default value (as the flows read it)."""
     def_id = definition_id(dv, schema)
-    row = def_id and dv.first("environmentvariablevalues?$select=value"
-                              f"&$filter=_environmentvariabledefinitionid_value eq {def_id}")
-    return (row or {}).get("value") or ""
+    if not def_id:
+        return ""
+    row = dv.first("environmentvariablevalues?$select=value"
+                   f"&$filter=_environmentvariabledefinitionid_value eq {def_id}")
+    if (row or {}).get("value"):
+        return row["value"]
+    return dv.get(f"environmentvariabledefinitions({def_id})?$select=defaultvalue").get("defaultvalue") or ""
 
 
 def set_value(dv, schema, value):
