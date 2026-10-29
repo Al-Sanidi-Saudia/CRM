@@ -346,4 +346,14 @@ def main(apply, only=None):
 
 if __name__ == "__main__":
     only = [a.split("=", 1)[1] for a in sys.argv if a.startswith("--only=")]
-    main("--apply" in sys.argv, only[0].split(",") if only else None)
+    # The connection to Dataverse sometimes drops during the hours this takes. Everything above skips what
+    # already exists, so after a network error the run simply starts again (up to 20 times).
+    for attempt in range(20):
+        try:
+            main("--apply" in sys.argv, only[0].split(",") if only else None)
+            break
+        except (urllib.error.URLError, ConnectionError, TimeoutError) as e:
+            if attempt == 19:
+                raise
+            print(f"network error ({e}); starting again in 60 s", flush=True)
+            time.sleep(60)
