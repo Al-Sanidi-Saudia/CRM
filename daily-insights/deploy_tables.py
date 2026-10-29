@@ -352,8 +352,9 @@ if __name__ == "__main__":
         try:
             main("--apply" in sys.argv, only[0].split(",") if only else None)
             break
-        except (urllib.error.URLError, ConnectionError, TimeoutError) as e:
-            if attempt == 19:
+        except (urllib.error.URLError, ConnectionError, TimeoutError, RuntimeError) as e:
+            # Network errors, and "Cannot start another [EntityCustomization]" (metadata changes run one at a time).
+            if attempt == 19 or (isinstance(e, RuntimeError) and "cannot start" not in str(e).lower()):
                 raise
-            print(f"network error ({e}); starting again in 60 s", flush=True)
+            print(f"retrying in 60 s: {str(e)[:150]}", flush=True)
             time.sleep(60)
