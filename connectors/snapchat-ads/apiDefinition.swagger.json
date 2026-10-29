@@ -584,7 +584,7 @@
       "get": {
         "operationId": "GetAdAccountStats",
         "summary": "Get ad account stats",
-        "description": "Performance metrics for an ad account; use breakdown=campaign for per-campaign rows.",
+        "description": "Performance metrics for an ad account; use breakdown=campaign or ad for per-campaign / per-ad rows (page with limit and cursor: at most 200 entities per page).",
         "parameters": [
           {
             "name": "ad_account_id",
@@ -649,7 +649,8 @@
             "x-ms-summary": "Breakdown",
             "description": "Return stats per child entity as well.",
             "enum": [
-              "campaign"
+              "campaign",
+              "ad"
             ],
             "x-ms-visibility": "advanced"
           },
@@ -745,6 +746,26 @@
               "excel"
             ],
             "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Page size",
+            "description": "Entities per page for breakdown stats (at most 200).",
+            "x-ms-visibility": "advanced",
+            "minimum": 1,
+            "maximum": 200
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Cursor",
+            "description": "Paging cursor taken from paging.next_link of the previous response.",
+            "x-ms-visibility": "advanced"
           }
         ],
         "responses": {
@@ -767,7 +788,7 @@
       "get": {
         "operationId": "GetCampaignStats",
         "summary": "Get campaign stats",
-        "description": "Performance metrics for a campaign; use breakdown=adsquad or ad for child rows.",
+        "description": "Performance metrics for a campaign; use breakdown=adsquad or ad for child rows (page with limit and cursor: at most 200 entities per page).",
         "parameters": [
           {
             "name": "campaign_id",
@@ -928,6 +949,26 @@
               "csv",
               "excel"
             ],
+            "x-ms-visibility": "advanced"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "x-ms-summary": "Page size",
+            "description": "Entities per page for breakdown stats (at most 200).",
+            "x-ms-visibility": "advanced",
+            "minimum": 1,
+            "maximum": 200
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Cursor",
+            "description": "Paging cursor taken from paging.next_link of the previous response.",
             "x-ms-visibility": "advanced"
           }
         ],

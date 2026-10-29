@@ -43,6 +43,7 @@ public class Script : ScriptBase
                 case "ListAdGroups": return await ListEntities("adgroup").ConfigureAwait(false);
                 case "ListAds": return await ListEntities("ad").ConfigureAwait(false);
                 case "GetLifetimeInsights": return await GetLifetimeInsights().ConfigureAwait(false);
+                case "GetPeriodInsights": return await GetPeriodInsights().ConfigureAwait(false);
                 case "RunReport": return await RunReport().ConfigureAwait(false);
                 default: return Error(HttpStatusCode.BadRequest, "Unknown operation '" + Context.OperationId + "'.");
             }
@@ -250,6 +251,121 @@ public class Script : ScriptBase
         var result = new JObject { ["advertiser_id"] = advertiserId, ["level"] = level, ["row_count"] = rows.Count, ["rows"] = rows };
         if (metricsError != null) result["metrics_error"] = metricsError;
         return Ok(result);
+    }
+
+    // Daily or monthly metrics for every campaign / ad group / ad of an advertiser, deleted items included, for one
+    // window: a day range of up to 30 days (TikTok's limit with stat_time_day), or one month (no time dimension, so
+    // TikTok totals the month itself: reach and frequency are the month's own). One row per item and day / month.
+    private async Task<HttpResponseMessage> GetPeriodInsights()
+    {
+        var advertiserId = AdvertiserId();
+        var level = (Param("level") ?? "campaign").ToLowerInvariant();
+        var cfg = ops["$insights"][level] as JObject;
+        if (cfg == null) throw new ArgumentException("level must be campaign, adgroup or ad.");
+        var period = (Param("period") ?? "day").ToLowerInvariant();
+        if (period != "day" && period != "month") throw new ArgumentException("period must be day or month.");
+        var start = ParseDay(Param("start_date"), "start_date");
+        var end = ParseDay(Param("end_date"), "end_date");
+        if (end < start) throw new ArgumentException("end_date is before start_date.");
+        if (period == "day" && (end - start).TotalDays > 29) throw new ArgumentException("A day range can be at most 30 days.");
+        if (period == "month" && (start.Day != 1 || end.Year != start.Year || end.Month != start.Month))
+            throw new ArgumentException("For period month, start_date is the 1st of the month and end_date is in the same month.");
+        var dimension = (string)cfg["dimension"];
+        var idColumn = (string)cfg["id_column"];
+        var statusField = level == "adgroup" ? "adgroup_status" : level + "_status";
+        var dimensions = period == "day" ? new JArray(dimension, "stat_time_day") : new JArray(dimension);
+        var filtering = new JArray(new JObject
+        {
+            ["field_name"] = statusField, ["filter_type"] = "IN", ["filter_value"] = "[\"STATUS_ALL\"]",
+        });
+        var metrics = (JArray)ops["$metrics"];
+
+        var byKey = new Dictionary<string, JObject>();
+        var raw = new Dictionary<string, JObject>();
+        var order = new List<string>();
+        string metricsError = null;
+        var now = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        var pending = new Queue<List<JArray>>(Chunks(metrics.Cast<JArray>().ToList(), MetricsPerRequest));
+        while (pending.Count > 0)
+        {
+            var chunk = pending.Dequeue();
+            var names = new JArray(chunk.Select(m => (string)m[2]));
+            List<JObject> reportRows;
+            try
+            {
+                reportRows = await Report(advertiserId, new Dictionary<string, string>
+                {
+                    ["report_type"] = "BASIC",
+                    ["data_level"] = (string)cfg["data_level"],
+                    ["dimensions"] = dimensions.ToString(Newtonsoft.Json.Formatting.None),
+                    ["metrics"] = names.ToString(Newtonsoft.Json.Formatting.None),
+                    ["filtering"] = filtering.ToString(Newtonsoft.Json.Formatting.None),
+                    ["start_date"] = start.ToString("yyyy-MM-dd"),
+                    ["end_date"] = end.ToString("yyyy-MM-dd"),
+                }, int.MaxValue).ConfigureAwait(false);
+            }
+            catch (TikTokException ex) when (ex.Code != 0 && !RateLimitCodes.Contains(ex.Code))
+            {
+                if (chunk.Count > 1)
+                {
+                    var half = chunk.Count / 2;
+                    pending.Enqueue(chunk.GetRange(0, half));
+                    pending.Enqueue(chunk.GetRange(half, chunk.Count - half));
+                }
+                else
+                {
+                    metricsError = (metricsError == null ? "" : metricsError + " | ") + (string)names[0] + ": " + ex.Message;
+                }
+                continue;
+            }
+            foreach (var r in reportRows)
+            {
+                var id = r["dimensions"]?[dimension]?.ToString();
+                if (string.IsNullOrEmpty(id)) continue;
+                var day = period == "day"
+                    ? ((string)r["dimensions"]?["stat_time_day"] ?? "").Split(' ')[0]
+                    : start.ToString("yyyy-MM-dd");
+                if (string.IsNullOrEmpty(day)) continue;
+                var key = id + "_" + day;
+                if (!byKey.TryGetValue(key, out var row))
+                {
+                    row = new JObject
+                    {
+                        [idColumn] = id, ["date"] = day, ["advertiserid"] = advertiserId, ["lastsyncedon"] = now,
+                    };
+                    byKey[key] = row;
+                    raw[key] = new JObject { [dimension] = id, ["date"] = day };
+                    order.Add(key);
+                }
+                var values = r["metrics"] as JObject ?? new JObject();
+                foreach (var m in chunk)
+                {
+                    row[(string)m[0]] = Convert(values[(string)m[2]], (string)m[1], 0);
+                    raw[key][(string)m[2]] = values[(string)m[2]];
+                }
+            }
+        }
+        var rows = new JArray(order.Select(k =>
+        {
+            byKey[k]["rawpayload"] = Truncate(raw[k].ToString(Newtonsoft.Json.Formatting.None), RawPayloadMaxLength);
+            return byKey[k];
+        }));
+        var result = new JObject
+        {
+            ["advertiser_id"] = advertiserId, ["level"] = level, ["period"] = period,
+            ["start_date"] = start.ToString("yyyy-MM-dd"), ["end_date"] = end.ToString("yyyy-MM-dd"),
+            ["row_count"] = rows.Count, ["rows"] = rows,
+        };
+        if (metricsError != null) result["metrics_error"] = metricsError;
+        return Ok(result);
+    }
+
+    private static DateTime ParseDay(string value, string name)
+    {
+        if (!DateTime.TryParseExact((value ?? "").Trim(), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture,
+                                    System.Globalization.DateTimeStyles.None, out var day))
+            throw new ArgumentException(name + " must be a date in the format YYYY-MM-DD.");
+        return day;
     }
 
     private async Task<HttpResponseMessage> RunReport()

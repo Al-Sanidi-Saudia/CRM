@@ -65,7 +65,9 @@ def per_period(value, period):
 
 
 def solution_name(dv):
-    s = dv.first(f"solutions?$select=uniquename&$filter=friendlyname eq '{spec.PATCH['displayname']}'")
+    # The name contains "&", which can't go in a URL filter as is: match on its end, then compare exactly.
+    rows = dv.get("solutions?$select=uniquename,friendlyname&$filter=endswith(friendlyname,'Monthly Insights')")["value"]
+    s = next((r for r in rows if r["friendlyname"] == spec.PATCH["displayname"]), None)
     return s["uniquename"] if s else None
 
 

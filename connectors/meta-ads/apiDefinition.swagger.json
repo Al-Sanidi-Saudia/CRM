@@ -673,6 +673,116 @@
           }
         ]
       }
+    },
+    "/period-insights": {
+      "get": {
+        "summary": "Get daily or monthly insights",
+        "description": "Daily (time_increment=1) or monthly (time_increment=monthly, totalled by Meta) insights for every campaign, ad set or ad of an ad account, deleted and archived items included, all pages. Rows are keyed like the Dataverse columns (purchases, purchase value, ROAS... taken from Meta's action lists as in Get Meta Insights), plus date and rawpayload.",
+        "operationId": "GetPeriodInsights",
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Ad account ID",
+            "description": "Meta ad account ID, with or without act_.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Level",
+            "description": "Level to report on.",
+            "x-ms-visibility": "important",
+            "enum": [
+              "campaign",
+              "adset",
+              "ad"
+            ],
+            "default": "campaign"
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Period",
+            "description": "day: one row per day; month: one row per calendar month.",
+            "x-ms-visibility": "important",
+            "enum": [
+              "day",
+              "month"
+            ],
+            "default": "day"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Start date",
+            "description": "YYYY-MM-DD, ad account time zone.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "End date",
+            "description": "YYYY-MM-DD, inclusive.",
+            "x-ms-visibility": "important"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rows",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "account_id": {
+                  "type": "string",
+                  "x-ms-summary": "Account ID"
+                },
+                "level": {
+                  "type": "string",
+                  "x-ms-summary": "Level"
+                },
+                "period": {
+                  "type": "string",
+                  "x-ms-summary": "Period"
+                },
+                "start_date": {
+                  "type": "string",
+                  "x-ms-summary": "Start date"
+                },
+                "end_date": {
+                  "type": "string",
+                  "x-ms-summary": "End date"
+                },
+                "row_count": {
+                  "type": "integer",
+                  "x-ms-summary": "Row count"
+                },
+                "rows": {
+                  "type": "array",
+                  "x-ms-summary": "Rows",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error"
+          }
+        }
+      }
     }
   },
   "definitions": {},
