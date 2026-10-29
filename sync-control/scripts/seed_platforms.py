@@ -21,8 +21,8 @@ rows = [
                                ("Get Google Ads Advertisements", "511feda4-57bc-5009-bf26-21dd79bb8fe9")),
      "sanidi_insightsflowname": "Get Google Ads Insights", "sanidi_insightsflowid": "59399b2c-080a-50b0-afcf-b803145237cf"},
     {"sanidi_name": "TikTok", "sanidi_platformkey": "tiktok", "sanidi_sortorder": 4, "sanidi_isconfigured": True,
-     # No until the TikTok app is approved and the connection works: the card shows a notice, no buttons.
-     "sanidi_connectionactive": False,
+     # Set to No in an environment where the TikTok connection isn't set up yet (notice, no buttons).
+     "sanidi_connectionactive": True,
      "sanidi_dataflows": flows(("Get TikTok Campaigns", "de45712c-6cd1-59ff-8546-26bb91f692f4"),
                                ("Get TikTok Ad Groups", "49f87836-4262-5c77-b470-5c90c1054813"),
                                ("Get TikTok Advertisements", "1c99d003-a774-5c45-94a8-73e1048fd19c")),

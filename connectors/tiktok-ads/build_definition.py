@@ -116,7 +116,7 @@ for level, (table, path, id_field, filters) in LEVELS.items():
         "path": path, "id": id_field, "filters": filters,
         "columns": [[c, kind, src, spec.max_length(c, kind)] for c, _, _, kind, src in entity_columns(table)],
     }
-ops["$metrics"] = [[c, kind, src] for c, _, _, kind, src in spec.metrics()]
+ops["$metrics"] = [[c, kind, src] for c, _, _, kind, src in spec.synced_metrics()]
 ops["$insights"] = {lvl: {"data_level": dl, "dimension": dim, "id_column": col}
                     for lvl, (dl, dim, col) in INSIGHT_LEVELS.items()}
 
@@ -129,7 +129,7 @@ insight_props = {
     "advertiserid": {"type": "string", "x-ms-summary": "Advertiser ID"},
     "insightslastsyncedon": {"type": "string", "format": "date-time", "x-ms-summary": "Insights Last Synced On"},
 }
-insight_props.update(row_schema("campaign", spec.metrics())["properties"])
+insight_props.update(row_schema("campaign", spec.synced_metrics())["properties"])
 
 paths = {
     "/oauth2/access_token/": op(

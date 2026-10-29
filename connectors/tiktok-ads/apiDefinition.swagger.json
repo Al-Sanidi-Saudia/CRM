@@ -759,7 +759,7 @@
         "apppromotiontype": {
           "type": "string",
           "x-ms-summary": "App Promotion Type",
-          "description": "One of: APP_INSTALL, APP_RETARGETING, APP_PREREGISTRATION, APP_POSTS_PROMOTION. Source: app_promotion_type."
+          "description": "One of: APP_INSTALL, APP_RETARGETING, APP_PREREGISTRATION, APP_POSTS_PROMOTION, UNSET. Source: app_promotion_type."
         },
         "salesdestination": {
           "type": "string",
@@ -1112,6 +1112,21 @@
           "x-ms-summary": "Deep Funnel Optimization Event",
           "description": "Source: deep_funnel_optimization_event."
         },
+        "categoryid": {
+          "type": "string",
+          "x-ms-summary": "Category ID",
+          "description": "Source: category_id."
+        },
+        "package": {
+          "type": "string",
+          "x-ms-summary": "App Package",
+          "description": "Source: package."
+        },
+        "adgroupappprofilepagetype": {
+          "type": "string",
+          "x-ms-summary": "App Profile Page Type",
+          "description": "Source: adgroup_app_profile_page_type."
+        },
         "shoppingadstype": {
           "type": "string",
           "x-ms-summary": "Shopping Ads Type",
@@ -1238,6 +1253,11 @@
           "type": "boolean",
           "x-ms-summary": "Sharing Disabled",
           "description": "Source: share_disabled."
+        },
+        "keywords": {
+          "type": "string",
+          "x-ms-summary": "Keywords",
+          "description": "JSON. Source: keywords."
         },
         "locationids": {
           "type": "string",
@@ -1454,7 +1474,7 @@
         "budgetmode": {
           "type": "string",
           "x-ms-summary": "Budget Mode",
-          "description": "One of: BUDGET_MODE_DAY, BUDGET_MODE_TOTAL, BUDGET_MODE_INFINITE. Source: budget_mode."
+          "description": "One of: BUDGET_MODE_DAY, BUDGET_MODE_TOTAL, BUDGET_MODE_INFINITE, BUDGET_MODE_DYNAMIC_DAILY_BUDGET. Source: budget_mode."
         },
         "budget": {
           "type": "number",
@@ -1583,7 +1603,7 @@
         "creativematerialmode": {
           "type": "string",
           "x-ms-summary": "Creative Material Mode",
-          "description": "One of: CUSTOM, DYNAMIC, SMART_CREATIVE. Source: creative_material_mode."
+          "description": "One of: CUSTOM, DYNAMIC, SMART_CREATIVE, CATALOG_SALES. Source: creative_material_mode."
         },
         "adgroupappprofilepagestate": {
           "type": "string",
@@ -1824,7 +1844,7 @@
         "creativetype": {
           "type": "string",
           "x-ms-summary": "Creative Type",
-          "description": "One of: SHOP_PDP, SHOP_PLP, SHORT_VIDEO_LIVE, DIRECT_LIVE, PSA, CUSTOM_INSTANT_PAGE, AUTO_INVENTORY_INSTANT_PAGE. Source: creative_type."
+          "description": "One of: SHOP_PDP, SHOP_PLP, SHORT_VIDEO_LIVE, DIRECT_LIVE, PSA, CUSTOM_INSTANT_PAGE, AUTO_INVENTORY_INSTANT_PAGE, SHOPPING_CATALOG_PAGE. Source: creative_type."
         },
         "dynamicformat": {
           "type": "string",
@@ -1896,6 +1916,11 @@
           "x-ms-summary": "Playable URL",
           "description": "Source: playable_url."
         },
+        "carouselimagelabels": {
+          "type": "string",
+          "x-ms-summary": "Carousel Image Labels",
+          "description": "JSON. Source: carousel_image_labels."
+        },
         "adtext": {
           "type": "string",
           "x-ms-summary": "Ad Text",
@@ -1949,7 +1974,7 @@
         "identitytype": {
           "type": "string",
           "x-ms-summary": "Identity Type",
-          "description": "One of: CUSTOMIZED_USER, AUTH_CODE, TT_USER, BC_AUTH_TT. Source: identity_type."
+          "description": "One of: CUSTOMIZED_USER, AUTH_CODE, TT_USER, BC_AUTH_TT, UNSET. Source: identity_type."
         },
         "identityauthorizedbcid": {
           "type": "string",
@@ -2025,6 +2050,11 @@
           "type": "string",
           "x-ms-summary": "Shopping Video Package ID",
           "description": "Source: shopping_ads_video_package_id."
+        },
+        "productinfo": {
+          "type": "string",
+          "x-ms-summary": "Product Info",
+          "description": "JSON. Source: product_info."
         },
         "landingpageurl": {
           "type": "string",
@@ -2110,6 +2140,11 @@
           "type": "string",
           "x-ms-summary": "Auto Message ID",
           "description": "Source: auto_message_id."
+        },
+        "landingpageurls": {
+          "type": "string",
+          "x-ms-summary": "Landing Page URLs",
+          "description": "One value per line. Source: landing_page_urls."
         },
         "disclaimertype": {
           "type": "string",
@@ -2201,6 +2236,11 @@
           "x-ms-summary": "Sharing Disabled",
           "description": "Source: share_disabled."
         },
+        "adrefpixelid": {
+          "type": "string",
+          "x-ms-summary": "Reference Pixel ID",
+          "description": "Source: ad_ref_pixel_id."
+        },
         "lastsyncedon": {
           "type": "string",
           "format": "date-time",
@@ -2270,16 +2310,6 @@
           "type": "number",
           "x-ms-summary": "Net cost",
           "description": "In the ad account currency. Source: billed_cost."
-        },
-        "cashspend": {
-          "type": "number",
-          "x-ms-summary": "Cost Charged by Cash",
-          "description": "In the ad account currency. Source: cash_spend."
-        },
-        "voucherspend": {
-          "type": "number",
-          "x-ms-summary": "Cost Charged by Voucher",
-          "description": "In the ad account currency. Source: voucher_spend."
         },
         "cpc": {
           "type": "number",
@@ -3157,32 +3187,6 @@
           "type": "number",
           "x-ms-summary": "Total customize product value",
           "description": "In the ad account currency. Source: website_total_customize_product_value."
-        },
-        "custompageevents": {
-          "type": "integer",
-          "format": "int64",
-          "x-ms-summary": "Custom events (website)",
-          "description": "Source: custom_page_events."
-        },
-        "costpercustompageevent": {
-          "type": "number",
-          "x-ms-summary": "Cost per custom event (website)",
-          "description": "In the ad account currency. Source: cost_per_custom_page_event."
-        },
-        "custompageeventrate": {
-          "type": "number",
-          "x-ms-summary": "Custom event rate (website) (%)",
-          "description": "Percent. Source: custom_page_event_rate."
-        },
-        "valuepercustompageevent": {
-          "type": "number",
-          "x-ms-summary": "Value per custom event (website)",
-          "description": "In the ad account currency. Source: value_per_custom_page_event."
-        },
-        "custompageeventsvalue": {
-          "type": "number",
-          "x-ms-summary": "Custom event value (website)",
-          "description": "In the ad account currency. Source: custom_page_events_value."
         },
         "vtaconversion": {
           "type": "integer",

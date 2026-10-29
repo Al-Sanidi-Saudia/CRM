@@ -276,7 +276,7 @@ def flow_insights():
         "runtimeConfiguration": {"concurrency": {"repetitions": 1}}}
     prev = "For_each_advertiser"
     # Like Get Google Ads Insights: list the records, then update each one's insight columns.
-    metric_cols = [c[0] for c in spec.metrics()] + ["insightslastsyncedon"]
+    metric_cols = [c[0] for c in spec.synced_metrics()] + ["insightslastsyncedon"]
     for _, table, name in INSIGHT_LEVELS:
         tbl = spec.TABLES[table]
         entity_set = spec.PREFIX + table + "s"

@@ -4,6 +4,10 @@ The 204 metrics approved for the **Insights** tab of TikTok Campaign, TikTok Ad 
 Source: TikTok API for Business v1.3, *Basic reports - Supported metrics* (Core, Videos, Clicks, Social,
 Website and Attribution groups). Column = `sanidi_` + the metric name without underscores.
 
+**Refused by TikTok (checked live 2026-10-28, both ad accounts, all three levels):** `cash_spend`, `voucher_spend`
+("invalid metric fields") and the five `custom_page_event*` / `custom_page_events*` website metrics ("no relation" to
+these levels). Their columns exist but are not requested, written or shown; 197 metrics are synced.
+
 Labels are TikTok's own (Ads Manager) names, with these corrections to errors in TikTok's documentation:
 - `total_complete_payment_rate` is labelled *Purchase value (website)* in the docs, so it is stored as currency, not as a rate.
 - `total_page_browse_view_value` and `value_per_page_browse_view`: the docs swap their labels; they are corrected here.

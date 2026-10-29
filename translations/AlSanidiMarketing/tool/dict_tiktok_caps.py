@@ -108,7 +108,7 @@ D = {
 "OR": "أو", "AND": "و",
 # placements
 "PLACEMENT_TYPE_AUTOMATIC": "مواضع تلقائية", "PLACEMENT_TYPE_NORMAL": "مواضع يدوية", "PLACEMENT_TIKTOK": "TikTok",
-"PLACEMENT_PANGLE": "Pangle", "PLACEMENT_GLOBAL_APP_BUNDLE": "حزمة التطبيقات العالمية", "IN_FEED": "داخل الخلاصة",
+"PLACEMENT_PANGLE": "Pangle", "PLACEMENT_TOPBUZZ": "TopBuzz", "PLACEMENT_GLOBAL_APP_BUNDLE": "حزمة التطبيقات العالمية", "IN_FEED": "داخل الخلاصة",
 "SEARCH_FEED": "خلاصة البحث", "TIKTOK_LITE": "TikTok Lite", "LEMON8": "Lemon8",
 # audience
 "GENDER_UNLIMITED": "كل الأجناس", "GENDER_MALE": "ذكور", "GENDER_FEMALE": "إناث",
@@ -130,7 +130,7 @@ D = {
 "PACING_MODE_FAST": "إنفاق سريع", "SCHEDULE": "مجدول", "SEQUENCE": "متسلسل", "VIEW_OPTIMIZE": "تحسين المشاهدات",
 "CPV": "تكلفة المشاهدة (CPV)", "GD": "عرض مضمون (GD)", "OCPM": "تكلفة الألف ظهور المحسّنة (oCPM)",
 "SEVEN_DAYS": "7 أيام", "ZERO_DAY": "اليوم نفسه", "TWO_SECONDS": "ثانيتان", "EVERYTIME": "كل مرة",
-"SMART_CREATIVE": "تصميم ذكي", "STANDARD_FEED": "خلاصة قياسية", "TOP_FEED": "أعلى الخلاصة", "ONE_DAY": "يوم واحد",
+"SMART_CREATIVE": "تصميم ذكي", "CATALOG_SALES": "مبيعات الكتالوج", "STANDARD_FEED": "خلاصة قياسية", "TOP_FEED": "أعلى الخلاصة", "ONE_DAY": "يوم واحد",
 "FOURTEEN_DAYS": "14 يومًا", "TWENTY_EIGHT_DAYS": "28 يومًا", "EVERY": "كل مرة", "ONCE": "مرة واحدة",
 "ONE_DAY_CLICK": "نقرة خلال يوم", "SEVEN_DAY_CLICK": "نقرة خلال 7 أيام",
 "ONE_DAY_CLICK_OR_ONE_DAY_VIEW": "نقرة أو مشاهدة خلال يوم",
@@ -168,7 +168,7 @@ D = {
 "SINGLE_IMAGE": "صورة واحدة", "SINGLE_VIDEO": "فيديو واحد", "LIVE_CONTENT": "محتوى مباشر", "CAROUSEL_ADS": "إعلانات دوّارة",
 "CATALOG_CAROUSEL": "كتالوج دوّار", "SHOP_PDP": "صفحة تفاصيل المنتج في المتجر", "SHOP_PLP": "صفحة قائمة المنتجات في المتجر",
 "SHORT_VIDEO_LIVE": "فيديو قصير إلى البث المباشر", "DIRECT_LIVE": "بث مباشر", "PSA": "إعلانات تسوق المنتجات (PSA)",
-"CUSTOM_INSTANT_PAGE": "صفحة فورية مخصصة", "AUTO_INVENTORY_INSTANT_PAGE": "صفحة فورية لمخزون السيارات",
+"CUSTOM_INSTANT_PAGE": "صفحة فورية مخصصة", "SHOPPING_CATALOG_PAGE": "صفحة كتالوج التسوق", "AUTO_INVENTORY_INSTANT_PAGE": "صفحة فورية لمخزون السيارات",
 "DYNAMIC_CREATIVE": "تصميم ديناميكي", "CATALOG_VIDEOS": "فيديوهات الكتالوج", "CATALOG_UPLOADED_VIDEOS": "فيديوهات مرفوعة للكتالوج",
 "LIVE_STREAM": "بث مباشر", "EMISSION": "الانبعاثات", "DISCOUNT": "الخصم",
 "DEALER_NAME": "اسم الوكيل", "MAKE": "الشركة المصنّعة", "MODEL": "الطراز", "YEAR": "السنة", "MILEAGE": "المسافة المقطوعة",

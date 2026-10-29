@@ -145,7 +145,8 @@
               "DIRECT_LIVE": 4,
               "PSA": 5,
               "CUSTOM_INSTANT_PAGE": 6,
-              "AUTO_INVENTORY_INSTANT_PAGE": 7
+              "AUTO_INVENTORY_INSTANT_PAGE": 7,
+              "SHOPPING_CATALOG_PAGE": 8
             },
             "sanidi_dynamicformat": {
               "UNSET": 1,
@@ -232,7 +233,8 @@
               "CUSTOMIZED_USER": 1,
               "AUTH_CODE": 2,
               "TT_USER": 3,
-              "BC_AUTH_TT": 4
+              "BC_AUTH_TT": 4,
+              "UNSET": 5
             },
             "sanidi_itemduetstatus": {
               "ENABLE": 1,
@@ -479,6 +481,7 @@
                       "item/sanidi_creativeautoenhancements": "@if(empty(body('Known_creativeautoenhancements')), null, join(body('Known_creativeautoenhancements'), ','))",
                       "item/sanidi_aigcdisclosuretype": "@outputs('Choice_maps')?['sanidi_aigcdisclosuretype']?[string(items('For_each_ad')?['aigcdisclosuretype'])]",
                       "item/sanidi_playableurl": "@items('For_each_ad')?['playableurl']",
+                      "item/sanidi_carouselimagelabels": "@items('For_each_ad')?['carouselimagelabels']",
                       "item/sanidi_adtext": "@items('For_each_ad')?['adtext']",
                       "item/sanidi_adtexts": "@items('For_each_ad')?['adtexts']",
                       "item/sanidi_calltoaction": "@outputs('Choice_maps')?['sanidi_calltoaction']?[string(items('For_each_ad')?['calltoaction'])]",
@@ -505,6 +508,7 @@
                       "item/sanidi_vehicleids": "@items('For_each_ad')?['vehicleids']",
                       "item/sanidi_showcaseproducts": "@items('For_each_ad')?['showcaseproducts']",
                       "item/sanidi_shoppingadsvideopackageid": "@items('For_each_ad')?['shoppingadsvideopackageid']",
+                      "item/sanidi_productinfo": "@items('For_each_ad')?['productinfo']",
                       "item/sanidi_landingpageurl": "@items('For_each_ad')?['landingpageurl']",
                       "item/sanidi_utmparams": "@items('For_each_ad')?['utmparams']",
                       "item/sanidi_pageid": "@items('For_each_ad')?['pageid']",
@@ -522,6 +526,7 @@
                       "item/sanidi_fallbacktype": "@outputs('Choice_maps')?['sanidi_fallbacktype']?[string(items('For_each_ad')?['fallbacktype'])]",
                       "item/sanidi_dynamicdestination": "@outputs('Choice_maps')?['sanidi_dynamicdestination']?[string(items('For_each_ad')?['dynamicdestination'])]",
                       "item/sanidi_automessageid": "@items('For_each_ad')?['automessageid']",
+                      "item/sanidi_landingpageurls": "@items('For_each_ad')?['landingpageurls']",
                       "item/sanidi_disclaimertype": "@outputs('Choice_maps')?['sanidi_disclaimertype']?[string(items('For_each_ad')?['disclaimertype'])]",
                       "item/sanidi_disclaimertext": "@items('For_each_ad')?['disclaimertext']",
                       "item/sanidi_disclaimerclickabletexts": "@items('For_each_ad')?['disclaimerclickabletexts']",
@@ -540,6 +545,7 @@
                       "item/sanidi_commentdisabled": "@items('For_each_ad')?['commentdisabled']",
                       "item/sanidi_videodownloaddisabled": "@items('For_each_ad')?['videodownloaddisabled']",
                       "item/sanidi_sharedisabled": "@items('For_each_ad')?['sharedisabled']",
+                      "item/sanidi_adrefpixelid": "@items('For_each_ad')?['adrefpixelid']",
                       "item/sanidi_lastsyncedon": "@items('For_each_ad')?['lastsyncedon']",
                       "item/sanidi_rawpayload": "@items('For_each_ad')?['rawpayload']",
                       "item/sanidi_tiktokadgroup@odata.bind": "/sanidi_tiktokadgroups(@{triggerOutputs()?['body/sanidi_tiktokadgroupid']})",
@@ -592,6 +598,7 @@
                         "item/sanidi_creativeautoenhancements": "@if(empty(body('Known_creativeautoenhancements')), null, join(body('Known_creativeautoenhancements'), ','))",
                         "item/sanidi_aigcdisclosuretype": "@outputs('Choice_maps')?['sanidi_aigcdisclosuretype']?[string(items('For_each_ad')?['aigcdisclosuretype'])]",
                         "item/sanidi_playableurl": "@items('For_each_ad')?['playableurl']",
+                        "item/sanidi_carouselimagelabels": "@items('For_each_ad')?['carouselimagelabels']",
                         "item/sanidi_adtext": "@items('For_each_ad')?['adtext']",
                         "item/sanidi_adtexts": "@items('For_each_ad')?['adtexts']",
                         "item/sanidi_calltoaction": "@outputs('Choice_maps')?['sanidi_calltoaction']?[string(items('For_each_ad')?['calltoaction'])]",
@@ -618,6 +625,7 @@
                         "item/sanidi_vehicleids": "@items('For_each_ad')?['vehicleids']",
                         "item/sanidi_showcaseproducts": "@items('For_each_ad')?['showcaseproducts']",
                         "item/sanidi_shoppingadsvideopackageid": "@items('For_each_ad')?['shoppingadsvideopackageid']",
+                        "item/sanidi_productinfo": "@items('For_each_ad')?['productinfo']",
                         "item/sanidi_landingpageurl": "@items('For_each_ad')?['landingpageurl']",
                         "item/sanidi_utmparams": "@items('For_each_ad')?['utmparams']",
                         "item/sanidi_pageid": "@items('For_each_ad')?['pageid']",
@@ -635,6 +643,7 @@
                         "item/sanidi_fallbacktype": "@outputs('Choice_maps')?['sanidi_fallbacktype']?[string(items('For_each_ad')?['fallbacktype'])]",
                         "item/sanidi_dynamicdestination": "@outputs('Choice_maps')?['sanidi_dynamicdestination']?[string(items('For_each_ad')?['dynamicdestination'])]",
                         "item/sanidi_automessageid": "@items('For_each_ad')?['automessageid']",
+                        "item/sanidi_landingpageurls": "@items('For_each_ad')?['landingpageurls']",
                         "item/sanidi_disclaimertype": "@outputs('Choice_maps')?['sanidi_disclaimertype']?[string(items('For_each_ad')?['disclaimertype'])]",
                         "item/sanidi_disclaimertext": "@items('For_each_ad')?['disclaimertext']",
                         "item/sanidi_disclaimerclickabletexts": "@items('For_each_ad')?['disclaimerclickabletexts']",
@@ -653,6 +662,7 @@
                         "item/sanidi_commentdisabled": "@items('For_each_ad')?['commentdisabled']",
                         "item/sanidi_videodownloaddisabled": "@items('For_each_ad')?['videodownloaddisabled']",
                         "item/sanidi_sharedisabled": "@items('For_each_ad')?['sharedisabled']",
+                        "item/sanidi_adrefpixelid": "@items('For_each_ad')?['adrefpixelid']",
                         "item/sanidi_lastsyncedon": "@items('For_each_ad')?['lastsyncedon']",
                         "item/sanidi_rawpayload": "@items('For_each_ad')?['rawpayload']",
                         "item/sanidi_tiktokadgroup@odata.bind": "/sanidi_tiktokadgroups(@{triggerOutputs()?['body/sanidi_tiktokadgroupid']})",

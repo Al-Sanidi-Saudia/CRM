@@ -219,7 +219,8 @@
             "sanidi_placements": {
               "PLACEMENT_TIKTOK": 1,
               "PLACEMENT_PANGLE": 2,
-              "PLACEMENT_GLOBAL_APP_BUNDLE": 3
+              "PLACEMENT_GLOBAL_APP_BUNDLE": 3,
+              "PLACEMENT_TOPBUZZ": 4
             },
             "sanidi_tiktoksubplacements": {
               "IN_FEED": 1,
@@ -293,7 +294,8 @@
             "sanidi_budgetmode": {
               "BUDGET_MODE_DAY": 1,
               "BUDGET_MODE_TOTAL": 2,
-              "BUDGET_MODE_INFINITE": 3
+              "BUDGET_MODE_INFINITE": 3,
+              "BUDGET_MODE_DYNAMIC_DAILY_BUDGET": 4
             },
             "sanidi_scheduletype": {
               "SCHEDULE_FROM_NOW": 1,
@@ -370,7 +372,8 @@
             "sanidi_creativematerialmode": {
               "CUSTOM": 1,
               "DYNAMIC": 2,
-              "SMART_CREATIVE": 3
+              "SMART_CREATIVE": 3,
+              "CATALOG_SALES": 4
             },
             "sanidi_adgroupappprofilepagestate": {
               "INVALID": 1,
@@ -673,6 +676,9 @@
                       "item/sanidi_deepfunneleventsource": "@outputs('Choice_maps')?['sanidi_deepfunneleventsource']?[string(items('For_each_ad_group')?['deepfunneleventsource'])]",
                       "item/sanidi_deepfunneleventsourceid": "@items('For_each_ad_group')?['deepfunneleventsourceid']",
                       "item/sanidi_deepfunneloptimizationevent": "@items('For_each_ad_group')?['deepfunneloptimizationevent']",
+                      "item/sanidi_categoryid": "@items('For_each_ad_group')?['categoryid']",
+                      "item/sanidi_package": "@items('For_each_ad_group')?['package']",
+                      "item/sanidi_adgroupappprofilepagetype": "@items('For_each_ad_group')?['adgroupappprofilepagetype']",
                       "item/sanidi_shoppingadstype": "@outputs('Choice_maps')?['sanidi_shoppingadstype']?[string(items('For_each_ad_group')?['shoppingadstype'])]",
                       "item/sanidi_productsource": "@outputs('Choice_maps')?['sanidi_productsource']?[string(items('For_each_ad_group')?['productsource'])]",
                       "item/sanidi_catalogid": "@items('For_each_ad_group')?['catalogid']",
@@ -697,6 +703,7 @@
                       "item/sanidi_commentdisabled": "@items('For_each_ad_group')?['commentdisabled']",
                       "item/sanidi_videodownloaddisabled": "@items('For_each_ad_group')?['videodownloaddisabled']",
                       "item/sanidi_sharedisabled": "@items('For_each_ad_group')?['sharedisabled']",
+                      "item/sanidi_keywords": "@items('For_each_ad_group')?['keywords']",
                       "item/sanidi_locationids": "@items('For_each_ad_group')?['locationids']",
                       "item/sanidi_zipcodeids": "@items('For_each_ad_group')?['zipcodeids']",
                       "item/sanidi_languages": "@items('For_each_ad_group')?['languages']",
@@ -840,6 +847,9 @@
                         "item/sanidi_deepfunneleventsource": "@outputs('Choice_maps')?['sanidi_deepfunneleventsource']?[string(items('For_each_ad_group')?['deepfunneleventsource'])]",
                         "item/sanidi_deepfunneleventsourceid": "@items('For_each_ad_group')?['deepfunneleventsourceid']",
                         "item/sanidi_deepfunneloptimizationevent": "@items('For_each_ad_group')?['deepfunneloptimizationevent']",
+                        "item/sanidi_categoryid": "@items('For_each_ad_group')?['categoryid']",
+                        "item/sanidi_package": "@items('For_each_ad_group')?['package']",
+                        "item/sanidi_adgroupappprofilepagetype": "@items('For_each_ad_group')?['adgroupappprofilepagetype']",
                         "item/sanidi_shoppingadstype": "@outputs('Choice_maps')?['sanidi_shoppingadstype']?[string(items('For_each_ad_group')?['shoppingadstype'])]",
                         "item/sanidi_productsource": "@outputs('Choice_maps')?['sanidi_productsource']?[string(items('For_each_ad_group')?['productsource'])]",
                         "item/sanidi_catalogid": "@items('For_each_ad_group')?['catalogid']",
@@ -864,6 +874,7 @@
                         "item/sanidi_commentdisabled": "@items('For_each_ad_group')?['commentdisabled']",
                         "item/sanidi_videodownloaddisabled": "@items('For_each_ad_group')?['videodownloaddisabled']",
                         "item/sanidi_sharedisabled": "@items('For_each_ad_group')?['sharedisabled']",
+                        "item/sanidi_keywords": "@items('For_each_ad_group')?['keywords']",
                         "item/sanidi_locationids": "@items('For_each_ad_group')?['locationids']",
                         "item/sanidi_zipcodeids": "@items('For_each_ad_group')?['zipcodeids']",
                         "item/sanidi_languages": "@items('For_each_ad_group')?['languages']",

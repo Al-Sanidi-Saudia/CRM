@@ -12,6 +12,10 @@ and flows, the new Campaign / Advertisement lookups, Sync Control's *Connection 
 flows, and Campaign / Advertisement labels that were still empty. Texts added for TikTok never replace existing
 Arabic on other components. Imported into UAT and published; `changes_ar-SA_tiktok.csv` lists every label.
 
+**2026-10-29, TikTok patch:** the 8 columns and 6 choice values added after the live check, and the patch's name
+(`TRANSLATION_SOLUTION=AlSanidiMarketing_Patch_5b266c1a python3 tool/uat.py export ...`). 24 labels, none changed;
+`changes_ar-SA_tiktok_patch.csv`, `files/CrmTranslations_ar-SA_TikTokPatch.zip`.
+
 **2026-10-22, Season Calendar:** the new `sanidi_seasoncalendar` table (see `seasons/README.md`). Its table,
 column, form and site map labels were created in Arabic by `seasons/deploy.py`. This round added the names
 Dataverse generates (views, forms, Advanced Find, …) and aligned its system column labels with the glossary.

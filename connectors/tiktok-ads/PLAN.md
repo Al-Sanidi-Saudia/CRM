@@ -1,9 +1,25 @@
 # TikTok Ads integration: plan (AlSanidi-UAT)
 
-Status: **steps 1–9 done in UAT (2026-10-21)**; steps 10–12 wait for TikTok's approval of the developer app.
-Left for activation (step 11): turn on the four Get TikTok flows and the two Map TikTok flows (as the owner of the
-connections), then add the two TikTok cases to *Sync Control - Run Sync Request* (`update_dispatcher.py`): a child
-flow has to have been turned on once before the dispatcher can call it.
+Status: **live in UAT (2026-10-29).** Built 2026-10-21 in AlSanidiMarketing (since deployed to production); the follow-up
+changes are in the patch **AlSanidi | Marketing | TikTok Integration** (`AlSanidiMarketing_Patch_5b266c1a`, 1.0.2.0).
+First sync: 134 campaigns, 236 ad groups, 1,381 ads (deleted included), matching TikTok; insights for 124 campaigns,
+224 ad groups and 1,224 ads (the lifetime report leaves deleted items out). Sync Control: TikTok card active.
+
+Live check (2026-10-28): 197 of the 204 metrics are accepted (7 refused, columns kept but not synced or shown); 8
+undocumented fields and 6 undocumented choice values added; TikTok sends null items in some lists (connector drops them).
+
+Production (2026-10-29): **live.** The patch was imported as managed into `https://operations-alsanidi.crm4.dynamics.com`
+(no failures). The access token and advertiser IDs are set as current values there. The 6 TikTok flows and *Sync Control -
+Run Sync Request* are on: importing had turned the dispatcher off until its new TikTok child flows were on, which needed
+the TikTok and Dataverse connections shared with the CRM-Claude app user. TikTok card: Connection Active = Yes. First
+sync: 134 campaigns, 236 ad groups, 1,381 ads; insights for 124 / 224 / 1,224 (same as UAT), all 788 flow runs succeeded.
+
+The Social Media Trials tables (`sanidi_tiktok_*`, `sanidi_meta_*`, `sanidi_snap_*`, `sanidi_google_*`), legacy flows and
+legacy environment variables are not in Production. In UAT the 5 `sanidi_tiktok_*` trial tables and the legacy TikTok
+environment variable values were added to AlSanidiMarketingSocialMediaTrials; they are still also in AlSanidiMarketing
+because a solution with patches cannot have components removed (needs Clone solution first).
+**Deferred to the next major update:** clone AlSanidiMarketing (rolls up both patches), then remove the 5 `sanidi_tiktok_*`
+trial tables, `sanidi_TikTokLastSyncStatus` and the 3 legacy environment variable values from it.
 
 Environment: `https://operations-alsenidiuat.crm4.dynamics.com`
 Solution: **AlSanidi | Marketing** (`AlSanidiMarketing`), publisher **AlSanidi Development**, prefix **`sanidi`**
