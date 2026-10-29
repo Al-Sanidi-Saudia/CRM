@@ -8,13 +8,11 @@ First sync: 134 campaigns, 236 ad groups, 1,381 ads (deleted included), matching
 Live check (2026-10-28): 197 of the 204 metrics are accepted (7 refused, columns kept but not synced or shown); 8
 undocumented fields and 6 undocumented choice values added; TikTok sends null items in some lists (connector drops them).
 
-Production (2026-10-29): the patch was imported as managed into `https://operations-alsanidi.crm4.dynamics.com` (no
-failures); the access token and advertiser IDs are set as current values there. Importing turned off *Sync Control - Run
-Sync Request* because its TikTok child flows had never been turned on in Production. Turning them on needs the TikTok and
-Dataverse connections behind `sanidi_sharedsanidi5ftiktok5f43b530b23a0dc933_3e7c1` and
-`sanidi_sharedcommondataserviceforapps_79822` shared with the CRM-Claude app user (or turn them on as the owner): order is
-Get TikTok Advertisements, Ad Groups, Campaigns, Insights, the two Map flows, then the dispatcher. Then set the TikTok
-Integration Platform row's Connection Active to Yes.
+Production (2026-10-29): **live.** The patch was imported as managed into `https://operations-alsanidi.crm4.dynamics.com`
+(no failures). The access token and advertiser IDs are set as current values there. The 6 TikTok flows and *Sync Control -
+Run Sync Request* are on: importing had turned the dispatcher off until its new TikTok child flows were on, which needed
+the TikTok and Dataverse connections shared with the CRM-Claude app user. TikTok card: Connection Active = Yes. First
+sync: 134 campaigns, 236 ad groups, 1,381 ads; insights for 124 / 224 / 1,224 (same as UAT), all 788 flow runs succeeded.
 
 The Social Media Trials tables (`sanidi_tiktok_*`, `sanidi_meta_*`, `sanidi_snap_*`, `sanidi_google_*`), legacy flows and
 legacy environment variables are not in Production. In UAT the 5 `sanidi_tiktok_*` trial tables and the legacy TikTok
