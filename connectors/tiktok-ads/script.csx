@@ -387,8 +387,11 @@ public class Script : ScriptBase
                 if (t.Length == 10) t += " 00:00:00";
                 return t.Length == 19 ? t.Replace(' ', 'T') + "Z" : t;
             case "enum": return v.ToString();
-            case "enums": return v is JArray ? v : new JArray(v);
-            case "strs": return Truncate(string.Join("\n", (v is JArray l ? l : new JArray(v)).Select(x => x.ToString())), maxLength);
+            // TikTok can send null items inside lists (seen live: ["IN_FEED","SEARCH_FEED",null,null]); drop them.
+            case "enums": return new JArray(Items(v).Where(x => !IsEmpty(x)).Select(x => x.ToString()));
+            case "strs":
+                var lines = Items(v).Where(x => !IsEmpty(x)).Select(x => x.ToString()).ToList();
+                return lines.Count == 0 ? JValue.CreateNull() : (JToken)Truncate(string.Join("\n", lines), maxLength);
             case "json": return Truncate(v.ToString(Newtonsoft.Json.Formatting.None), maxLength);
             default: return v;
         }
@@ -402,6 +405,8 @@ public class Script : ScriptBase
         return double.TryParse(s, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var d)
             ? d : (double?)null;
     }
+
+    private static IEnumerable<JToken> Items(JToken v) => v is JArray a ? (IEnumerable<JToken>)a : new[] { v };
 
     private static IEnumerable<List<T>> Chunks<T>(List<T> items, int size)
     {

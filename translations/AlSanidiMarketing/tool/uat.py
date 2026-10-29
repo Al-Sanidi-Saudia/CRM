@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "scripts"))
 from dv import Dataverse  # noqa: E402
 
-SOLUTION = "AlSanidiMarketing"
+SOLUTION = __import__("os").environ.get("TRANSLATION_SOLUTION", "AlSanidiMarketing")  # e.g. a patch
 XS = 'xmlns:c="http://www.w3.org/2001/XMLSchema"'
 
 

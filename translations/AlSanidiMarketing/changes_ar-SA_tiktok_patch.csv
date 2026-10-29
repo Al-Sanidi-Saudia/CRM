@@ -1,0 +1,25 @@
+﻿Table / Component,Object ID,Label Type,English,Previous Arabic,New Arabic,Change
+Solution,5b266c1a-6fc2-473d-bdfe-290442ef7179,friendlyname,AlSanidi | Marketing | TikTok Integration,,السنيدي | التسويق | تكامل TikTok,New
+Solution,5b266c1a-6fc2-473d-bdfe-290442ef7179,description,Patch for AlSanidi | Marketing,,تحديث تصحيحي لـ السنيدي | التسويق,New
+sanidi_tiktokadvertisement,b5eae2c8-f5d2-f111-a05a-e4fb1ef50921,Description,TikTok: carousel_image_labels.,,TikTok: carousel_image_labels.,New
+sanidi_tiktokadvertisement,b5eae2c8-f5d2-f111-a05a-e4fb1ef50921,DisplayName,Carousel Image Labels,,تسميات صور الإعلان الدوّار,New
+sanidi_tiktokadvertisement,d709e8e1-f5d2-f111-a05a-6045bdddd79d,Description,TikTok: ad_ref_pixel_id.,,TikTok: ad_ref_pixel_id.,New
+sanidi_tiktokadvertisement,d709e8e1-f5d2-f111-a05a-6045bdddd79d,DisplayName,Reference Pixel ID,,معرّف البكسل المرجعي,New
+sanidi_tiktokadvertisement,e8542fcb-f5d2-f111-a05a-70a8a581e673,Description,TikTok: product_info.,,TikTok: product_info.,New
+sanidi_tiktokadvertisement,e8542fcb-f5d2-f111-a05a-70a8a581e673,DisplayName,Product Info,,معلومات المنتج,New
+sanidi_tiktokadvertisement,9085f7f3-f5d2-f111-a05a-70a8a581e673,DisplayName,UNSET,,غير مضبوط,New
+sanidi_tiktokadvertisement,ef542fcb-f5d2-f111-a05a-70a8a581e673,Description,TikTok: landing_page_urls.,,TikTok: landing_page_urls.,New
+sanidi_tiktokadvertisement,ef542fcb-f5d2-f111-a05a-70a8a581e673,DisplayName,Landing Page URLs,,روابط الصفحات المقصودة,New
+sanidi_tiktokadvertisement,0f6a94f0-f5d2-f111-a05a-e4fb1ef50921,DisplayName,SHOPPING_CATALOG_PAGE,,صفحة كتالوج التسوق,New
+sanidi_tiktokcampaign,54588b68-f5d2-f111-a05a-6045bdddd79d,DisplayName,UNSET,,غير مضبوط,New
+sanidi_tiktokadgroup,bfd3c778-f5d2-f111-a05a-70a8a581e673,Description,TikTok: adgroup_app_profile_page_type.,,TikTok: adgroup_app_profile_page_type.,New
+sanidi_tiktokadgroup,bfd3c778-f5d2-f111-a05a-70a8a581e673,DisplayName,App Profile Page Type,,نوع صفحة ملف التطبيق,New
+sanidi_tiktokadgroup,b8261076-f5d2-f111-a05a-e4fb1ef50921,Description,TikTok: package.,,TikTok: package.,New
+sanidi_tiktokadgroup,b8261076-f5d2-f111-a05a-e4fb1ef50921,DisplayName,App Package,,حزمة التطبيق,New
+sanidi_tiktokadgroup,c3d3c778-f5d2-f111-a05a-70a8a581e673,Description,TikTok: keywords.,,TikTok: keywords.,New
+sanidi_tiktokadgroup,c3d3c778-f5d2-f111-a05a-70a8a581e673,DisplayName,Keywords,,الكلمات المفتاحية,New
+sanidi_tiktokadgroup,40a75d88-f5d2-f111-a05a-70a8a581e673,DisplayName,PLACEMENT_TOPBUZZ,,TopBuzz,New
+sanidi_tiktokadgroup,a7ea0eac-f5d2-f111-a05a-6045bdddd79d,DisplayName,CATALOG_SALES,,مبيعات الكتالوج,New
+sanidi_tiktokadgroup,e8a8a1a0-f5d2-f111-a05a-70a8a581e673,DisplayName,BUDGET_MODE_DYNAMIC_DAILY_BUDGET,,ميزانية يومية مرنة,New
+sanidi_tiktokadgroup,a39f006f-f5d2-f111-a05a-e4fb1ef50921,Description,TikTok: category_id.,,TikTok: category_id.,New
+sanidi_tiktokadgroup,a39f006f-f5d2-f111-a05a-e4fb1ef50921,DisplayName,Category ID,,معرّف الفئة,New

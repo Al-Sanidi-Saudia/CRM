@@ -1,6 +1,9 @@
 # TikTok tables, columns, forms, views, flows and environment variables (labels from connectors/tiktok-ads/spec.py).
 # Same glossary as dict1-4: TikTok and other brand names in English, abbreviations in parentheses.
 D = {
+# solution patch
+"AlSanidi | Marketing | TikTok Integration": "السنيدي | التسويق | تكامل TikTok",
+"Patch for AlSanidi | Marketing": "تحديث تصحيحي لـ السنيدي | التسويق",
 # tables
 "TikTok Campaign": "حملة TikTok", "TikTok Campaigns": "حملات TikTok",
 "TikTok Ad Group": "مجموعة إعلانية في TikTok", "TikTok Ad Groups": "المجموعات الإعلانية في TikTok",
@@ -288,6 +291,10 @@ D = {
 "TopView Estimated CPM": "تكلفة الألف ظهور (CPM) التقديرية في TopView", "TopView Discount Type": "نوع خصم TopView",
 "TopView Discount Amount": "مبلغ خصم TopView", "TopView Discount (%)": "خصم TopView (%)",
 "TopView Pre-discount Budget": "ميزانية TopView قبل الخصم",
+# returned by the API, not in the v1.3 docs (added after the live check)
+"Category ID": "معرّف الفئة", "App Package": "حزمة التطبيق", "App Profile Page Type": "نوع صفحة ملف التطبيق",
+"Keywords": "الكلمات المفتاحية", "Reference Pixel ID": "معرّف البكسل المرجعي", "Carousel Image Labels": "تسميات صور الإعلان الدوّار",
+"Landing Page URLs": "روابط الصفحات المقصودة", "Product Info": "معلومات المنتج",
 # ad columns
 "Ad ID v2": "معرّف الإعلان v2", "Smart+ Ad ID": "معرّف إعلان Smart+", "Smart Creative (ACO)": "تصميم ذكي (ACO)",
 "Creative Authorized": "التصميم مفوَّض", "Ad Format": "تنسيق الإعلان", "Creative Type": "نوع التصميم",

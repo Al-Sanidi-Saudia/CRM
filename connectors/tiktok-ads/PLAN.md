@@ -1,9 +1,12 @@
 # TikTok Ads integration: plan (AlSanidi-UAT)
 
-Status: **steps 1–9 done in UAT (2026-10-21)**; steps 10–12 wait for TikTok's approval of the developer app.
-Left for activation (step 11): turn on the four Get TikTok flows and the two Map TikTok flows (as the owner of the
-connections), then add the two TikTok cases to *Sync Control - Run Sync Request* (`update_dispatcher.py`): a child
-flow has to have been turned on once before the dispatcher can call it.
+Status: **live in UAT (2026-10-29).** Built 2026-10-21 in AlSanidiMarketing (since deployed to production); the follow-up
+changes are in the patch **AlSanidi | Marketing | TikTok Integration** (`AlSanidiMarketing_Patch_5b266c1a`, 1.0.2.0).
+First sync: 134 campaigns, 236 ad groups, 1,381 ads (deleted included), matching TikTok; insights for 124 campaigns,
+224 ad groups and 1,224 ads (the lifetime report leaves deleted items out). Sync Control: TikTok card active.
+
+Live check (2026-10-28): 197 of the 204 metrics are accepted (7 refused, columns kept but not synced or shown); 8
+undocumented fields and 6 undocumented choice values added; TikTok sends null items in some lists (connector drops them).
 
 Environment: `https://operations-alsenidiuat.crm4.dynamics.com`
 Solution: **AlSanidi | Marketing** (`AlSanidiMarketing`), publisher **AlSanidi Development**, prefix **`sanidi`**
