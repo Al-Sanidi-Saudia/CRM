@@ -334,7 +334,7 @@ each Integration Platform row (data), and the full load itself.
 | 2 | **Live check:** a temporary test flow in UAT runs one daily and one monthly request per platform and level (read-only API calls). Confirms the fields, deleted items, Google asset-group daily rows, Snap breakdowns, Meta / Snap account time zones and real row counts. Deleted afterwards. | UAT |
 | 3 | Connectors: export Meta to the repo; `GetPeriodInsights` for Meta and TikTok; Snap account-level breakdown | repo, then UAT |
 | 4 | New patch; 26 tables + columns + alternate keys + lookups, publish | UAT |
-| 5 | Forms, views, parent subgrids, app tables, Manager role, publish | UAT |
+| 5 | Forms, views, parent subgrids, app tables + *Social Media Insights* site map area, Manager role, publish | UAT |
 | 6 | 8 insight flows, 4 run flows (off) | UAT |
 | 7 | Test: one week and one month per platform, through the run flows; check the rows against the platforms' own UIs | UAT |
 | 8 | Sync Control: new columns and choice values, dispatcher cases, page (3 buttons, pop-up) | UAT |
