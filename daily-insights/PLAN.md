@@ -1,6 +1,6 @@
 # Social Media Daily and Monthly Insights: feasibility study and plan (AlSanidi-UAT)
 
-Status: **decisions agreed (2026-10-29); scheduling still to be designed. Nothing has been changed in Dataverse.**
+Status: **plan and scheduling agreed (2026-10-29), waiting for the go-ahead to build in UAT. Nothing has been changed in Dataverse.**
 Nothing is started in UAT before the plan, including the scheduling, is confirmed. Everything below comes from
 read-only checks of UAT (tables, connectors, flows) and from each platform's official API documentation only.
 
@@ -31,18 +31,18 @@ Goal, for Meta, Snap, TikTok and Google Ads:
 | 8 | Deleted / archived items on the platforms | **Included** (Meta `ad.effective_status` filter, TikTok `STATUS_ALL`) |
 | 9 | Levels | **All 13**, Google Ads Asset Groups included |
 | 10 | Ad accounts | The same accounts the current sync reads (existing environment variables and connections) |
-| 11 | Today's partial day | **Included** (the day row is overwritten until the day is over). Mechanism: in the scheduling design (§5) |
-| 12 | Month to date | **Up to now, today included**. Mechanism: in the scheduling design (§5) |
-| 13 | Months with no activity | **A month row is created even when there is no data**, so Power BI has no gaps. Details still to confirm (§6, Q1–Q3) |
-| 14 | Daily history | **One full load per environment** of all the data, then the scheduler keeps it up to date |
-| 15 | Monthly history | **One full load per environment** of all the data, then the scheduler keeps it up to date |
-| 16 | Daily refresh window | **2 (maybe 3) days**, to be agreed in the scheduling design (§5) |
-| 17 | Previous month refresh | Reloaded for the first **28 days** of the new month (**90** for Google Ads) |
-| 18 | Schedule | Once a day at **05:00** (Riyadh); Google Ads 90-day reload weekly on **Friday**. Final shape in §5 |
+| 11 | Today's partial day | **Included**; overwritten by every run until the day is over (§5) |
+| 12 | Month to date | **Up to now, today included**; overwritten by every run until the month is over (§5) |
+| 13 | Months with no activity | **A month row is created even when there is no data**, so Power BI has no gaps: every month from the item's start month to the current (or end) month, metrics blank, **No Data** = Yes (may change later). Days with no activity get no row (§5.5) |
+| 14 | Daily history | **One full load per environment** (Sync Control *Update All Time*, from **Full Load From**), then the scheduler |
+| 15 | Monthly history | Same as 14 |
+| 16 | Daily refresh window | **3 days** at 05:00 (today, yesterday, the day before); today only at 08:00 / 12:00 / 16:00; last 28 days (Google Ads 90) on Fridays (§5) |
+| 17 | Previous month refresh | Reloaded every Friday (with the current month) until it is closed on the current month's last Friday; Google Ads reloads every month its 90 days touch (§5) |
+| 18 | Schedule | **05:00** daily (data + all insights), **08:00 / 12:00 / 16:00** (lifetime, today, current month), **Friday** reloads, last Friday closes the previous month (§5) |
 | 19 | Snap calls | **Option B**: add account-level calls to the Snap connector where Snap allows them (§1.3, explained) |
 | 20 | Meta connector | **Exported to the repo** (`connectors/meta-ads/`) before it is changed |
-| 21 | Sync Control | **Two new buttons** per platform: *Daily Insights* and *Monthly Insights*; plus a **full-load button**, configured on the Integration Platform row. The period each button reloads is agreed in §5 |
-| 22 | Notifications | **Nobody** for scheduled runs; the person who pressed the button for Sync Control runs (as today). Revisited with the scheduling (§5) |
+| 21 | Sync Control | **3 buttons** per platform: *Data* (existing), *Update Day & Month to Date* (replaces *Insights*), *Update All Time* with an *Insights Only* / *Data and Insights* pop-up and **Full Load From** on the Integration Platform row (§3.3) |
+| 22 | Notifications | **Nobody** for scheduled runs; the person who pressed the button for Sync Control runs (as today) |
 | 23 | Forms | **Daily Insights** and **Monthly Insights** subgrids on each of the 13 parent forms (Insights tab) |
 | 24 | Site map | **None for now**: the new tables are reached through the parent forms' subgrids |
 | 25 | Charts | **None for now** |
@@ -53,6 +53,14 @@ Goal, for Meta, Snap, TikTok and Google Ads:
 | 30 | Approvals in UAT | **One approval for the whole UAT build**; a report after each step |
 | 31 | Production | **A separate request** after you confirm UAT |
 | 32 | Existing lifetime insights | **Unchanged**: lifetime *Get … Insights* flows, lifetime columns and the cost roll-up (their schedule is part of §5) |
+| 33 | Child data flow triggers | **Limited to the data columns**, so insights updates no longer start a data re-sync (§3.2) |
+| 34 | 05:00 order | Data → wait for the cascade (max 30 min) → lifetime → daily → monthly; platforms in parallel (§5.2) |
+| 35 | Overlaps | Scheduled runs go through *Integration Sync Request* and the dispatcher; one run per platform at a time (§5.3) |
+| 36 | Month change | The 05:00 monthly step covers every month the 3-day window touches (§5.1) |
+| 37 | Friday daily reload | Last 28 days (Google Ads 90), so daily rows stay consistent with the monthly ones (§5.1) |
+| 38 | Flag name | **Period Closed** (period over and refreshed after it ended; not "final") (§5.4) |
+| 39 | Intraday data sync | **None**: items created during the day get insights from the next 05:00 run |
+| 40 | Time zones | Each account's own time zone, as the API reports it (§5) |
 
 ---
 
@@ -186,12 +194,12 @@ Every table:
   is an upsert and a period is never duplicated.
 - The parent lookup (cascade **Remove Link**, like the existing lookups).
 - All the parent's insight columns: same logical names, labels, types and choices.
-- **Period Complete** (Yes/No): No for today's partial day / the running month; Yes once the period is over.
+- **Period Closed** (Yes/No): set by the rules in §5.4; never Yes for today or the current month.
 - **No Data** (Yes/No): Yes on a month row created without platform data (decision 13).
 - **Last Synced On**, **Raw Payload**.
 
 Forms and views:
-- Main form "Information": General (Name, parent lookup, Date, Platform ID, Period Complete, No Data), the parent's
+- Main form "Information": General (Name, parent lookup, Date, Platform ID, Period Closed, No Data), the parent's
   Insights sections, and Sync (Last Synced On, Raw Payload).
 - Views: **Active** (default, newest first), **Inactive**.
 - Each parent form gets **Daily Insights** and **Monthly Insights** subgrids (newest first) in its Insights tab.
@@ -200,83 +208,165 @@ Forms and views:
 
 ### 3.2 Flows
 
-Two flows per platform, in the patch, with stored connections and a Respond step (needed to run them from Sync Control):
+**New insight flows** (two per platform), in the patch, with stored connections and a Respond step (needed to run them as
+child flows):
 
 | Flow | Does |
 |---|---|
 | **Get \<Platform\> Daily Insights** | Daily rows for a date range (all levels) |
-| **Get \<Platform\> Monthly Insights** | Monthly rows for a month range (all levels) |
+| **Get \<Platform\> Monthly Insights** | Monthly rows for a list of months (all levels) |
 
-Each flow:
-1. Gets its range from its inputs (set by the scheduler, a Sync Control button or the full load, see §5).
+Each one:
+1. Gets its range from its inputs, set by the platform's run flow (§5).
 2. For each ad account and level, calls the platform once per window (daily: ≤ 30 days; monthly: one month), see §1.5.
 3. **Driver:** lists that level's records from the synced table (active and inactive, platform ID not empty) and keeps
    only report rows whose ID matches. Rows for items not in Dataverse are skipped and counted.
-4. Upserts each row by Insight Key, binding the parent lookup and setting Period Complete.
-5. Monthly only: creates the empty month rows (decision 13, details in §6).
+4. Upserts each row by Insight Key, binding the parent lookup and setting **Period Closed** with the rules in §5.4.
+5. Monthly only: creates the **empty month rows** (§5.5).
 6. Responds with counts per level: written, empty months created, skipped, errors.
 
-The lifetime *Get … Insights* flows and the cost roll-up are not changed (decision 32).
+**Run flows** (one per platform), **\<Platform\> - Run Sync** (instant, child flow): run the steps of a sync request in
+order (Data, wait for the data cascade, Lifetime, Daily, Monthly). See §5.2.
+
+**Scheduler flow**, **Social Media - Scheduled Sync** (recurrence): creates the scheduled sync requests. See §5.1.
+
+**Changed existing flows:**
+- **Sync Control - Run Sync Request** (dispatcher): new sync types go to the platform's *Run Sync* flow (4 new cases),
+  and the waiting / skipping rule in §5.3.
+- **The 9 child data flows** (Get Meta AdSets / Advertisements, Get Snap Ad Squads / Advertisements, Get Google Ads Ad
+  Groups / Advertisements / Asset Groups, Get TikTok Ad Groups / Advertisements): their trigger is limited to the columns
+  only the data flows write (suggestion 1). The data sync still cascades as today, but lifetime insights updates no
+  longer start a data re-sync. The exact columns per flow are listed in `spec.py` before the change.
+  - Why: today the trigger fires on any change of the parent row. Since 15 October in UAT, Get Snap Advertisements ran
+    7,439 times and Map Snap Advertisement Spend 12,323 times, against 15 Snap Campaigns / Insights runs.
+
+The lifetime *Get … Insights* flows, their columns and the cost roll-up are not changed (decision 32).
 
 ### 3.3 Sync Control
 
-- Two new sync types: **Daily Insights** and **Monthly Insights**, each with its own button per platform card. The
-  dispatcher flow gets the matching cases (8 new child-flow cases), and the page is updated.
-- **Full load** button and its configuration on the Integration Platform row (decision 21, details in §6 Q4).
-- What each button reloads is set in §5.
+Each platform card has **3 buttons** (decision Q5):
+
+| Button | Sync type | Runs |
+|---|---|---|
+| **Data** | Data (existing, unchanged) | Get \<Platform\> Campaigns, then the cascade |
+| **Update Day & Month to Date** | *Day & Month to Date* (new) | Lifetime → daily (day before yesterday, yesterday, today) → monthly (every month those 3 days touch). No data. Replaces the existing **Insights** button. |
+| **Update All Time** | *All Time* (new) | A pop-up asks **Insights Only** or **Data and Insights**. Then (Data and wait if chosen) → lifetime → daily from **Full Load From** to today → monthly from that month to the current month. |
+
+Changes:
+- **Integration Platform**: new column **Full Load From** (Date Only). Empty = each platform's maximum history: Meta 37
+  months; Google Ads 37 months for daily, 11 years for monthly; Snap and TikTok from each item's start.
+- **Integration Sync Request**:
+  - Sync Type gets new values: *Day & Month to Date*, *All Time*, *Scheduled Daily (05:00)*, *Scheduled Intraday*.
+    The existing *Insights* value is kept for the history rows; the page no longer creates it.
+  - New columns: **Include Data** (Yes/No, the pop-up's answer), **Triggered By** (Button / Schedule), **Weekly Run**
+    (Yes on Friday's 05:00 run), **Close Previous Month** (Yes on the last Friday of the month), **Steps Log** (text:
+    counts and timing per step).
+  - Status gets a new value: **Skipped** (§5.3).
+- **Page** (`sync-control.tsx`): the 3 buttons, the pop-up, and scheduled runs shown on the cards like button runs.
+  Notifications are unchanged: only the person who pressed a button is notified (decision 22).
 
 ### 3.4 Arabic (ar-SA)
 
-Same process and glossary as `translations/AlSanidiMarketing/`: the 26 tables, their columns, forms, views, flows, new
-Sync Control texts and any new environment variables.
+Same process and glossary as `translations/AlSanidiMarketing/`: the 26 tables, their columns, forms and views, the new
+flows, the new Sync Control columns, choice values, buttons and pop-up texts.
 
 ### 3.5 Execution order
 
 | # | Step | Where |
 |---|---|---|
-| 1 | `daily-insights/spec.py`: the 26 tables, columns copied from the parents' insight columns (live metadata), keys, forms, views | repo |
-| 2 | **Live check:** a temporary test flow in UAT runs one daily and one monthly request per platform and level (read-only API calls). Confirms the fields, deleted items, Google asset-group daily rows, Snap breakdowns and real row counts. The flow is deleted afterwards. | UAT |
+| 1 | `daily-insights/spec.py`: the 26 tables, columns copied from the parents' insight columns (live metadata), keys, forms, views; the 9 trigger column lists | repo |
+| 2 | **Live check:** a temporary test flow in UAT runs one daily and one monthly request per platform and level (read-only API calls). Confirms the fields, deleted items, Google asset-group daily rows, Snap breakdowns, Meta / Snap account time zones and real row counts. Deleted afterwards. | UAT |
 | 3 | Connectors: export Meta to the repo; `GetPeriodInsights` for Meta and TikTok; Snap account-level breakdown | repo, then UAT |
 | 4 | New patch; 26 tables + columns + alternate keys + lookups, publish | UAT |
 | 5 | Forms, views, parent subgrids, app tables, Manager role, publish | UAT |
-| 6 | 8 flows + the scheduling pieces from §5 (off) | UAT |
-| 7 | Test: one week and one month per platform; check the rows against the platforms' own UIs | UAT |
-| 8 | Full load (daily and monthly), then the scheduler on | UAT |
-| 9 | Sync Control (buttons, full load configuration) and Arabic translations | UAT |
+| 6 | 8 insight flows, 4 run flows (off) | UAT |
+| 7 | Test: one week and one month per platform, through the run flows; check the rows against the platforms' own UIs | UAT |
+| 8 | Sync Control: new columns and choice values, dispatcher cases, page (3 buttons, pop-up) | UAT |
+| 9 | Trigger columns on the 9 child data flows; check that a Data sync still cascades and an Insights run doesn't | UAT |
+| 10 | Full load per platform (**Update All Time**, Data and Insights) | UAT |
+| 11 | Scheduler flow on | UAT |
+| 12 | Arabic translations | UAT |
 | — | Production: a separate request after you confirm UAT (decision 31) | Production |
 
 ---
 
-## 4. Volume
+## 4. Volume and duration
 
 The 13 tables hold 3,669 items today: Meta 218, Snap 1,387, Google Ads 313, TikTok 1,751.
 - **Daily:** a row only for an item that delivered on that day, so at most 3,669 rows a day and in practice far fewer.
-- **Monthly:** a row for each item and month, including empty months (decision 13). The real counts come out of the
-  live check and Q1 in §6.
+- **Monthly:** a row for each item and month from the item's start, including empty months.
+- Today's runs in UAT (successful runs since 15 October, median): Get Snap Insights ≈ 9 min, Get TikTok Insights ≈ 8
+  min, Get Meta / Google Ads Insights ≈ 1 min; Get Snap Campaigns ≈ 4 min; each child data flow a few seconds to
+  minutes. A 05:00 run should finish well before 08:00. The live check and step 7 give the real figures for the new
+  flows.
 
 ---
 
-## 5. Scheduling (to be designed next)
+## 5. Scheduling (agreed)
 
-Covers every sync, not just the new ones:
-- **Data**: campaigns → ad sets / ad squads / ad groups / asset groups → ads.
-- **Lifetime insights** in the 13 main tables.
-- **Daily insights**: the 2–3 day window, today's partial day.
-- **Monthly insights**: month to date, the previous month for 28 days (Google Ads 90).
-- The Google Ads weekly 90-day reload.
-- The **full load** per environment.
-- What each Sync Control button reloads, how runs avoid overlapping, and who is notified.
+All times are Riyadh time. "Today" and every date in a request are in the ad account's time zone (Google Ads and
+TikTok accounts are Asia/Riyadh; Meta and Snap are confirmed in the live check). The 4 platforms run in parallel; the
+steps of one platform run one after the other.
 
----
+### 5.1 When
 
-## 6. Open points (to confirm before the build)
-
-| # | Question |
+| When | Steps per platform |
 |---|---|
-| Q1 | **Empty months: which months get a row for an item?** Proposal: every month from the month of the item's start (its platform start or create date) to the current month. If the item has an end date, the months after the end month get no row. |
-| Q2 | **Empty months: blank or zero?** Proposal: metric columns stay **blank**, and **No Data** = Yes, so "no data from the platform" can be told apart from a real 0. |
-| Q3 | **Empty days:** days with no activity get **no** daily row (only months get empty rows). Confirm. |
-| Q4 | **Full-load button:** proposal: a **Full Load From** date (and an optional **Full Load To** date, empty = today) on the platform's Integration Platform row. The button loads daily and monthly insights for that range. Empty From = from the platform's maximum history (Meta 37 months; Google Ads 37 months daily, 11 years monthly; Snap and TikTok from each item's start). Confirm, or tell me what "to a certain date" should mean. |
+| **Every day 05:00** | 1. **Data** (campaigns → cascade), then wait for the cascade (§5.2). 2. **Lifetime** insights on the main tables. 3. **Daily**: today (partial), yesterday, the day before yesterday; the day before yesterday gets Period Closed. 4. **Monthly**: every month those 3 days touch (normally the current month; on the 1st and 2nd also the previous month). |
+| **+ on Fridays (05:00 run)** | 5. **Daily** reload of the last **28 days** (Google Ads: **90 days**). 6. **Monthly** reload of the current and previous month (Google Ads: every month the 90 days touch). |
+| **+ on the last Friday of the month** | 7. The **previous month** gets Period Closed (after step 6 reloaded it). Example: September is closed on Friday 30 October. |
+| **08:00, 12:00, 16:00** | **Lifetime** insights; **daily**: today (partial); **monthly**: the current month. No data sync. |
+
+The scheduler flow runs at 05:00, 08:00, 12:00 and 16:00. For each platform with *Set Up* = Yes and *Connection
+Active* not No, it creates one *Integration Sync Request* (Triggered By = Schedule; Weekly Run / Close Previous Month
+set on Fridays). The dispatcher runs it like a button press.
+
+### 5.2 Order inside one run (\<Platform\> - Run Sync)
+
+1. **Data** (05:00 run; *All Time* with *Data and Insights*): runs Get \<Platform\> Campaigns. The ad set / ad squad /
+   ad group / asset group and ad flows then run on their own, so the run **waits** until none of that platform's child
+   data flows has a run in progress (checked every 2 minutes, two quiet checks in a row, at most 30 minutes). After 30
+   minutes it continues and writes a warning in Steps Log.
+2. **Lifetime**: runs Get \<Platform\> Insights (unchanged flow).
+3. **Daily**: runs Get \<Platform\> Daily Insights with the date range.
+4. **Monthly**: runs Get \<Platform\> Monthly Insights with the months.
+5. Writes Steps Log and the request status. A failed step is recorded and the run continues with the next step; the
+   request ends **Failed** if any step failed.
+
+### 5.3 No overlaps
+
+- One run per platform at a time. When a request arrives while the same platform has one *Running*:
+  - **Scheduled** request: waits for it (up to 60 minutes), then is marked **Skipped**. The next scheduled run covers
+    the same periods again.
+  - **Button**: not possible; the page disables the platform's buttons while a sync runs (as today).
+- Different platforms never block each other.
+
+### 5.4 Period Closed
+
+The same rules everywhere (scheduler and buttons):
+- **Day**: closed when it is the day before yesterday or older.
+- **Month**: closed when it is older than the previous month; the **previous month** is closed once the current month's
+  last Friday has come (the scheduler closes it on that Friday; a button run after that date closes it too).
+- Today and the current month are never closed.
+- Closed means the period is over and was refreshed after it ended. The platforms can still change older numbers
+  (Meta up to 28 days, Google Ads conversions up to 90 days), which the Friday reloads pick up.
+
+### 5.5 Empty month rows
+
+- Every item in the 13 tables gets a row for **every month from its start month** (its platform start or create date)
+  **to the current month**; for an item with an end date, up to its end month.
+- A month the platform returns nothing for gets a row with **blank** metrics and **No Data** = Yes.
+- Days with no activity get no daily row.
+
+### 5.6 What each sync type covers
+
+| Sync type | Data | Lifetime | Daily | Monthly | Closes |
+|---|---|---|---|---|---|
+| Scheduled Daily (05:00) | Yes | Yes | D-2 … today | Months of D-2 … today | Day D-2 |
+| + Weekly (Friday) | | | + last 28 days (Google Ads 90) | + current and previous month (Google Ads: months of the 90 days) | + previous month on the last Friday |
+| Scheduled Intraday (08/12/16) | No | Yes | Today | Current month | Nothing |
+| Day & Month to Date (button) | No | Yes | D-2 … today | Months of D-2 … today | Per §5.4 |
+| All Time (button) | Pop-up choice | Yes | Full Load From … today | Its month … current month | Per §5.4 |
 
 ---
 
