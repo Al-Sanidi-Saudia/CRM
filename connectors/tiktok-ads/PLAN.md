@@ -18,6 +18,8 @@ The Social Media Trials tables (`sanidi_tiktok_*`, `sanidi_meta_*`, `sanidi_snap
 legacy environment variables are not in Production. In UAT the 5 `sanidi_tiktok_*` trial tables and the legacy TikTok
 environment variable values were added to AlSanidiMarketingSocialMediaTrials; they are still also in AlSanidiMarketing
 because a solution with patches cannot have components removed (needs Clone solution first).
+**Deferred to the next major update:** clone AlSanidiMarketing (rolls up both patches), then remove the 5 `sanidi_tiktok_*`
+trial tables, `sanidi_TikTokLastSyncStatus` and the 3 legacy environment variable values from it.
 
 Environment: `https://operations-alsenidiuat.crm4.dynamics.com`
 Solution: **AlSanidi | Marketing** (`AlSanidiMarketing`), publisher **AlSanidi Development**, prefix **`sanidi`**
