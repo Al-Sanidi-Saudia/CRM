@@ -44,9 +44,9 @@ Goal, for Meta, Snap, TikTok and Google Ads:
 | 21 | Sync Control | **3 buttons** per platform: *Data* (existing), *Update Day & Month to Date* (replaces *Insights*), *Update All Time* with an *Insights Only* / *Data and Insights* pop-up and **Full Load From** on the Integration Platform row (§3.3) |
 | 22 | Notifications | **Nobody** for scheduled runs; the person who pressed the button for Sync Control runs (as today) |
 | 23 | Forms | **Daily Insights** and **Monthly Insights** subgrids on each of the 13 parent forms (Insights tab) |
-| 24 | Site map | **None for now**: the new tables are reached through the parent forms' subgrids |
+| 24 | Site map | New area **Social Media Insights** in the AlSanidi \| Marketing app, one group per platform with its daily and monthly tables (§3.1). The parent-form subgrids stay too |
 | 25 | Charts | **None for now** |
-| 26 | Security | **AlSanidi \| Marketing \| Manager**: Read, Append, Append To (organization). No other role for now |
+| 26 | Security | **AlSanidi \| Marketing \| Manager**: Read, Append, Append To (organization) on the 26 tables. No other role for now. The role is in the solution, so its new privileges go in the patch |
 | 27 | Arabic | **Yes** (ar-SA, existing glossary) |
 | 28 | Solution | **New patch**: *AlSanidi \| Marketing \| Daily & Monthly Insights* |
 | 29 | Live check | **A temporary test flow in UAT**, deleted afterwards (§3.6 step 2) |
@@ -61,6 +61,9 @@ Goal, for Meta, Snap, TikTok and Google Ads:
 | 38 | Flag name | **Period Closed** (period over and refreshed after it ended; not "final") (§5.4) |
 | 39 | Intraday data sync | **None**: items created during the day get insights from the next 05:00 run |
 | 40 | Time zones | Each account's own time zone, as the API reports it (§5) |
+| 41 | Date-part columns | Daily: **Day**, **Month** (choice), **Year**, **Weekday** (choice). Monthly: **Month** (choice), **Year**. Set on every row from its date; choices numbered from 1 (§3.1) |
+| 42 | Forms, views, translation | Tidy main form and Active / Inactive views with the key insight fields on all 26 tables; everything translated to ar-SA (§3.1, §3.4) |
+| 43 | Patch | Everything built or changed goes into the new patch, ready for the Production request (§3.6) |
 
 ---
 
@@ -189,6 +192,16 @@ Every table:
 - User-owned, currency-enabled, in the patch.
 - **Name** (primary): `<item name> · YYYY-MM-DD` (daily) / `<item name> · YYYY-MM` (monthly).
 - **Date** (`sanidi_date`, Date Only; for monthly tables it is the 1st of the month).
+- **Date parts**, set on every row from its date (the account-time-zone date), for filtering and Power BI:
+
+  | Column | Daily tables | Monthly tables | Type |
+  |---|---|---|---|
+  | **Day** (`sanidi_day`) | Yes | | Whole number 1–31 |
+  | **Month** (`sanidi_month`) | Yes | Yes | Choice (global `sanidi_month`): 1 January … 12 December |
+  | **Year** (`sanidi_year`) | Yes | Yes | Whole number |
+  | **Weekday** (`sanidi_weekday`) | Yes | | Choice (global `sanidi_weekday`): 1 Sunday, 2 Monday … 7 Saturday |
+
+  The two choices are global, so all 26 tables share the same values and labels.
 - **Platform ID**: the campaign / ad set / … ID, as text.
 - **Insight Key** (`<platform ID>_<YYYYMMDD>` / `<platform ID>_<YYYYMM>`) with an **alternate key**, so every write
   is an upsert and a period is never duplicated.
@@ -198,12 +211,31 @@ Every table:
 - **No Data** (Yes/No): Yes on a month row created without platform data (decision 13).
 - **Last Synced On**, **Raw Payload**.
 
-Forms and views:
-- Main form "Information": General (Name, parent lookup, Date, Platform ID, Period Closed, No Data), the parent's
-  Insights sections, and Sync (Last Synced On, Raw Payload).
-- Views: **Active** (default, newest first), **Inactive**.
+Forms and views (same style as the Snap / Google Ads / TikTok tables):
+- Main form **"Information"**:
+  - Header: Date, Period Closed, Last Synced On.
+  - **General** tab: *Identity* (Name, parent lookup, Platform ID), *Period* (Date, Day, Month, Year, Weekday on daily
+    tables; Date, Month, Year on monthly), *Status* (Period Closed, No Data).
+  - **Insights** tab: the parent's Insights sections, with the same sections and order (Delivery & Cost, Video,
+    Engagement…).
+  - **Sync** tab: Last Synced On, Raw Payload.
+- Views:
+  - **Active** (default, newest first): Name, parent lookup, Date, then the platform's main insight fields (as in the
+    parent's Active view: cost / spend, impressions, clicks, CTR, conversions / purchases, conversion value, reach where
+    the platform has it), then Period Closed, Last Synced On.
+  - **Inactive**: Name, parent lookup, Date, Period Closed, Last Synced On, Created On.
+  - The exact columns per table are listed in `spec.py` (step 1).
 - Each parent form gets **Daily Insights** and **Monthly Insights** subgrids (newest first) in its Insights tab.
-- Not in the site map, no charts (decisions 24, 25). The tables are added to the app so the subgrids and forms open.
+- **Site map**: a new area **Social Media Insights** in the AlSanidi | Marketing app, with one group per platform:
+
+  | Group | Subareas (in this order) |
+  |---|---|
+  | Meta | Campaign Daily, Campaign Monthly, Ad Set Daily, Ad Set Monthly, Advertisement Daily, Advertisement Monthly |
+  | Snap | Campaign, Ad Squad, Advertisement (Daily, Monthly each) |
+  | Google Ads | Campaign, Ad Group, Asset Group, Advertisement (Daily, Monthly each) |
+  | TikTok | Campaign, Ad Group, Advertisement (Daily, Monthly each) |
+
+- No charts (decision 25).
 - Manager role: Read, Append, Append To (organization).
 
 ### 3.2 Flows
@@ -267,8 +299,32 @@ Changes:
 
 ### 3.4 Arabic (ar-SA)
 
-Same process and glossary as `translations/AlSanidiMarketing/`: the 26 tables, their columns, forms and views, the new
-flows, the new Sync Control columns, choice values, buttons and pop-up texts.
+Same process and glossary as `translations/AlSanidiMarketing/`, for everything new or changed: the 26 tables (names,
+columns, descriptions, choice values including the Month and Weekday choices), forms (tabs, sections), views, the
+*Social Media Insights* site map area and groups, the new flows, the new Sync Control columns and choice values, and the
+page's buttons and pop-up texts.
+
+### 3.6 Patch contents (for the Production request)
+
+New patch **AlSanidi | Marketing | Daily & Monthly Insights** of `AlSanidiMarketing`, holding everything this work
+builds or changes:
+
+| Component | In the patch |
+|---|---|
+| Tables | The 26 new tables with all columns, alternate keys, forms and views |
+| Choices | Global `sanidi_month`, `sanidi_weekday` |
+| Relationships | The 26 lookups to the parent tables |
+| Parent tables | The 13 parent forms (new subgrids) |
+| Sync Control tables | Integration Platform (Full Load From), Integration Sync Request (new columns and choice values) |
+| Connectors | Meta, Snap, TikTok (changed) |
+| Flows | 8 insight flows, 4 Run Sync flows, the scheduler, the dispatcher, the 9 child data flows (trigger change) |
+| App | AlSanidi \| Marketing app (new tables) and its site map (new area) |
+| Sync Control page | The updated generative page |
+| Security role | AlSanidi \| Marketing \| Manager (new privileges) |
+| Translations | ar-SA for all of the above |
+
+Not in a solution, so they are set per environment as part of the Production request: the **Full Load From** value on
+each Integration Platform row (data), and the full load itself.
 
 ### 3.5 Execution order
 
