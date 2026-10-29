@@ -49,12 +49,12 @@ def update_request(fields, run_after):
     return dv_action("UpdateOnlyRecord", params, run_after)
 
 
-def notify(title, body, icon, run_after):
+def notify(name, title, body, icon, run_after):
     # Only for a button press: a scheduled request has no person to notify (decision 22).
     # appnotification: icontype 100000001 Success / 100000002 Failure; toasttype 200000000 Timed.
     return {"type": "If", "runAfter": run_after,
             "expression": {"and": [{"not": {"equals": [f"@{SCHEDULED}", True]}}]},
-            "actions": {"Send_notification": dv_action("CreateRecord", {
+            "actions": {name: dv_action("CreateRecord", {
                 "entityName": "appnotifications",
                 "item/title": title,
                 "item/body": body,
@@ -84,11 +84,13 @@ CASES = {
 }
 
 
-def run_sync_cases():
-    """platform-new -> its Run Sync flow, with the request's run type and options."""
+def run_sync_cases(platforms=("meta", "snap", "google", "tiktok")):
+    """platform-new -> its Run Sync flow, with the request's run type and options. A platform whose Run Sync flow
+    has never been turned on can't be called yet (Power Automate refuses the save): leave it out until then, and its
+    new sync types end in "No flow is set up"."""
     from deploy_flows import flow_id, name_run
     cases = {}
-    for key in ("meta", "snap", "google", "tiktok"):
+    for key in platforms:
         name = f"Run_{key}_sync"
         cases[f"{key}-new"] = {
             name: child(flow_id(name_run(key)), {
@@ -113,11 +115,11 @@ FAILED_MSG = ("@{if(not(empty(variables('RunLog'))), concat(variables('FlowName'
               "'see the flow run history in Power Automate for details.')), variables('NoFlowMessage')))}")
 
 
-def definition():
+def definition(platforms=("meta", "snap", "google", "tiktok")):
     old_cases = {"Case_" + key.replace("-", "_"): {"case": key, "actions": {name: child(fid)}}
                  for key, (name, fid) in CASES.items()}
     new_cases = {f"Case_{key.replace('-', '_')}": {"case": key, "actions": actions}
-                 for key, actions in run_sync_cases().items()}
+                 for key, actions in run_sync_cases(platforms).items()}
     others_running = ("sanidi_integrationsyncrequests", "_sanidi_platform_value eq @{triggerOutputs()?['body/_sanidi_platform_value']} "
                       f"and sanidi_status eq {STATUS['running']} and sanidi_integrationsyncrequestid ne "
                       "@{triggerOutputs()?['body/sanidi_integrationsyncrequestid']}")
@@ -222,7 +224,7 @@ def definition():
             },
             "Mark_succeeded": update_request({"sanidi_status": STATUS["succeeded"], "sanidi_completedon": "@utcNow()",
                                               "sanidi_stepslog": "@{variables('RunLog')}"}, {"Try": ["Succeeded"]}),
-            "Notify_succeeded": notify(SYNC_LABEL + " succeeded",
+            "Notify_succeeded": notify("Send_success_notification", SYNC_LABEL + " succeeded",
                                        "@{variables('FlowName')} finished at " + LOCAL_NOW + ".",
                                        100000001, {"Mark_succeeded": ["Succeeded"]}),
             "Failed_steps": {
@@ -232,14 +234,32 @@ def definition():
             "Mark_failed": update_request({"sanidi_status": STATUS["failed"], "sanidi_completedon": "@utcNow()",
                                            "sanidi_errormessage": FAILED_MSG, "sanidi_stepslog": "@{variables('RunLog')}"},
                                           {"Failed_steps": ["Succeeded", "Failed"]}),
-            "Notify_failed": notify(SYNC_LABEL + " failed", FAILED_MSG, 100000002, {"Mark_failed": ["Succeeded"]}),
+            "Notify_failed": notify("Send_failure_notification", SYNC_LABEL + " failed", FAILED_MSG, 100000002,
+                                    {"Mark_failed": ["Succeeded"]}),
         },
         "outputs": {}
     }
 
 
+def published_platforms(dv):
+    """Platforms whose Run Sync flow is on (a flow turned off later still counts as published, but is skipped
+    here so the dispatcher never calls a flow that is off)."""
+    from deploy_flows import flow_id, name_run
+    out = []
+    for key in ("meta", "snap", "google", "tiktok"):
+        row = dv.first(f"workflows?$select=statecode&$filter=workflowid eq {flow_id(name_run(key))}")
+        if row and row["statecode"] == 1:
+            out.append(key)
+    return tuple(out)
+
+
 def main(apply):
-    d = definition()
+    platforms = ("meta", "snap", "google", "tiktok")
+    if apply:
+        from dv import Dataverse
+        platforms = published_platforms(Dataverse())
+        print(f"Run Sync flows on: {', '.join(platforms) or 'none'}")
+    d = definition(platforms)
     (HERE / "dispatcher.json").write_text(json.dumps(d, indent=1) + "\n")
     print(f"dispatcher v3: {len(json.dumps(d)) // 1024} KB, cases: "
           f"{len(d['actions']['Try']['actions']['Run_the_matching_flow']['cases'])} -> dispatcher.json")
