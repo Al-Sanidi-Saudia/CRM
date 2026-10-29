@@ -1,0 +1,20 @@
+{
+  "connectionParameters": {
+    "api_key": {
+      "type": "securestring",
+      "uiDefinition": {
+        "displayName": "Meta access token",
+        "description": "Meta Marketing API access token (system user token). Sent as the access_token query parameter.",
+        "tooltip": "Meta Marketing API access token",
+        "constraints": {
+          "tabIndex": 2,
+          "clearText": false,
+          "required": "true"
+        }
+      }
+    }
+  },
+  "policyTemplateInstances": [],
+  "iconBrandColor": "#007ee5",
+  "capabilities": null
+}

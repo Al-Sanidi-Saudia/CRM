@@ -1,0 +1,694 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Facebook Marketing API (MAPI)",
+    "description": "This public collection contains common queries, sample responses, and links to supporting documentation for the [Facebook Marketing API](https://developers.facebook.com/docs/marketing-apis/overview)."
+  },
+  "host": "graph.facebook.com",
+  "basePath": "/v26.0",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/act_%7B%7Baccount_id%7D%7D/agencies": {
+      "get": {
+        "summary": "GetAgencies",
+        "description": "GetAgencies",
+        "operationId": "GetAgencies",
+        "parameters": [
+          {
+            "name": "fields",
+            "default": "permitted_tasks",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_%7B%7Baccount_id%7D%7D/instagram_accounts": {
+      "get": {
+        "summary": "GetIGAccounts",
+        "description": "GetIGAccounts",
+        "operationId": "GetIGAccounts",
+        "parameters": [
+          {
+            "name": "fields",
+            "default": "id,username,profile_pic",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_%7B%7Baccount_id%7D%7D": {
+      "get": {
+        "summary": "GetAdAccount",
+        "description": "GetAdAccount",
+        "operationId": "GetAdAccount",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_%7B%7Baccount_id%7D%7D/reachfrequencypredictions": {
+      "get": {
+        "summary": "GetReachFrequencyPredictions",
+        "description": "GetReachFrequencyPredictions",
+        "operationId": "GetReachFrequencyPredictions",
+        "parameters": [
+          {
+            "name": "fields",
+            "default": "external_maximum_impression,external_budget,time_updated,pause_periods,audience_size_lower_bound,external_maximum_budget,prediction_mode,external_maximum_reach,holdout_percentage,prediction_progress,target_spec,id,story_event_type,audience_size_upper_bound,external_minimum_reach,reservation_status,time_created,external_impression,external_minimum_impression,expiration_time,external_minimum_budget,account_id,interval_frequency_cap_reset_period,campaign_time_stop,destination_id,status,external_reach,frequency_cap,campaign_group_id,campaign_id,campaign_time_start,instagram_destination_id,name",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_%7B%7Baccount_id%7D%7D/advertisable_applications": {
+      "get": {
+        "summary": "GetAdvertisableApplications",
+        "description": "GetAdvertisableApplications",
+        "operationId": "GetAdvertisableApplications",
+        "parameters": [
+          {
+            "name": "fields",
+            "default": "id,name,app_install_tracked,app_name,app_type,category,icon_url,ipad_app_store_id,iphone_app_store_id,link,mobile_web_url,object_store_urls,supported_platforms,website_url,photo_url,advertisable_app_events",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "GetCampaignGroupWithFields",
+        "description": "GetCampaignGroupWithFields",
+        "operationId": "GetCampaignGroupWithFields",
+        "parameters": [
+          {
+            "name": "ids",
+            "default": "{{campaign_id_traffic}},{{campaign_id_awareness}},{{campaign_id_sales}}",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "fields",
+            "default": "id,account_id,objective,name,configured_status,effective_status,buying_type,created_time,updated_time,spend_cap,can_use_spend_cap,issues_info,special_ad_categories",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_%7B%7Baccount_id%7D%7D/adsets": {
+      "get": {
+        "summary": "GetAdsetsList",
+        "description": "GetAdsetsList",
+        "operationId": "GetAdsetsList",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/%7B%7Badset_id%7D%7D": {
+      "get": {
+        "summary": "GetAdsetFields",
+        "description": "GetAdsetFields",
+        "operationId": "GetAdsetFields",
+        "parameters": [
+          {
+            "name": "fields",
+            "default": "account_id,campaign_id,created_time,effective_status,id,name,recommendations,status",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_%7B%7Baccount_id%7D%7D/adcreatives/": {
+      "get": {
+        "summary": "GetCreativesList",
+        "description": "GetCreativesList",
+        "operationId": "GetCreativesList",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/%7B%7Badcreatives1%7D%7D/": {
+      "get": {
+        "summary": "GetCreativeDetails",
+        "description": "GetCreativeDetails",
+        "operationId": "GetCreativeDetails",
+        "parameters": [
+          {
+            "name": "fields",
+            "default": "name,object_story_id,object_story_spec{},object_type,image_hash,video_id,body,title,status",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_%7B%7Baccount_id%7D%7D/insights": {
+      "get": {
+        "summary": "GetReportForInsight2",
+        "description": "GetReportForInsight2",
+        "operationId": "GetReportForInsight2",
+        "parameters": [
+          {
+            "name": "time_range",
+            "default": "{\"since\":\"2023-03-13\",\"until\":\"2023-06-11\"}",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "default": "100",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "fields",
+            "default": "spend, account_currency",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "time_increment",
+            "default": "all_days",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "format",
+            "default": "json",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/insights": {
+      "get": {
+        "summary": "GetInsightForAdsGroup",
+        "description": "GetInsightForAdsGroup",
+        "operationId": "GetInsightForAdsGroup",
+        "parameters": [
+          {
+            "name": "date_preset",
+            "default": "maximum",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "default": "100",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "action_breakdowns",
+            "default": "action_type",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "ids",
+            "default": "{{ad_id}}",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "fields",
+            "default": "date_start,date_stop,account_id,account_name,ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name,actions,unique_actions,action_values,impressions,clicks,unique_clicks,spend,frequency,inline_link_clicks,inline_post_engagement,reach,website_ctr,video_thruplay_watched_actions,video_avg_time_watched_actions,video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,video_p95_watched_actions,video_p100_watched_actions,video_30_sec_watched_actions,video_play_actions,video_continuous_2_sec_watched_actions,unique_video_continuous_2_sec_watched_actions,estimated_ad_recallers,estimated_ad_recall_rate,unique_outbound_clicks,outbound_clicks,conversions,conversion_values,social_spend",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "time_increment",
+            "default": "all_days",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/%7B%7Bamazon_report_attribution_id2%7D%7D/insights": {
+      "get": {
+        "summary": "GetReportForInsightAttribution",
+        "description": "GetReportForInsightAttribution",
+        "operationId": "GetReportForInsightAttribution",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/%7B%7Breport_id_breakdowns%7D%7D/insights": {
+      "get": {
+        "summary": "GetReportIDBreakdownsResponse",
+        "description": "GetReportIDBreakdownsResponse",
+        "operationId": "GetReportIDBreakdownsResponse",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "summary": "GetSearchInterest",
+        "description": "GetSearchInterest",
+        "operationId": "GetSearchInterest",
+        "parameters": [
+          {
+            "name": "type",
+            "default": "adinterest",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "q",
+            "default": "software",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "locale",
+            "default": "nepal",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_%7B%7Baccount_id%7D%7D/broadtargetingcategories": {
+      "get": {
+        "summary": "GetTargetingCategories",
+        "description": "GetTargetingCategories",
+        "operationId": "GetTargetingCategories",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_%7B%7Baccount_id%7D%7D/assigned_users": {
+      "get": {
+        "summary": "GetAssginedUsers",
+        "description": "GetAssginedUsers",
+        "operationId": "GetAssginedUsers",
+        "parameters": [
+          {
+            "name": "fields",
+            "default": "id,tasks,user_type,permitted_tasks",
+            "in": "query",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "business",
+            "default": "{{business_id}}",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_%7B%7Baccount_id%7D%7D/offline_conversion_data_sets": {
+      "get": {
+        "summary": "GetOfflineConversionForAccountId",
+        "description": "GetOfflineConversionForAccountId",
+        "operationId": "GetOfflineConversionForAccountId",
+        "parameters": [
+          {
+            "name": "fields",
+            "default": "name,id,description,valid_entries,matched_entries,event_time_min,event_time_max,event_stats,business,is_assigned_to_ad_accounts_in_business,enable_auto_assign_to_accounts,auto_track_for_ads",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_%7B%7Baccount_id%7D%7D/customconversions": {
+      "get": {
+        "summary": "GetCustomConversionforAccountId",
+        "description": "GetCustomConversionforAccountId",
+        "operationId": "GetCustomConversionforAccountId",
+        "parameters": [
+          {
+            "name": "fields",
+            "default": "account_id,creation_time,custom_event_type,default_conversion_value,description,data_sources,first_fired_time,is_archived,last_fired_time,name,pixel,rule,id",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_%7B%7Baccount_id%7D%7D/adspixels": {
+      "get": {
+        "summary": "GetPixelDetails",
+        "description": "GetPixelDetails",
+        "operationId": "GetPixelDetails",
+        "parameters": [
+          {
+            "name": "fields",
+            "default": "name,id,code,last_fired_time",
+            "in": "query",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/%7B%7Bpixel_id%7D%7D/stats": {
+      "get": {
+        "summary": "GetAdsPixelStats",
+        "description": "GetAdsPixelStats",
+        "operationId": "GetAdsPixelStats",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/{ad_id}/": {
+      "get": {
+        "summary": "GetDetailsFromAdID",
+        "description": "GetDetailsFromAdID",
+        "operationId": "GetDetailsFromAdID",
+        "parameters": [
+          {
+            "name": "ad_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_{account_id}/ads/": {
+      "get": {
+        "summary": "GetAdsFromAccountIdWithFields",
+        "description": "GetAdsFromAccountIdWithFields",
+        "operationId": "GetAdsFromAccountIdWithFields",
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/act_{account_id}/campaigns/": {
+      "get": {
+        "summary": "GetCampaignsDetails",
+        "description": "GetCampaignsDetails",
+        "operationId": "GetCampaignsDetails",
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        }
+      }
+    },
+    "/{campaign_id}/adsets/": {
+      "get": {
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        },
+        "summary": "Custom_GetCampaignAdsets",
+        "description": "Custom_GetCampaignAdsets",
+        "operationId": "Custom_GetCampaignAdsets",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "/{adset_id}/ads/": {
+      "get": {
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        },
+        "summary": "Custom_GetAdsetAds",
+        "description": "Custom_GetAdsetAds",
+        "operationId": "Custom_GetAdsetAds",
+        "parameters": [
+          {
+            "name": "adset_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "/{campaign_id}/ads": {
+      "get": {
+        "responses": {
+          "default": {
+            "description": "default",
+            "schema": {}
+          }
+        },
+        "summary": "Custom_GetCampaignAds",
+        "description": "Custom_GetCampaignAds",
+        "operationId": "Custom_GetCampaignAds",
+        "parameters": [
+          {
+            "name": "campaign_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {},
+  "parameters": {},
+  "responses": {},
+  "security": [
+    {
+      "api_key": []
+    }
+  ],
+  "tags": [],
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "in": "query",
+      "name": "access_token"
+    }
+  }
+}
