@@ -285,9 +285,20 @@ def ensure_key(dv, t, solution, apply):
     print(f"  alternate key {t['key_name']} (sanidi_insightkey)")
     if not apply:
         return
-    dv.request("POST", f"EntityDefinitions(LogicalName='{t['schema']}')/Keys", {
-        "SchemaName": t["key_name"], "DisplayName": label("Insight Key", COMMON_AR["sanidi_insightkey"]),
-        "KeyAttributes": ["sanidi_insightkey"]}, solution=solution)
+    body = {"SchemaName": t["key_name"], "DisplayName": label("Insight Key", COMMON_AR["sanidi_insightkey"]),
+            "KeyAttributes": ["sanidi_insightkey"]}
+    for attempt in range(6):
+        try:
+            dv.request("POST", f"EntityDefinitions(LogicalName='{t['schema']}')/Keys", body, solution=solution)
+            return
+        except (RuntimeError, urllib.error.URLError, ConnectionError, TimeoutError) as e:
+            transient = not isinstance(e, RuntimeError) or "cannot start" in str(e).lower()
+            if attempt == 5 or not transient:
+                raise
+            time.sleep(30 * (attempt + 1))
+            keys = dv.get(f"EntityDefinitions(LogicalName='{t['schema']}')/Keys?$select=LogicalName")["value"]
+            if any(k["LogicalName"] == t["key_name"] for k in keys):
+                return
 
 
 def main(apply, only=None):
