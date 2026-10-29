@@ -1,0 +1,2543 @@
+{
+ "properties": {
+  "connectionReferences": {
+   "shared_commondataserviceforapps": {
+    "api": {
+     "name": "shared_commondataserviceforapps"
+    },
+    "connection": {
+     "connectionReferenceLogicalName": "sanidi_sharedcommondataserviceforapps_79822"
+    },
+    "runtimeSource": "embedded"
+   },
+   "shared_sanidi-5ftiktok-5f43b530b23a0dc933": {
+    "api": {
+     "name": "shared_sanidi-5ftiktok-5f43b530b23a0dc933",
+     "logicalName": "sanidi_tiktok"
+    },
+    "connection": {
+     "connectionReferenceLogicalName": "sanidi_sharedsanidi5ftiktok5f43b530b23a0dc933_3e7c1"
+    },
+    "runtimeSource": "embedded"
+   }
+  },
+  "definition": {
+   "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+   "contentVersion": "1.0.0.0",
+   "parameters": {
+    "$authentication": {
+     "defaultValue": {},
+     "type": "SecureObject"
+    },
+    "$connections": {
+     "defaultValue": {},
+     "type": "Object"
+    },
+    "TikTok Ads Access Token (sanidi_TikTokAdsAccessToken)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_TikTokAdsAccessToken"
+     }
+    },
+    "TikTok Ads Advertiser IDs (sanidi_TikTokAdsAdvertiserIds)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_TikTokAdsAdvertiserIds"
+     }
+    }
+   },
+   "triggers": {
+    "manual": {
+     "type": "Request",
+     "kind": "Button",
+     "inputs": {
+      "schema": {
+       "type": "object",
+       "properties": {
+        "start_date": {
+         "title": "Start date",
+         "type": "string",
+         "description": "First day (YYYY-MM-DD); for monthly, any day of the first month.",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "TEXT"
+        },
+        "end_date": {
+         "title": "End date",
+         "type": "string",
+         "description": "Last day (YYYY-MM-DD), inclusive; usually today.",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "TEXT"
+        },
+        "closed_through": {
+         "title": "Closed through",
+         "type": "string",
+         "description": "Rows dated on or before this date get Period Closed = Yes (YYYY-MM-DD, may be empty).",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "TEXT"
+        }
+       },
+       "required": [
+        "start_date",
+        "end_date"
+       ]
+      }
+     }
+    }
+   },
+   "actions": {
+    "Init_written": {
+     "type": "InitializeVariable",
+     "runAfter": {},
+     "inputs": {
+      "variables": [
+       {
+        "name": "Written",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Init_skipped": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_written": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "Skipped",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Init_failed": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_skipped": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "Failed",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Init_empty": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_failed": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "Empty",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Init_errors": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_empty": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "Errors",
+        "type": "string",
+        "value": ""
+       }
+      ]
+     }
+    },
+    "Init_snap_cursor": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_errors": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "SnapCursor",
+        "type": "string",
+        "value": ""
+       }
+      ]
+     }
+    },
+    "Organization": {
+     "runAfter": {
+      "Init_snap_cursor": [
+       "Succeeded"
+      ]
+     },
+     "type": "OpenApiConnection",
+     "inputs": {
+      "parameters": {
+       "entityName": "organizations",
+       "$select": "_basecurrencyid_value",
+       "$top": 1
+      },
+      "host": {
+       "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+       "operationId": "ListRecords",
+       "connectionName": "shared_commondataserviceforapps"
+      }
+     }
+    },
+    "Base_currency": {
+     "type": "Compose",
+     "runAfter": {
+      "Organization": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@first(outputs('Organization')?['body/value'])?['_basecurrencyid_value']"
+    },
+    "Advertiser_ID_list": {
+     "type": "Select",
+     "runAfter": {
+      "Base_currency": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "from": "@split(coalesce(parameters('TikTok Ads Advertiser IDs (sanidi_TikTokAdsAdvertiserIds)'), ''), ',')",
+      "select": "@trim(item())"
+     }
+    },
+    "Advertiser_IDs": {
+     "type": "Query",
+     "runAfter": {
+      "Advertiser_ID_list": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "from": "@body('Advertiser_ID_list')",
+      "where": "@not(empty(item()))"
+     }
+    },
+    "Level_campaign": {
+     "type": "Scope",
+     "runAfter": {
+      "Advertiser_IDs": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "actions": {
+      "List_items_campaign_d": {
+       "runAfter": {},
+       "type": "OpenApiConnection",
+       "inputs": {
+        "parameters": {
+         "entityName": "sanidi_tiktokcampaigns",
+         "$select": "sanidi_tiktokcampaignid,sanidi_campaignid,sanidi_campaignname,_transactioncurrencyid_value,createdon,sanidi_createtime",
+         "$filter": "sanidi_campaignid ne null"
+        },
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "operationId": "ListRecords",
+         "connectionName": "shared_commondataserviceforapps"
+        }
+       },
+       "runtimeConfiguration": {
+        "paginationPolicy": {
+         "minimumItemCount": 100000
+        }
+       }
+      },
+      "Select_items_campaign_d": {
+       "type": "Select",
+       "runAfter": {
+        "List_items_campaign_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@coalesce(outputs('List_items_campaign_d')?['body/value'], json('[]'))",
+        "select": "@concat('\"', item()?['sanidi_campaignid'], '\":', string(item()))"
+       }
+      },
+      "Map_items_campaign_d": {
+       "type": "Compose",
+       "runAfter": {
+        "Select_items_campaign_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@json(concat('{', join(body('Select_items_campaign_d'), ','), '}'))"
+      },
+      "Window_count_campaign_d": {
+       "type": "Compose",
+       "runAfter": {
+        "Map_items_campaign_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@add(div(div(sub(ticks(triggerBody()?['end_date']), ticks(triggerBody()?['start_date'])), 864000000000), 30), 1)"
+      },
+      "For_each_window_campaign_d": {
+       "type": "Foreach",
+       "foreach": "@range(0, outputs('Window_count_campaign_d'))",
+       "runAfter": {
+        "Window_count_campaign_d": [
+         "Succeeded"
+        ]
+       },
+       "actions": {
+        "Window_start_campaign_d": {
+         "type": "Compose",
+         "runAfter": {},
+         "inputs": "@formatDateTime(addDays(triggerBody()?['start_date'], mul(items('For_each_window_campaign_d'), 30)), 'yyyy-MM-dd')"
+        },
+        "Window_end_campaign_d": {
+         "type": "Compose",
+         "runAfter": {
+          "Window_start_campaign_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(greater(ticks(addDays(outputs('Window_start_campaign_d'), 29)), ticks(triggerBody()?['end_date'])), triggerBody()?['end_date'], formatDateTime(addDays(outputs('Window_start_campaign_d'), 29), 'yyyy-MM-dd'))"
+        },
+        "List_existing_campaign_d": {
+         "runAfter": {
+          "Window_end_campaign_d": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_tiktokcampaigndailyinsights",
+           "$select": "sanidi_tiktokcampaigndailyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date ge @{outputs('Window_start_campaign_d')} and sanidi_date le @{outputs('Window_end_campaign_d')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_existing_campaign_d": {
+         "type": "Select",
+         "runAfter": {
+          "List_existing_campaign_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_existing_campaign_d')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', concat('\"', item()?['sanidi_tiktokcampaigndailyinsightid'], '\"'))"
+         }
+        },
+        "Map_existing_campaign_d": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_existing_campaign_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_existing_campaign_d'), ','), '}'))"
+        },
+        "For_each_advertiser_campaign_d": {
+         "type": "Foreach",
+         "foreach": "@body('Advertiser_IDs')",
+         "runAfter": {
+          "Map_existing_campaign_d": [
+           "Succeeded"
+          ]
+         },
+         "actions": {
+          "Get_campaign_d": {
+           "runAfter": {},
+           "type": "OpenApiConnection",
+           "inputs": {
+            "parameters": {
+             "Access-Token": "@trim(parameters('TikTok Ads Access Token (sanidi_TikTokAdsAccessToken)'))",
+             "advertiser_id": "@items('For_each_advertiser_campaign_d')",
+             "level": "campaign",
+             "period": "day",
+             "start_date": "@outputs('Window_start_campaign_d')",
+             "end_date": "@outputs('Window_end_campaign_d')"
+            },
+            "host": {
+             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5ftiktok-5f43b530b23a0dc933",
+             "operationId": "GetPeriodInsights",
+             "connectionName": "shared_sanidi-5ftiktok-5f43b530b23a0dc933"
+            }
+           }
+          },
+          "For_each_row_campaign_d": {
+           "type": "Foreach",
+           "foreach": "@coalesce(outputs('Get_campaign_d')?['body/rows'], json('[]'))",
+           "runAfter": {
+            "Get_campaign_d": [
+             "Succeeded"
+            ]
+           },
+           "actions": {
+            "Parent_campaign_d": {
+             "type": "Compose",
+             "runAfter": {},
+             "inputs": "@outputs('Map_items_campaign_d')?[string(items('For_each_row_campaign_d')?['campaignid'])]"
+            },
+            "If_synced_campaign_d": {
+             "type": "If",
+             "runAfter": {
+              "Parent_campaign_d": [
+               "Succeeded"
+              ]
+             },
+             "expression": {
+              "and": [
+               {
+                "not": {
+                 "equals": [
+                  "@outputs('Parent_campaign_d')",
+                  "@null"
+                 ]
+                }
+               }
+              ]
+             },
+             "actions": {
+              "Key_campaign_d": {
+               "type": "Compose",
+               "runAfter": {},
+               "inputs": "@concat(string(items('For_each_row_campaign_d')?['campaignid']), '_', formatDateTime(items('For_each_row_campaign_d')?['date'], 'yyyyMMdd'))"
+              },
+              "If_exists_campaign_d": {
+               "type": "If",
+               "runAfter": {
+                "Key_campaign_d": [
+                 "Succeeded"
+                ]
+               },
+               "expression": {
+                "and": [
+                 {
+                  "not": {
+                   "equals": [
+                    "@coalesce(outputs('Map_existing_campaign_d')?[outputs('Key_campaign_d')], '')",
+                    ""
+                   ]
+                  }
+                 }
+                ]
+               },
+               "actions": {
+                "Update_campaign_d": {
+                 "runAfter": {},
+                 "type": "OpenApiConnection",
+                 "inputs": {
+                  "parameters": {
+                   "entityName": "sanidi_tiktokcampaigndailyinsights",
+                   "recordId": "@outputs('Map_existing_campaign_d')?[outputs('Key_campaign_d')]",
+                   "item/sanidi_name": "@concat(coalesce(outputs('Parent_campaign_d')?['sanidi_campaignname'], string(items('For_each_row_campaign_d')?['campaignid'])), ' · ', items('For_each_row_campaign_d')?['date'])",
+                   "item/sanidi_platformid": "@string(items('For_each_row_campaign_d')?['campaignid'])",
+                   "item/sanidi_insightkey": "@concat(string(items('For_each_row_campaign_d')?['campaignid']), '_', formatDateTime(items('For_each_row_campaign_d')?['date'], 'yyyyMMdd'))",
+                   "item/sanidi_date": "@items('For_each_row_campaign_d')?['date']",
+                   "item/sanidi_month": "@int(formatDateTime(items('For_each_row_campaign_d')?['date'], 'MM'))",
+                   "item/sanidi_year": "@int(formatDateTime(items('For_each_row_campaign_d')?['date'], 'yyyy'))",
+                   "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_campaign_d')?['date']), ticks(triggerBody()?['closed_through'])))",
+                   "item/sanidi_nodata": false,
+                   "item/sanidi_lastsyncedon": "@utcNow()",
+                   "item/sanidi_tiktokcampaign@odata.bind": "/sanidi_tiktokcampaigns(@{outputs('Parent_campaign_d')?['sanidi_tiktokcampaignid']})",
+                   "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_campaign_d')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                   "item/sanidi_rawpayload": "@if(greater(length(string(coalesce(items('For_each_row_campaign_d')?['rawpayload'], items('For_each_row_campaign_d')))), 100000), substring(string(coalesce(items('For_each_row_campaign_d')?['rawpayload'], items('For_each_row_campaign_d'))), 0, 100000), string(coalesce(items('For_each_row_campaign_d')?['rawpayload'], items('For_each_row_campaign_d'))))",
+                   "item/sanidi_day": "@int(formatDateTime(items('For_each_row_campaign_d')?['date'], 'dd'))",
+                   "item/sanidi_weekday": "@add(dayOfWeek(items('For_each_row_campaign_d')?['date']), 1)",
+                   "item/sanidi_spend": "@items('For_each_row_campaign_d')?['spend']",
+                   "item/sanidi_billedcost": "@items('For_each_row_campaign_d')?['billedcost']",
+                   "item/sanidi_cpc": "@items('For_each_row_campaign_d')?['cpc']",
+                   "item/sanidi_cpm": "@items('For_each_row_campaign_d')?['cpm']",
+                   "item/sanidi_impressions": "@items('For_each_row_campaign_d')?['impressions']",
+                   "item/sanidi_grossimpressions": "@items('For_each_row_campaign_d')?['grossimpressions']",
+                   "item/sanidi_clicks": "@items('For_each_row_campaign_d')?['clicks']",
+                   "item/sanidi_ctr": "@items('For_each_row_campaign_d')?['ctr']",
+                   "item/sanidi_reach": "@items('For_each_row_campaign_d')?['reach']",
+                   "item/sanidi_costper1000reached": "@items('For_each_row_campaign_d')?['costper1000reached']",
+                   "item/sanidi_frequency": "@items('For_each_row_campaign_d')?['frequency']",
+                   "item/sanidi_conversion": "@items('For_each_row_campaign_d')?['conversion']",
+                   "item/sanidi_costperconversion": "@items('For_each_row_campaign_d')?['costperconversion']",
+                   "item/sanidi_conversionrate": "@items('For_each_row_campaign_d')?['conversionrate']",
+                   "item/sanidi_conversionratev2": "@items('For_each_row_campaign_d')?['conversionratev2']",
+                   "item/sanidi_realtimeconversion": "@items('For_each_row_campaign_d')?['realtimeconversion']",
+                   "item/sanidi_realtimecostperconversion": "@items('For_each_row_campaign_d')?['realtimecostperconversion']",
+                   "item/sanidi_realtimeconversionrate": "@items('For_each_row_campaign_d')?['realtimeconversionrate']",
+                   "item/sanidi_realtimeconversionratev2": "@items('For_each_row_campaign_d')?['realtimeconversionratev2']",
+                   "item/sanidi_result": "@items('For_each_row_campaign_d')?['result']",
+                   "item/sanidi_costperresult": "@items('For_each_row_campaign_d')?['costperresult']",
+                   "item/sanidi_resultrate": "@items('For_each_row_campaign_d')?['resultrate']",
+                   "item/sanidi_realtimeresult": "@items('For_each_row_campaign_d')?['realtimeresult']",
+                   "item/sanidi_realtimecostperresult": "@items('For_each_row_campaign_d')?['realtimecostperresult']",
+                   "item/sanidi_realtimeresultrate": "@items('For_each_row_campaign_d')?['realtimeresultrate']",
+                   "item/sanidi_secondarygoalresult": "@items('For_each_row_campaign_d')?['secondarygoalresult']",
+                   "item/sanidi_costpersecondarygoalresult": "@items('For_each_row_campaign_d')?['costpersecondarygoalresult']",
+                   "item/sanidi_secondarygoalresultrate": "@items('For_each_row_campaign_d')?['secondarygoalresultrate']",
+                   "item/sanidi_videoplayactions": "@items('For_each_row_campaign_d')?['videoplayactions']",
+                   "item/sanidi_videowatched2s": "@items('For_each_row_campaign_d')?['videowatched2s']",
+                   "item/sanidi_videowatched6s": "@items('For_each_row_campaign_d')?['videowatched6s']",
+                   "item/sanidi_videoviewsp25": "@items('For_each_row_campaign_d')?['videoviewsp25']",
+                   "item/sanidi_videoviewsp50": "@items('For_each_row_campaign_d')?['videoviewsp50']",
+                   "item/sanidi_videoviewsp75": "@items('For_each_row_campaign_d')?['videoviewsp75']",
+                   "item/sanidi_videoviewsp100": "@items('For_each_row_campaign_d')?['videoviewsp100']",
+                   "item/sanidi_averagevideoplay": "@items('For_each_row_campaign_d')?['averagevideoplay']",
+                   "item/sanidi_averagevideoplayperuser": "@items('For_each_row_campaign_d')?['averagevideoplayperuser']",
+                   "item/sanidi_engagedview": "@items('For_each_row_campaign_d')?['engagedview']",
+                   "item/sanidi_paidengagedview": "@items('For_each_row_campaign_d')?['paidengagedview']",
+                   "item/sanidi_paidengagementengagedview": "@items('For_each_row_campaign_d')?['paidengagementengagedview']",
+                   "item/sanidi_engagedview15s": "@items('For_each_row_campaign_d')?['engagedview15s']",
+                   "item/sanidi_paidengagedview15s": "@items('For_each_row_campaign_d')?['paidengagedview15s']",
+                   "item/sanidi_paidengagementengagedview15s": "@items('For_each_row_campaign_d')?['paidengagementengagedview15s']",
+                   "item/sanidi_engagements": "@items('For_each_row_campaign_d')?['engagements']",
+                   "item/sanidi_engagementrate": "@items('For_each_row_campaign_d')?['engagementrate']",
+                   "item/sanidi_clicksonmusicdisc": "@items('For_each_row_campaign_d')?['clicksonmusicdisc']",
+                   "item/sanidi_duetclicks": "@items('For_each_row_campaign_d')?['duetclicks']",
+                   "item/sanidi_stitchclicks": "@items('For_each_row_campaign_d')?['stitchclicks']",
+                   "item/sanidi_soundusageclicks": "@items('For_each_row_campaign_d')?['soundusageclicks']",
+                   "item/sanidi_anchorclicks": "@items('For_each_row_campaign_d')?['anchorclicks']",
+                   "item/sanidi_anchorclickrate": "@items('For_each_row_campaign_d')?['anchorclickrate']",
+                   "item/sanidi_clicksonhashtagchallenge": "@items('For_each_row_campaign_d')?['clicksonhashtagchallenge']",
+                   "item/sanidi_follows": "@items('For_each_row_campaign_d')?['follows']",
+                   "item/sanidi_likes": "@items('For_each_row_campaign_d')?['likes']",
+                   "item/sanidi_comments": "@items('For_each_row_campaign_d')?['comments']",
+                   "item/sanidi_shares": "@items('For_each_row_campaign_d')?['shares']",
+                   "item/sanidi_profilevisits": "@items('For_each_row_campaign_d')?['profilevisits']",
+                   "item/sanidi_profilevisitsrate": "@items('For_each_row_campaign_d')?['profilevisitsrate']",
+                   "item/sanidi_ttplaylistvisit": "@items('For_each_row_campaign_d')?['ttplaylistvisit']",
+                   "item/sanidi_ttplaylistvisitrate": "@items('For_each_row_campaign_d')?['ttplaylistvisitrate']",
+                   "item/sanidi_costperconsideration": "@items('For_each_row_campaign_d')?['costperconsideration']",
+                   "item/sanidi_newconsiderationrate": "@items('For_each_row_campaign_d')?['newconsiderationrate']",
+                   "item/sanidi_newconsiderationsize": "@items('For_each_row_campaign_d')?['newconsiderationsize']",
+                   "item/sanidi_completepaymentroas": "@items('For_each_row_campaign_d')?['completepaymentroas']",
+                   "item/sanidi_completepayment": "@items('For_each_row_campaign_d')?['completepayment']",
+                   "item/sanidi_costpercompletepayment": "@items('For_each_row_campaign_d')?['costpercompletepayment']",
+                   "item/sanidi_completepaymentrate": "@items('For_each_row_campaign_d')?['completepaymentrate']",
+                   "item/sanidi_valuepercompletepayment": "@items('For_each_row_campaign_d')?['valuepercompletepayment']",
+                   "item/sanidi_totalcompletepaymentrate": "@items('For_each_row_campaign_d')?['totalcompletepaymentrate']",
+                   "item/sanidi_totallandingpageview": "@items('For_each_row_campaign_d')?['totallandingpageview']",
+                   "item/sanidi_costperlandingpageview": "@items('For_each_row_campaign_d')?['costperlandingpageview']",
+                   "item/sanidi_landingpageviewrate": "@items('For_each_row_campaign_d')?['landingpageviewrate']",
+                   "item/sanidi_totalpageview": "@items('For_each_row_campaign_d')?['totalpageview']",
+                   "item/sanidi_costperpageview": "@items('For_each_row_campaign_d')?['costperpageview']",
+                   "item/sanidi_pageviewrate": "@items('For_each_row_campaign_d')?['pageviewrate']",
+                   "item/sanidi_avgvalueperpageview": "@items('For_each_row_campaign_d')?['avgvalueperpageview']",
+                   "item/sanidi_totalvalueperpageview": "@items('For_each_row_campaign_d')?['totalvalueperpageview']",
+                   "item/sanidi_pagebrowseview": "@items('For_each_row_campaign_d')?['pagebrowseview']",
+                   "item/sanidi_costperpagebrowseview": "@items('For_each_row_campaign_d')?['costperpagebrowseview']",
+                   "item/sanidi_pagebrowseviewrate": "@items('For_each_row_campaign_d')?['pagebrowseviewrate']",
+                   "item/sanidi_totalpagebrowseviewvalue": "@items('For_each_row_campaign_d')?['totalpagebrowseviewvalue']",
+                   "item/sanidi_valueperpagebrowseview": "@items('For_each_row_campaign_d')?['valueperpagebrowseview']",
+                   "item/sanidi_buttonclick": "@items('For_each_row_campaign_d')?['buttonclick']",
+                   "item/sanidi_costperbuttonclick": "@items('For_each_row_campaign_d')?['costperbuttonclick']",
+                   "item/sanidi_buttonclickrate": "@items('For_each_row_campaign_d')?['buttonclickrate']",
+                   "item/sanidi_valueperbuttonclick": "@items('For_each_row_campaign_d')?['valueperbuttonclick']",
+                   "item/sanidi_totalbuttonclickvalue": "@items('For_each_row_campaign_d')?['totalbuttonclickvalue']",
+                   "item/sanidi_onlineconsult": "@items('For_each_row_campaign_d')?['onlineconsult']",
+                   "item/sanidi_costperonlineconsult": "@items('For_each_row_campaign_d')?['costperonlineconsult']",
+                   "item/sanidi_onlineconsultrate": "@items('For_each_row_campaign_d')?['onlineconsultrate']",
+                   "item/sanidi_valueperonlineconsult": "@items('For_each_row_campaign_d')?['valueperonlineconsult']",
+                   "item/sanidi_totalonlineconsultvalue": "@items('For_each_row_campaign_d')?['totalonlineconsultvalue']",
+                   "item/sanidi_userregistration": "@items('For_each_row_campaign_d')?['userregistration']",
+                   "item/sanidi_costperuserregistration": "@items('For_each_row_campaign_d')?['costperuserregistration']",
+                   "item/sanidi_userregistrationrate": "@items('For_each_row_campaign_d')?['userregistrationrate']",
+                   "item/sanidi_valueperuserregistration": "@items('For_each_row_campaign_d')?['valueperuserregistration']",
+                   "item/sanidi_totaluserregistrationvalue": "@items('For_each_row_campaign_d')?['totaluserregistrationvalue']",
+                   "item/sanidi_pagecontentviewevents": "@items('For_each_row_campaign_d')?['pagecontentviewevents']",
+                   "item/sanidi_costperpagecontentviewevent": "@items('For_each_row_campaign_d')?['costperpagecontentviewevent']",
+                   "item/sanidi_pagecontentvieweventrate": "@items('For_each_row_campaign_d')?['pagecontentvieweventrate']",
+                   "item/sanidi_valueperpagecontentviewevent": "@items('For_each_row_campaign_d')?['valueperpagecontentviewevent']",
+                   "item/sanidi_totalpageviewcontenteventsvalue": "@items('For_each_row_campaign_d')?['totalpageviewcontenteventsvalue']",
+                   "item/sanidi_productdetailspagebrowse": "@items('For_each_row_campaign_d')?['productdetailspagebrowse']",
+                   "item/sanidi_costperproductdetailspagebrowse": "@items('For_each_row_campaign_d')?['costperproductdetailspagebrowse']",
+                   "item/sanidi_productdetailspagebrowserate": "@items('For_each_row_campaign_d')?['productdetailspagebrowserate']",
+                   "item/sanidi_valueperproductdetailspagebrowse": "@items('For_each_row_campaign_d')?['valueperproductdetailspagebrowse']",
+                   "item/sanidi_totalproductdetailspagebrowsevalue": "@items('For_each_row_campaign_d')?['totalproductdetailspagebrowsevalue']",
+                   "item/sanidi_webeventaddtocart": "@items('For_each_row_campaign_d')?['webeventaddtocart']",
+                   "item/sanidi_costperwebeventaddtocart": "@items('For_each_row_campaign_d')?['costperwebeventaddtocart']",
+                   "item/sanidi_webeventaddtocartrate": "@items('For_each_row_campaign_d')?['webeventaddtocartrate']",
+                   "item/sanidi_valueperwebeventaddtocart": "@items('For_each_row_campaign_d')?['valueperwebeventaddtocart']",
+                   "item/sanidi_totalwebeventaddtocartvalue": "@items('For_each_row_campaign_d')?['totalwebeventaddtocartvalue']",
+                   "item/sanidi_onweborder": "@items('For_each_row_campaign_d')?['onweborder']",
+                   "item/sanidi_costperonweborder": "@items('For_each_row_campaign_d')?['costperonweborder']",
+                   "item/sanidi_onweborderrate": "@items('For_each_row_campaign_d')?['onweborderrate']",
+                   "item/sanidi_valueperonweborder": "@items('For_each_row_campaign_d')?['valueperonweborder']",
+                   "item/sanidi_totalonwebordervalue": "@items('For_each_row_campaign_d')?['totalonwebordervalue']",
+                   "item/sanidi_initiatecheckout": "@items('For_each_row_campaign_d')?['initiatecheckout']",
+                   "item/sanidi_costperinitiatecheckout": "@items('For_each_row_campaign_d')?['costperinitiatecheckout']",
+                   "item/sanidi_initiatecheckoutrate": "@items('For_each_row_campaign_d')?['initiatecheckoutrate']",
+                   "item/sanidi_valueperinitiatecheckout": "@items('For_each_row_campaign_d')?['valueperinitiatecheckout']",
+                   "item/sanidi_totalinitiatecheckoutvalue": "@items('For_each_row_campaign_d')?['totalinitiatecheckoutvalue']",
+                   "item/sanidi_addbilling": "@items('For_each_row_campaign_d')?['addbilling']",
+                   "item/sanidi_costperaddbilling": "@items('For_each_row_campaign_d')?['costperaddbilling']",
+                   "item/sanidi_addbillingrate": "@items('For_each_row_campaign_d')?['addbillingrate']",
+                   "item/sanidi_valueperaddbilling": "@items('For_each_row_campaign_d')?['valueperaddbilling']",
+                   "item/sanidi_totaladdbillingvalue": "@items('For_each_row_campaign_d')?['totaladdbillingvalue']",
+                   "item/sanidi_pageeventsearch": "@items('For_each_row_campaign_d')?['pageeventsearch']",
+                   "item/sanidi_costperpageeventsearch": "@items('For_each_row_campaign_d')?['costperpageeventsearch']",
+                   "item/sanidi_pageeventsearchrate": "@items('For_each_row_campaign_d')?['pageeventsearchrate']",
+                   "item/sanidi_valueperpageeventsearch": "@items('For_each_row_campaign_d')?['valueperpageeventsearch']",
+                   "item/sanidi_totalpageeventsearchvalue": "@items('For_each_row_campaign_d')?['totalpageeventsearchvalue']",
+                   "item/sanidi_form": "@items('For_each_row_campaign_d')?['form']",
+                   "item/sanidi_costperform": "@items('For_each_row_campaign_d')?['costperform']",
+                   "item/sanidi_formrate": "@items('For_each_row_campaign_d')?['formrate']",
+                   "item/sanidi_valueperform": "@items('For_each_row_campaign_d')?['valueperform']",
+                   "item/sanidi_totalformvalue": "@items('For_each_row_campaign_d')?['totalformvalue']",
+                   "item/sanidi_downloadstart": "@items('For_each_row_campaign_d')?['downloadstart']",
+                   "item/sanidi_costperdownloadstart": "@items('For_each_row_campaign_d')?['costperdownloadstart']",
+                   "item/sanidi_downloadstartrate": "@items('For_each_row_campaign_d')?['downloadstartrate']",
+                   "item/sanidi_valueperdownloadstart": "@items('For_each_row_campaign_d')?['valueperdownloadstart']",
+                   "item/sanidi_totaldownloadstartvalue": "@items('For_each_row_campaign_d')?['totaldownloadstartvalue']",
+                   "item/sanidi_onwebaddtowishlist": "@items('For_each_row_campaign_d')?['onwebaddtowishlist']",
+                   "item/sanidi_costperonwebaddtowishlist": "@items('For_each_row_campaign_d')?['costperonwebaddtowishlist']",
+                   "item/sanidi_onwebaddtowishlistperclick": "@items('For_each_row_campaign_d')?['onwebaddtowishlistperclick']",
+                   "item/sanidi_valueperonwebaddtowishlist": "@items('For_each_row_campaign_d')?['valueperonwebaddtowishlist']",
+                   "item/sanidi_totalonwebaddtowishlistvalue": "@items('For_each_row_campaign_d')?['totalonwebaddtowishlistvalue']",
+                   "item/sanidi_onwebsubscribe": "@items('For_each_row_campaign_d')?['onwebsubscribe']",
+                   "item/sanidi_costperonwebsubscribe": "@items('For_each_row_campaign_d')?['costperonwebsubscribe']",
+                   "item/sanidi_onwebsubscribeperclick": "@items('For_each_row_campaign_d')?['onwebsubscribeperclick']",
+                   "item/sanidi_valueperonwebsubscribe": "@items('For_each_row_campaign_d')?['valueperonwebsubscribe']",
+                   "item/sanidi_totalonwebsubscribevalue": "@items('For_each_row_campaign_d')?['totalonwebsubscribevalue']",
+                   "item/sanidi_websitetotalfindlocation": "@items('For_each_row_campaign_d')?['websitetotalfindlocation']",
+                   "item/sanidi_websitecostperfindlocation": "@items('For_each_row_campaign_d')?['websitecostperfindlocation']",
+                   "item/sanidi_websitefindlocationrate": "@items('For_each_row_campaign_d')?['websitefindlocationrate']",
+                   "item/sanidi_websitevalueperfindlocation": "@items('For_each_row_campaign_d')?['websitevalueperfindlocation']",
+                   "item/sanidi_websitetotalfindlocationvalue": "@items('For_each_row_campaign_d')?['websitetotalfindlocationvalue']",
+                   "item/sanidi_websitetotalschedule": "@items('For_each_row_campaign_d')?['websitetotalschedule']",
+                   "item/sanidi_websitecostperschedule": "@items('For_each_row_campaign_d')?['websitecostperschedule']",
+                   "item/sanidi_websiteschedulerate": "@items('For_each_row_campaign_d')?['websiteschedulerate']",
+                   "item/sanidi_websitevalueperschedule": "@items('For_each_row_campaign_d')?['websitevalueperschedule']",
+                   "item/sanidi_websitetotalschedulevalue": "@items('For_each_row_campaign_d')?['websitetotalschedulevalue']",
+                   "item/sanidi_websitetotalcustomizeproduct": "@items('For_each_row_campaign_d')?['websitetotalcustomizeproduct']",
+                   "item/sanidi_websitecostpercustomizeproduct": "@items('For_each_row_campaign_d')?['websitecostpercustomizeproduct']",
+                   "item/sanidi_websitecustomizeproductrate": "@items('For_each_row_campaign_d')?['websitecustomizeproductrate']",
+                   "item/sanidi_websitevaluepercustomizeproduct": "@items('For_each_row_campaign_d')?['websitevaluepercustomizeproduct']",
+                   "item/sanidi_websitetotalcustomizeproductvalue": "@items('For_each_row_campaign_d')?['websitetotalcustomizeproductvalue']",
+                   "item/sanidi_vtaconversion": "@items('For_each_row_campaign_d')?['vtaconversion']",
+                   "item/sanidi_costpervtaconversion": "@items('For_each_row_campaign_d')?['costpervtaconversion']",
+                   "item/sanidi_ctaconversion": "@items('For_each_row_campaign_d')?['ctaconversion']",
+                   "item/sanidi_costperctaconversion": "@items('For_each_row_campaign_d')?['costperctaconversion']",
+                   "item/sanidi_engagedviewthroughconversions": "@items('For_each_row_campaign_d')?['engagedviewthroughconversions']",
+                   "item/sanidi_costperengagedviewthroughconversion": "@items('For_each_row_campaign_d')?['costperengagedviewthroughconversion']",
+                   "item/sanidi_vtaappinstall": "@items('For_each_row_campaign_d')?['vtaappinstall']",
+                   "item/sanidi_costpervtaappinstall": "@items('For_each_row_campaign_d')?['costpervtaappinstall']",
+                   "item/sanidi_ctaappinstall": "@items('For_each_row_campaign_d')?['ctaappinstall']",
+                   "item/sanidi_costperctaappinstall": "@items('For_each_row_campaign_d')?['costperctaappinstall']",
+                   "item/sanidi_evtaappinstall": "@items('For_each_row_campaign_d')?['evtaappinstall']",
+                   "item/sanidi_costperevtaappinstall": "@items('For_each_row_campaign_d')?['costperevtaappinstall']",
+                   "item/sanidi_vtaregistration": "@items('For_each_row_campaign_d')?['vtaregistration']",
+                   "item/sanidi_costpervtaregistration": "@items('For_each_row_campaign_d')?['costpervtaregistration']",
+                   "item/sanidi_ctaregistration": "@items('For_each_row_campaign_d')?['ctaregistration']",
+                   "item/sanidi_costperctaregistration": "@items('For_each_row_campaign_d')?['costperctaregistration']",
+                   "item/sanidi_evtaregistration": "@items('For_each_row_campaign_d')?['evtaregistration']",
+                   "item/sanidi_costperevtaregistration": "@items('For_each_row_campaign_d')?['costperevtaregistration']",
+                   "item/sanidi_vtapurchase": "@items('For_each_row_campaign_d')?['vtapurchase']",
+                   "item/sanidi_costpervtapurchase": "@items('For_each_row_campaign_d')?['costpervtapurchase']",
+                   "item/sanidi_ctapurchase": "@items('For_each_row_campaign_d')?['ctapurchase']",
+                   "item/sanidi_costperctapurchase": "@items('For_each_row_campaign_d')?['costperctapurchase']",
+                   "item/sanidi_evtapurchase": "@items('For_each_row_campaign_d')?['evtapurchase']",
+                   "item/sanidi_costperevtapurchase": "@items('For_each_row_campaign_d')?['costperevtapurchase']",
+                   "item/sanidi_vtacompletepayment": "@items('For_each_row_campaign_d')?['vtacompletepayment']",
+                   "item/sanidi_costpervtapaymentscompleted": "@items('For_each_row_campaign_d')?['costpervtapaymentscompleted']",
+                   "item/sanidi_evtapaymentscompleted": "@items('For_each_row_campaign_d')?['evtapaymentscompleted']",
+                   "item/sanidi_costperevtapaymentscompleted": "@items('For_each_row_campaign_d')?['costperevtapaymentscompleted']",
+                   "item/sanidi_vtacompletepaymentvalue": "@items('For_each_row_campaign_d')?['vtacompletepaymentvalue']",
+                   "item/sanidi_vtacompletepaymentroas": "@items('For_each_row_campaign_d')?['vtacompletepaymentroas']"
+                  },
+                  "host": {
+                   "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                   "operationId": "UpdateOnlyRecord",
+                   "connectionName": "shared_commondataserviceforapps"
+                  }
+                 }
+                }
+               },
+               "else": {
+                "actions": {
+                 "Create_campaign_d": {
+                  "runAfter": {},
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                   "parameters": {
+                    "entityName": "sanidi_tiktokcampaigndailyinsights",
+                    "item/sanidi_name": "@concat(coalesce(outputs('Parent_campaign_d')?['sanidi_campaignname'], string(items('For_each_row_campaign_d')?['campaignid'])), ' · ', items('For_each_row_campaign_d')?['date'])",
+                    "item/sanidi_platformid": "@string(items('For_each_row_campaign_d')?['campaignid'])",
+                    "item/sanidi_insightkey": "@concat(string(items('For_each_row_campaign_d')?['campaignid']), '_', formatDateTime(items('For_each_row_campaign_d')?['date'], 'yyyyMMdd'))",
+                    "item/sanidi_date": "@items('For_each_row_campaign_d')?['date']",
+                    "item/sanidi_month": "@int(formatDateTime(items('For_each_row_campaign_d')?['date'], 'MM'))",
+                    "item/sanidi_year": "@int(formatDateTime(items('For_each_row_campaign_d')?['date'], 'yyyy'))",
+                    "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_campaign_d')?['date']), ticks(triggerBody()?['closed_through'])))",
+                    "item/sanidi_nodata": false,
+                    "item/sanidi_lastsyncedon": "@utcNow()",
+                    "item/sanidi_tiktokcampaign@odata.bind": "/sanidi_tiktokcampaigns(@{outputs('Parent_campaign_d')?['sanidi_tiktokcampaignid']})",
+                    "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_campaign_d')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                    "item/sanidi_rawpayload": "@if(greater(length(string(coalesce(items('For_each_row_campaign_d')?['rawpayload'], items('For_each_row_campaign_d')))), 100000), substring(string(coalesce(items('For_each_row_campaign_d')?['rawpayload'], items('For_each_row_campaign_d'))), 0, 100000), string(coalesce(items('For_each_row_campaign_d')?['rawpayload'], items('For_each_row_campaign_d'))))",
+                    "item/sanidi_day": "@int(formatDateTime(items('For_each_row_campaign_d')?['date'], 'dd'))",
+                    "item/sanidi_weekday": "@add(dayOfWeek(items('For_each_row_campaign_d')?['date']), 1)",
+                    "item/sanidi_spend": "@items('For_each_row_campaign_d')?['spend']",
+                    "item/sanidi_billedcost": "@items('For_each_row_campaign_d')?['billedcost']",
+                    "item/sanidi_cpc": "@items('For_each_row_campaign_d')?['cpc']",
+                    "item/sanidi_cpm": "@items('For_each_row_campaign_d')?['cpm']",
+                    "item/sanidi_impressions": "@items('For_each_row_campaign_d')?['impressions']",
+                    "item/sanidi_grossimpressions": "@items('For_each_row_campaign_d')?['grossimpressions']",
+                    "item/sanidi_clicks": "@items('For_each_row_campaign_d')?['clicks']",
+                    "item/sanidi_ctr": "@items('For_each_row_campaign_d')?['ctr']",
+                    "item/sanidi_reach": "@items('For_each_row_campaign_d')?['reach']",
+                    "item/sanidi_costper1000reached": "@items('For_each_row_campaign_d')?['costper1000reached']",
+                    "item/sanidi_frequency": "@items('For_each_row_campaign_d')?['frequency']",
+                    "item/sanidi_conversion": "@items('For_each_row_campaign_d')?['conversion']",
+                    "item/sanidi_costperconversion": "@items('For_each_row_campaign_d')?['costperconversion']",
+                    "item/sanidi_conversionrate": "@items('For_each_row_campaign_d')?['conversionrate']",
+                    "item/sanidi_conversionratev2": "@items('For_each_row_campaign_d')?['conversionratev2']",
+                    "item/sanidi_realtimeconversion": "@items('For_each_row_campaign_d')?['realtimeconversion']",
+                    "item/sanidi_realtimecostperconversion": "@items('For_each_row_campaign_d')?['realtimecostperconversion']",
+                    "item/sanidi_realtimeconversionrate": "@items('For_each_row_campaign_d')?['realtimeconversionrate']",
+                    "item/sanidi_realtimeconversionratev2": "@items('For_each_row_campaign_d')?['realtimeconversionratev2']",
+                    "item/sanidi_result": "@items('For_each_row_campaign_d')?['result']",
+                    "item/sanidi_costperresult": "@items('For_each_row_campaign_d')?['costperresult']",
+                    "item/sanidi_resultrate": "@items('For_each_row_campaign_d')?['resultrate']",
+                    "item/sanidi_realtimeresult": "@items('For_each_row_campaign_d')?['realtimeresult']",
+                    "item/sanidi_realtimecostperresult": "@items('For_each_row_campaign_d')?['realtimecostperresult']",
+                    "item/sanidi_realtimeresultrate": "@items('For_each_row_campaign_d')?['realtimeresultrate']",
+                    "item/sanidi_secondarygoalresult": "@items('For_each_row_campaign_d')?['secondarygoalresult']",
+                    "item/sanidi_costpersecondarygoalresult": "@items('For_each_row_campaign_d')?['costpersecondarygoalresult']",
+                    "item/sanidi_secondarygoalresultrate": "@items('For_each_row_campaign_d')?['secondarygoalresultrate']",
+                    "item/sanidi_videoplayactions": "@items('For_each_row_campaign_d')?['videoplayactions']",
+                    "item/sanidi_videowatched2s": "@items('For_each_row_campaign_d')?['videowatched2s']",
+                    "item/sanidi_videowatched6s": "@items('For_each_row_campaign_d')?['videowatched6s']",
+                    "item/sanidi_videoviewsp25": "@items('For_each_row_campaign_d')?['videoviewsp25']",
+                    "item/sanidi_videoviewsp50": "@items('For_each_row_campaign_d')?['videoviewsp50']",
+                    "item/sanidi_videoviewsp75": "@items('For_each_row_campaign_d')?['videoviewsp75']",
+                    "item/sanidi_videoviewsp100": "@items('For_each_row_campaign_d')?['videoviewsp100']",
+                    "item/sanidi_averagevideoplay": "@items('For_each_row_campaign_d')?['averagevideoplay']",
+                    "item/sanidi_averagevideoplayperuser": "@items('For_each_row_campaign_d')?['averagevideoplayperuser']",
+                    "item/sanidi_engagedview": "@items('For_each_row_campaign_d')?['engagedview']",
+                    "item/sanidi_paidengagedview": "@items('For_each_row_campaign_d')?['paidengagedview']",
+                    "item/sanidi_paidengagementengagedview": "@items('For_each_row_campaign_d')?['paidengagementengagedview']",
+                    "item/sanidi_engagedview15s": "@items('For_each_row_campaign_d')?['engagedview15s']",
+                    "item/sanidi_paidengagedview15s": "@items('For_each_row_campaign_d')?['paidengagedview15s']",
+                    "item/sanidi_paidengagementengagedview15s": "@items('For_each_row_campaign_d')?['paidengagementengagedview15s']",
+                    "item/sanidi_engagements": "@items('For_each_row_campaign_d')?['engagements']",
+                    "item/sanidi_engagementrate": "@items('For_each_row_campaign_d')?['engagementrate']",
+                    "item/sanidi_clicksonmusicdisc": "@items('For_each_row_campaign_d')?['clicksonmusicdisc']",
+                    "item/sanidi_duetclicks": "@items('For_each_row_campaign_d')?['duetclicks']",
+                    "item/sanidi_stitchclicks": "@items('For_each_row_campaign_d')?['stitchclicks']",
+                    "item/sanidi_soundusageclicks": "@items('For_each_row_campaign_d')?['soundusageclicks']",
+                    "item/sanidi_anchorclicks": "@items('For_each_row_campaign_d')?['anchorclicks']",
+                    "item/sanidi_anchorclickrate": "@items('For_each_row_campaign_d')?['anchorclickrate']",
+                    "item/sanidi_clicksonhashtagchallenge": "@items('For_each_row_campaign_d')?['clicksonhashtagchallenge']",
+                    "item/sanidi_follows": "@items('For_each_row_campaign_d')?['follows']",
+                    "item/sanidi_likes": "@items('For_each_row_campaign_d')?['likes']",
+                    "item/sanidi_comments": "@items('For_each_row_campaign_d')?['comments']",
+                    "item/sanidi_shares": "@items('For_each_row_campaign_d')?['shares']",
+                    "item/sanidi_profilevisits": "@items('For_each_row_campaign_d')?['profilevisits']",
+                    "item/sanidi_profilevisitsrate": "@items('For_each_row_campaign_d')?['profilevisitsrate']",
+                    "item/sanidi_ttplaylistvisit": "@items('For_each_row_campaign_d')?['ttplaylistvisit']",
+                    "item/sanidi_ttplaylistvisitrate": "@items('For_each_row_campaign_d')?['ttplaylistvisitrate']",
+                    "item/sanidi_costperconsideration": "@items('For_each_row_campaign_d')?['costperconsideration']",
+                    "item/sanidi_newconsiderationrate": "@items('For_each_row_campaign_d')?['newconsiderationrate']",
+                    "item/sanidi_newconsiderationsize": "@items('For_each_row_campaign_d')?['newconsiderationsize']",
+                    "item/sanidi_completepaymentroas": "@items('For_each_row_campaign_d')?['completepaymentroas']",
+                    "item/sanidi_completepayment": "@items('For_each_row_campaign_d')?['completepayment']",
+                    "item/sanidi_costpercompletepayment": "@items('For_each_row_campaign_d')?['costpercompletepayment']",
+                    "item/sanidi_completepaymentrate": "@items('For_each_row_campaign_d')?['completepaymentrate']",
+                    "item/sanidi_valuepercompletepayment": "@items('For_each_row_campaign_d')?['valuepercompletepayment']",
+                    "item/sanidi_totalcompletepaymentrate": "@items('For_each_row_campaign_d')?['totalcompletepaymentrate']",
+                    "item/sanidi_totallandingpageview": "@items('For_each_row_campaign_d')?['totallandingpageview']",
+                    "item/sanidi_costperlandingpageview": "@items('For_each_row_campaign_d')?['costperlandingpageview']",
+                    "item/sanidi_landingpageviewrate": "@items('For_each_row_campaign_d')?['landingpageviewrate']",
+                    "item/sanidi_totalpageview": "@items('For_each_row_campaign_d')?['totalpageview']",
+                    "item/sanidi_costperpageview": "@items('For_each_row_campaign_d')?['costperpageview']",
+                    "item/sanidi_pageviewrate": "@items('For_each_row_campaign_d')?['pageviewrate']",
+                    "item/sanidi_avgvalueperpageview": "@items('For_each_row_campaign_d')?['avgvalueperpageview']",
+                    "item/sanidi_totalvalueperpageview": "@items('For_each_row_campaign_d')?['totalvalueperpageview']",
+                    "item/sanidi_pagebrowseview": "@items('For_each_row_campaign_d')?['pagebrowseview']",
+                    "item/sanidi_costperpagebrowseview": "@items('For_each_row_campaign_d')?['costperpagebrowseview']",
+                    "item/sanidi_pagebrowseviewrate": "@items('For_each_row_campaign_d')?['pagebrowseviewrate']",
+                    "item/sanidi_totalpagebrowseviewvalue": "@items('For_each_row_campaign_d')?['totalpagebrowseviewvalue']",
+                    "item/sanidi_valueperpagebrowseview": "@items('For_each_row_campaign_d')?['valueperpagebrowseview']",
+                    "item/sanidi_buttonclick": "@items('For_each_row_campaign_d')?['buttonclick']",
+                    "item/sanidi_costperbuttonclick": "@items('For_each_row_campaign_d')?['costperbuttonclick']",
+                    "item/sanidi_buttonclickrate": "@items('For_each_row_campaign_d')?['buttonclickrate']",
+                    "item/sanidi_valueperbuttonclick": "@items('For_each_row_campaign_d')?['valueperbuttonclick']",
+                    "item/sanidi_totalbuttonclickvalue": "@items('For_each_row_campaign_d')?['totalbuttonclickvalue']",
+                    "item/sanidi_onlineconsult": "@items('For_each_row_campaign_d')?['onlineconsult']",
+                    "item/sanidi_costperonlineconsult": "@items('For_each_row_campaign_d')?['costperonlineconsult']",
+                    "item/sanidi_onlineconsultrate": "@items('For_each_row_campaign_d')?['onlineconsultrate']",
+                    "item/sanidi_valueperonlineconsult": "@items('For_each_row_campaign_d')?['valueperonlineconsult']",
+                    "item/sanidi_totalonlineconsultvalue": "@items('For_each_row_campaign_d')?['totalonlineconsultvalue']",
+                    "item/sanidi_userregistration": "@items('For_each_row_campaign_d')?['userregistration']",
+                    "item/sanidi_costperuserregistration": "@items('For_each_row_campaign_d')?['costperuserregistration']",
+                    "item/sanidi_userregistrationrate": "@items('For_each_row_campaign_d')?['userregistrationrate']",
+                    "item/sanidi_valueperuserregistration": "@items('For_each_row_campaign_d')?['valueperuserregistration']",
+                    "item/sanidi_totaluserregistrationvalue": "@items('For_each_row_campaign_d')?['totaluserregistrationvalue']",
+                    "item/sanidi_pagecontentviewevents": "@items('For_each_row_campaign_d')?['pagecontentviewevents']",
+                    "item/sanidi_costperpagecontentviewevent": "@items('For_each_row_campaign_d')?['costperpagecontentviewevent']",
+                    "item/sanidi_pagecontentvieweventrate": "@items('For_each_row_campaign_d')?['pagecontentvieweventrate']",
+                    "item/sanidi_valueperpagecontentviewevent": "@items('For_each_row_campaign_d')?['valueperpagecontentviewevent']",
+                    "item/sanidi_totalpageviewcontenteventsvalue": "@items('For_each_row_campaign_d')?['totalpageviewcontenteventsvalue']",
+                    "item/sanidi_productdetailspagebrowse": "@items('For_each_row_campaign_d')?['productdetailspagebrowse']",
+                    "item/sanidi_costperproductdetailspagebrowse": "@items('For_each_row_campaign_d')?['costperproductdetailspagebrowse']",
+                    "item/sanidi_productdetailspagebrowserate": "@items('For_each_row_campaign_d')?['productdetailspagebrowserate']",
+                    "item/sanidi_valueperproductdetailspagebrowse": "@items('For_each_row_campaign_d')?['valueperproductdetailspagebrowse']",
+                    "item/sanidi_totalproductdetailspagebrowsevalue": "@items('For_each_row_campaign_d')?['totalproductdetailspagebrowsevalue']",
+                    "item/sanidi_webeventaddtocart": "@items('For_each_row_campaign_d')?['webeventaddtocart']",
+                    "item/sanidi_costperwebeventaddtocart": "@items('For_each_row_campaign_d')?['costperwebeventaddtocart']",
+                    "item/sanidi_webeventaddtocartrate": "@items('For_each_row_campaign_d')?['webeventaddtocartrate']",
+                    "item/sanidi_valueperwebeventaddtocart": "@items('For_each_row_campaign_d')?['valueperwebeventaddtocart']",
+                    "item/sanidi_totalwebeventaddtocartvalue": "@items('For_each_row_campaign_d')?['totalwebeventaddtocartvalue']",
+                    "item/sanidi_onweborder": "@items('For_each_row_campaign_d')?['onweborder']",
+                    "item/sanidi_costperonweborder": "@items('For_each_row_campaign_d')?['costperonweborder']",
+                    "item/sanidi_onweborderrate": "@items('For_each_row_campaign_d')?['onweborderrate']",
+                    "item/sanidi_valueperonweborder": "@items('For_each_row_campaign_d')?['valueperonweborder']",
+                    "item/sanidi_totalonwebordervalue": "@items('For_each_row_campaign_d')?['totalonwebordervalue']",
+                    "item/sanidi_initiatecheckout": "@items('For_each_row_campaign_d')?['initiatecheckout']",
+                    "item/sanidi_costperinitiatecheckout": "@items('For_each_row_campaign_d')?['costperinitiatecheckout']",
+                    "item/sanidi_initiatecheckoutrate": "@items('For_each_row_campaign_d')?['initiatecheckoutrate']",
+                    "item/sanidi_valueperinitiatecheckout": "@items('For_each_row_campaign_d')?['valueperinitiatecheckout']",
+                    "item/sanidi_totalinitiatecheckoutvalue": "@items('For_each_row_campaign_d')?['totalinitiatecheckoutvalue']",
+                    "item/sanidi_addbilling": "@items('For_each_row_campaign_d')?['addbilling']",
+                    "item/sanidi_costperaddbilling": "@items('For_each_row_campaign_d')?['costperaddbilling']",
+                    "item/sanidi_addbillingrate": "@items('For_each_row_campaign_d')?['addbillingrate']",
+                    "item/sanidi_valueperaddbilling": "@items('For_each_row_campaign_d')?['valueperaddbilling']",
+                    "item/sanidi_totaladdbillingvalue": "@items('For_each_row_campaign_d')?['totaladdbillingvalue']",
+                    "item/sanidi_pageeventsearch": "@items('For_each_row_campaign_d')?['pageeventsearch']",
+                    "item/sanidi_costperpageeventsearch": "@items('For_each_row_campaign_d')?['costperpageeventsearch']",
+                    "item/sanidi_pageeventsearchrate": "@items('For_each_row_campaign_d')?['pageeventsearchrate']",
+                    "item/sanidi_valueperpageeventsearch": "@items('For_each_row_campaign_d')?['valueperpageeventsearch']",
+                    "item/sanidi_totalpageeventsearchvalue": "@items('For_each_row_campaign_d')?['totalpageeventsearchvalue']",
+                    "item/sanidi_form": "@items('For_each_row_campaign_d')?['form']",
+                    "item/sanidi_costperform": "@items('For_each_row_campaign_d')?['costperform']",
+                    "item/sanidi_formrate": "@items('For_each_row_campaign_d')?['formrate']",
+                    "item/sanidi_valueperform": "@items('For_each_row_campaign_d')?['valueperform']",
+                    "item/sanidi_totalformvalue": "@items('For_each_row_campaign_d')?['totalformvalue']",
+                    "item/sanidi_downloadstart": "@items('For_each_row_campaign_d')?['downloadstart']",
+                    "item/sanidi_costperdownloadstart": "@items('For_each_row_campaign_d')?['costperdownloadstart']",
+                    "item/sanidi_downloadstartrate": "@items('For_each_row_campaign_d')?['downloadstartrate']",
+                    "item/sanidi_valueperdownloadstart": "@items('For_each_row_campaign_d')?['valueperdownloadstart']",
+                    "item/sanidi_totaldownloadstartvalue": "@items('For_each_row_campaign_d')?['totaldownloadstartvalue']",
+                    "item/sanidi_onwebaddtowishlist": "@items('For_each_row_campaign_d')?['onwebaddtowishlist']",
+                    "item/sanidi_costperonwebaddtowishlist": "@items('For_each_row_campaign_d')?['costperonwebaddtowishlist']",
+                    "item/sanidi_onwebaddtowishlistperclick": "@items('For_each_row_campaign_d')?['onwebaddtowishlistperclick']",
+                    "item/sanidi_valueperonwebaddtowishlist": "@items('For_each_row_campaign_d')?['valueperonwebaddtowishlist']",
+                    "item/sanidi_totalonwebaddtowishlistvalue": "@items('For_each_row_campaign_d')?['totalonwebaddtowishlistvalue']",
+                    "item/sanidi_onwebsubscribe": "@items('For_each_row_campaign_d')?['onwebsubscribe']",
+                    "item/sanidi_costperonwebsubscribe": "@items('For_each_row_campaign_d')?['costperonwebsubscribe']",
+                    "item/sanidi_onwebsubscribeperclick": "@items('For_each_row_campaign_d')?['onwebsubscribeperclick']",
+                    "item/sanidi_valueperonwebsubscribe": "@items('For_each_row_campaign_d')?['valueperonwebsubscribe']",
+                    "item/sanidi_totalonwebsubscribevalue": "@items('For_each_row_campaign_d')?['totalonwebsubscribevalue']",
+                    "item/sanidi_websitetotalfindlocation": "@items('For_each_row_campaign_d')?['websitetotalfindlocation']",
+                    "item/sanidi_websitecostperfindlocation": "@items('For_each_row_campaign_d')?['websitecostperfindlocation']",
+                    "item/sanidi_websitefindlocationrate": "@items('For_each_row_campaign_d')?['websitefindlocationrate']",
+                    "item/sanidi_websitevalueperfindlocation": "@items('For_each_row_campaign_d')?['websitevalueperfindlocation']",
+                    "item/sanidi_websitetotalfindlocationvalue": "@items('For_each_row_campaign_d')?['websitetotalfindlocationvalue']",
+                    "item/sanidi_websitetotalschedule": "@items('For_each_row_campaign_d')?['websitetotalschedule']",
+                    "item/sanidi_websitecostperschedule": "@items('For_each_row_campaign_d')?['websitecostperschedule']",
+                    "item/sanidi_websiteschedulerate": "@items('For_each_row_campaign_d')?['websiteschedulerate']",
+                    "item/sanidi_websitevalueperschedule": "@items('For_each_row_campaign_d')?['websitevalueperschedule']",
+                    "item/sanidi_websitetotalschedulevalue": "@items('For_each_row_campaign_d')?['websitetotalschedulevalue']",
+                    "item/sanidi_websitetotalcustomizeproduct": "@items('For_each_row_campaign_d')?['websitetotalcustomizeproduct']",
+                    "item/sanidi_websitecostpercustomizeproduct": "@items('For_each_row_campaign_d')?['websitecostpercustomizeproduct']",
+                    "item/sanidi_websitecustomizeproductrate": "@items('For_each_row_campaign_d')?['websitecustomizeproductrate']",
+                    "item/sanidi_websitevaluepercustomizeproduct": "@items('For_each_row_campaign_d')?['websitevaluepercustomizeproduct']",
+                    "item/sanidi_websitetotalcustomizeproductvalue": "@items('For_each_row_campaign_d')?['websitetotalcustomizeproductvalue']",
+                    "item/sanidi_vtaconversion": "@items('For_each_row_campaign_d')?['vtaconversion']",
+                    "item/sanidi_costpervtaconversion": "@items('For_each_row_campaign_d')?['costpervtaconversion']",
+                    "item/sanidi_ctaconversion": "@items('For_each_row_campaign_d')?['ctaconversion']",
+                    "item/sanidi_costperctaconversion": "@items('For_each_row_campaign_d')?['costperctaconversion']",
+                    "item/sanidi_engagedviewthroughconversions": "@items('For_each_row_campaign_d')?['engagedviewthroughconversions']",
+                    "item/sanidi_costperengagedviewthroughconversion": "@items('For_each_row_campaign_d')?['costperengagedviewthroughconversion']",
+                    "item/sanidi_vtaappinstall": "@items('For_each_row_campaign_d')?['vtaappinstall']",
+                    "item/sanidi_costpervtaappinstall": "@items('For_each_row_campaign_d')?['costpervtaappinstall']",
+                    "item/sanidi_ctaappinstall": "@items('For_each_row_campaign_d')?['ctaappinstall']",
+                    "item/sanidi_costperctaappinstall": "@items('For_each_row_campaign_d')?['costperctaappinstall']",
+                    "item/sanidi_evtaappinstall": "@items('For_each_row_campaign_d')?['evtaappinstall']",
+                    "item/sanidi_costperevtaappinstall": "@items('For_each_row_campaign_d')?['costperevtaappinstall']",
+                    "item/sanidi_vtaregistration": "@items('For_each_row_campaign_d')?['vtaregistration']",
+                    "item/sanidi_costpervtaregistration": "@items('For_each_row_campaign_d')?['costpervtaregistration']",
+                    "item/sanidi_ctaregistration": "@items('For_each_row_campaign_d')?['ctaregistration']",
+                    "item/sanidi_costperctaregistration": "@items('For_each_row_campaign_d')?['costperctaregistration']",
+                    "item/sanidi_evtaregistration": "@items('For_each_row_campaign_d')?['evtaregistration']",
+                    "item/sanidi_costperevtaregistration": "@items('For_each_row_campaign_d')?['costperevtaregistration']",
+                    "item/sanidi_vtapurchase": "@items('For_each_row_campaign_d')?['vtapurchase']",
+                    "item/sanidi_costpervtapurchase": "@items('For_each_row_campaign_d')?['costpervtapurchase']",
+                    "item/sanidi_ctapurchase": "@items('For_each_row_campaign_d')?['ctapurchase']",
+                    "item/sanidi_costperctapurchase": "@items('For_each_row_campaign_d')?['costperctapurchase']",
+                    "item/sanidi_evtapurchase": "@items('For_each_row_campaign_d')?['evtapurchase']",
+                    "item/sanidi_costperevtapurchase": "@items('For_each_row_campaign_d')?['costperevtapurchase']",
+                    "item/sanidi_vtacompletepayment": "@items('For_each_row_campaign_d')?['vtacompletepayment']",
+                    "item/sanidi_costpervtapaymentscompleted": "@items('For_each_row_campaign_d')?['costpervtapaymentscompleted']",
+                    "item/sanidi_evtapaymentscompleted": "@items('For_each_row_campaign_d')?['evtapaymentscompleted']",
+                    "item/sanidi_costperevtapaymentscompleted": "@items('For_each_row_campaign_d')?['costperevtapaymentscompleted']",
+                    "item/sanidi_vtacompletepaymentvalue": "@items('For_each_row_campaign_d')?['vtacompletepaymentvalue']",
+                    "item/sanidi_vtacompletepaymentroas": "@items('For_each_row_campaign_d')?['vtacompletepaymentroas']"
+                   },
+                   "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                    "operationId": "CreateRecord",
+                    "connectionName": "shared_commondataserviceforapps"
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              "Count_written_campaign_d": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_campaign_d": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Written",
+                "value": 1
+               }
+              },
+              "Count_failed_campaign_d": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_campaign_d": [
+                 "Failed",
+                 "TimedOut"
+                ]
+               },
+               "inputs": {
+                "name": "Failed",
+                "value": 1
+               }
+              }
+             },
+             "else": {
+              "actions": {
+               "Count_skipped_campaign_d": {
+                "type": "IncrementVariable",
+                "runAfter": {},
+                "inputs": {
+                 "name": "Skipped",
+                 "value": 1
+                }
+               }
+              }
+             }
+            }
+           },
+           "runtimeConfiguration": {
+            "concurrency": {
+             "repetitions": 20
+            }
+           }
+          },
+          "Note_failed_Get_campaign_d": {
+           "type": "AppendToStringVariable",
+           "runAfter": {
+            "Get_campaign_d": [
+             "Failed",
+             "TimedOut"
+            ]
+           },
+           "inputs": {
+            "name": "Errors",
+            "value": "@{concat('campaign_d ', outputs('Window_start_campaign_d'), ': ', take(string(coalesce(body('Get_campaign_d'), '')), 400), ' | ')}"
+           }
+          }
+         },
+         "runtimeConfiguration": {
+          "concurrency": {
+           "repetitions": 1
+          }
+         }
+        }
+       },
+       "runtimeConfiguration": {
+        "concurrency": {
+         "repetitions": 1
+        }
+       }
+      }
+     }
+    },
+    "Level_adgroup": {
+     "type": "Scope",
+     "runAfter": {
+      "Level_campaign": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "actions": {
+      "List_items_adgroup_d": {
+       "runAfter": {},
+       "type": "OpenApiConnection",
+       "inputs": {
+        "parameters": {
+         "entityName": "sanidi_tiktokadgroups",
+         "$select": "sanidi_tiktokadgroupid,sanidi_adgroupid,sanidi_adgroupname,_transactioncurrencyid_value,createdon,sanidi_schedulestarttime,sanidi_createtime,sanidi_scheduleendtime",
+         "$filter": "sanidi_adgroupid ne null"
+        },
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "operationId": "ListRecords",
+         "connectionName": "shared_commondataserviceforapps"
+        }
+       },
+       "runtimeConfiguration": {
+        "paginationPolicy": {
+         "minimumItemCount": 100000
+        }
+       }
+      },
+      "Select_items_adgroup_d": {
+       "type": "Select",
+       "runAfter": {
+        "List_items_adgroup_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@coalesce(outputs('List_items_adgroup_d')?['body/value'], json('[]'))",
+        "select": "@concat('\"', item()?['sanidi_adgroupid'], '\":', string(item()))"
+       }
+      },
+      "Map_items_adgroup_d": {
+       "type": "Compose",
+       "runAfter": {
+        "Select_items_adgroup_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@json(concat('{', join(body('Select_items_adgroup_d'), ','), '}'))"
+      },
+      "Window_count_adgroup_d": {
+       "type": "Compose",
+       "runAfter": {
+        "Map_items_adgroup_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@add(div(div(sub(ticks(triggerBody()?['end_date']), ticks(triggerBody()?['start_date'])), 864000000000), 30), 1)"
+      },
+      "For_each_window_adgroup_d": {
+       "type": "Foreach",
+       "foreach": "@range(0, outputs('Window_count_adgroup_d'))",
+       "runAfter": {
+        "Window_count_adgroup_d": [
+         "Succeeded"
+        ]
+       },
+       "actions": {
+        "Window_start_adgroup_d": {
+         "type": "Compose",
+         "runAfter": {},
+         "inputs": "@formatDateTime(addDays(triggerBody()?['start_date'], mul(items('For_each_window_adgroup_d'), 30)), 'yyyy-MM-dd')"
+        },
+        "Window_end_adgroup_d": {
+         "type": "Compose",
+         "runAfter": {
+          "Window_start_adgroup_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(greater(ticks(addDays(outputs('Window_start_adgroup_d'), 29)), ticks(triggerBody()?['end_date'])), triggerBody()?['end_date'], formatDateTime(addDays(outputs('Window_start_adgroup_d'), 29), 'yyyy-MM-dd'))"
+        },
+        "List_existing_adgroup_d": {
+         "runAfter": {
+          "Window_end_adgroup_d": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_tiktokadgroupdailyinsights",
+           "$select": "sanidi_tiktokadgroupdailyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date ge @{outputs('Window_start_adgroup_d')} and sanidi_date le @{outputs('Window_end_adgroup_d')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_existing_adgroup_d": {
+         "type": "Select",
+         "runAfter": {
+          "List_existing_adgroup_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_existing_adgroup_d')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', concat('\"', item()?['sanidi_tiktokadgroupdailyinsightid'], '\"'))"
+         }
+        },
+        "Map_existing_adgroup_d": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_existing_adgroup_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_existing_adgroup_d'), ','), '}'))"
+        },
+        "For_each_advertiser_adgroup_d": {
+         "type": "Foreach",
+         "foreach": "@body('Advertiser_IDs')",
+         "runAfter": {
+          "Map_existing_adgroup_d": [
+           "Succeeded"
+          ]
+         },
+         "actions": {
+          "Get_adgroup_d": {
+           "runAfter": {},
+           "type": "OpenApiConnection",
+           "inputs": {
+            "parameters": {
+             "Access-Token": "@trim(parameters('TikTok Ads Access Token (sanidi_TikTokAdsAccessToken)'))",
+             "advertiser_id": "@items('For_each_advertiser_adgroup_d')",
+             "level": "adgroup",
+             "period": "day",
+             "start_date": "@outputs('Window_start_adgroup_d')",
+             "end_date": "@outputs('Window_end_adgroup_d')"
+            },
+            "host": {
+             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5ftiktok-5f43b530b23a0dc933",
+             "operationId": "GetPeriodInsights",
+             "connectionName": "shared_sanidi-5ftiktok-5f43b530b23a0dc933"
+            }
+           }
+          },
+          "For_each_row_adgroup_d": {
+           "type": "Foreach",
+           "foreach": "@coalesce(outputs('Get_adgroup_d')?['body/rows'], json('[]'))",
+           "runAfter": {
+            "Get_adgroup_d": [
+             "Succeeded"
+            ]
+           },
+           "actions": {
+            "Parent_adgroup_d": {
+             "type": "Compose",
+             "runAfter": {},
+             "inputs": "@outputs('Map_items_adgroup_d')?[string(items('For_each_row_adgroup_d')?['adgroupid'])]"
+            },
+            "If_synced_adgroup_d": {
+             "type": "If",
+             "runAfter": {
+              "Parent_adgroup_d": [
+               "Succeeded"
+              ]
+             },
+             "expression": {
+              "and": [
+               {
+                "not": {
+                 "equals": [
+                  "@outputs('Parent_adgroup_d')",
+                  "@null"
+                 ]
+                }
+               }
+              ]
+             },
+             "actions": {
+              "Key_adgroup_d": {
+               "type": "Compose",
+               "runAfter": {},
+               "inputs": "@concat(string(items('For_each_row_adgroup_d')?['adgroupid']), '_', formatDateTime(items('For_each_row_adgroup_d')?['date'], 'yyyyMMdd'))"
+              },
+              "If_exists_adgroup_d": {
+               "type": "If",
+               "runAfter": {
+                "Key_adgroup_d": [
+                 "Succeeded"
+                ]
+               },
+               "expression": {
+                "and": [
+                 {
+                  "not": {
+                   "equals": [
+                    "@coalesce(outputs('Map_existing_adgroup_d')?[outputs('Key_adgroup_d')], '')",
+                    ""
+                   ]
+                  }
+                 }
+                ]
+               },
+               "actions": {
+                "Update_adgroup_d": {
+                 "runAfter": {},
+                 "type": "OpenApiConnection",
+                 "inputs": {
+                  "parameters": {
+                   "entityName": "sanidi_tiktokadgroupdailyinsights",
+                   "recordId": "@outputs('Map_existing_adgroup_d')?[outputs('Key_adgroup_d')]",
+                   "item/sanidi_name": "@concat(coalesce(outputs('Parent_adgroup_d')?['sanidi_adgroupname'], string(items('For_each_row_adgroup_d')?['adgroupid'])), ' · ', items('For_each_row_adgroup_d')?['date'])",
+                   "item/sanidi_platformid": "@string(items('For_each_row_adgroup_d')?['adgroupid'])",
+                   "item/sanidi_insightkey": "@concat(string(items('For_each_row_adgroup_d')?['adgroupid']), '_', formatDateTime(items('For_each_row_adgroup_d')?['date'], 'yyyyMMdd'))",
+                   "item/sanidi_date": "@items('For_each_row_adgroup_d')?['date']",
+                   "item/sanidi_month": "@int(formatDateTime(items('For_each_row_adgroup_d')?['date'], 'MM'))",
+                   "item/sanidi_year": "@int(formatDateTime(items('For_each_row_adgroup_d')?['date'], 'yyyy'))",
+                   "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_adgroup_d')?['date']), ticks(triggerBody()?['closed_through'])))",
+                   "item/sanidi_nodata": false,
+                   "item/sanidi_lastsyncedon": "@utcNow()",
+                   "item/sanidi_tiktokadgroup@odata.bind": "/sanidi_tiktokadgroups(@{outputs('Parent_adgroup_d')?['sanidi_tiktokadgroupid']})",
+                   "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_adgroup_d')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                   "item/sanidi_rawpayload": "@if(greater(length(string(coalesce(items('For_each_row_adgroup_d')?['rawpayload'], items('For_each_row_adgroup_d')))), 100000), substring(string(coalesce(items('For_each_row_adgroup_d')?['rawpayload'], items('For_each_row_adgroup_d'))), 0, 100000), string(coalesce(items('For_each_row_adgroup_d')?['rawpayload'], items('For_each_row_adgroup_d'))))",
+                   "item/sanidi_day": "@int(formatDateTime(items('For_each_row_adgroup_d')?['date'], 'dd'))",
+                   "item/sanidi_weekday": "@add(dayOfWeek(items('For_each_row_adgroup_d')?['date']), 1)",
+                   "item/sanidi_spend": "@items('For_each_row_adgroup_d')?['spend']",
+                   "item/sanidi_billedcost": "@items('For_each_row_adgroup_d')?['billedcost']",
+                   "item/sanidi_cpc": "@items('For_each_row_adgroup_d')?['cpc']",
+                   "item/sanidi_cpm": "@items('For_each_row_adgroup_d')?['cpm']",
+                   "item/sanidi_impressions": "@items('For_each_row_adgroup_d')?['impressions']",
+                   "item/sanidi_grossimpressions": "@items('For_each_row_adgroup_d')?['grossimpressions']",
+                   "item/sanidi_clicks": "@items('For_each_row_adgroup_d')?['clicks']",
+                   "item/sanidi_ctr": "@items('For_each_row_adgroup_d')?['ctr']",
+                   "item/sanidi_reach": "@items('For_each_row_adgroup_d')?['reach']",
+                   "item/sanidi_costper1000reached": "@items('For_each_row_adgroup_d')?['costper1000reached']",
+                   "item/sanidi_frequency": "@items('For_each_row_adgroup_d')?['frequency']",
+                   "item/sanidi_conversion": "@items('For_each_row_adgroup_d')?['conversion']",
+                   "item/sanidi_costperconversion": "@items('For_each_row_adgroup_d')?['costperconversion']",
+                   "item/sanidi_conversionrate": "@items('For_each_row_adgroup_d')?['conversionrate']",
+                   "item/sanidi_conversionratev2": "@items('For_each_row_adgroup_d')?['conversionratev2']",
+                   "item/sanidi_realtimeconversion": "@items('For_each_row_adgroup_d')?['realtimeconversion']",
+                   "item/sanidi_realtimecostperconversion": "@items('For_each_row_adgroup_d')?['realtimecostperconversion']",
+                   "item/sanidi_realtimeconversionrate": "@items('For_each_row_adgroup_d')?['realtimeconversionrate']",
+                   "item/sanidi_realtimeconversionratev2": "@items('For_each_row_adgroup_d')?['realtimeconversionratev2']",
+                   "item/sanidi_result": "@items('For_each_row_adgroup_d')?['result']",
+                   "item/sanidi_costperresult": "@items('For_each_row_adgroup_d')?['costperresult']",
+                   "item/sanidi_resultrate": "@items('For_each_row_adgroup_d')?['resultrate']",
+                   "item/sanidi_realtimeresult": "@items('For_each_row_adgroup_d')?['realtimeresult']",
+                   "item/sanidi_realtimecostperresult": "@items('For_each_row_adgroup_d')?['realtimecostperresult']",
+                   "item/sanidi_realtimeresultrate": "@items('For_each_row_adgroup_d')?['realtimeresultrate']",
+                   "item/sanidi_secondarygoalresult": "@items('For_each_row_adgroup_d')?['secondarygoalresult']",
+                   "item/sanidi_costpersecondarygoalresult": "@items('For_each_row_adgroup_d')?['costpersecondarygoalresult']",
+                   "item/sanidi_secondarygoalresultrate": "@items('For_each_row_adgroup_d')?['secondarygoalresultrate']",
+                   "item/sanidi_videoplayactions": "@items('For_each_row_adgroup_d')?['videoplayactions']",
+                   "item/sanidi_videowatched2s": "@items('For_each_row_adgroup_d')?['videowatched2s']",
+                   "item/sanidi_videowatched6s": "@items('For_each_row_adgroup_d')?['videowatched6s']",
+                   "item/sanidi_videoviewsp25": "@items('For_each_row_adgroup_d')?['videoviewsp25']",
+                   "item/sanidi_videoviewsp50": "@items('For_each_row_adgroup_d')?['videoviewsp50']",
+                   "item/sanidi_videoviewsp75": "@items('For_each_row_adgroup_d')?['videoviewsp75']",
+                   "item/sanidi_videoviewsp100": "@items('For_each_row_adgroup_d')?['videoviewsp100']",
+                   "item/sanidi_averagevideoplay": "@items('For_each_row_adgroup_d')?['averagevideoplay']",
+                   "item/sanidi_averagevideoplayperuser": "@items('For_each_row_adgroup_d')?['averagevideoplayperuser']",
+                   "item/sanidi_engagedview": "@items('For_each_row_adgroup_d')?['engagedview']",
+                   "item/sanidi_paidengagedview": "@items('For_each_row_adgroup_d')?['paidengagedview']",
+                   "item/sanidi_paidengagementengagedview": "@items('For_each_row_adgroup_d')?['paidengagementengagedview']",
+                   "item/sanidi_engagedview15s": "@items('For_each_row_adgroup_d')?['engagedview15s']",
+                   "item/sanidi_paidengagedview15s": "@items('For_each_row_adgroup_d')?['paidengagedview15s']",
+                   "item/sanidi_paidengagementengagedview15s": "@items('For_each_row_adgroup_d')?['paidengagementengagedview15s']",
+                   "item/sanidi_engagements": "@items('For_each_row_adgroup_d')?['engagements']",
+                   "item/sanidi_engagementrate": "@items('For_each_row_adgroup_d')?['engagementrate']",
+                   "item/sanidi_clicksonmusicdisc": "@items('For_each_row_adgroup_d')?['clicksonmusicdisc']",
+                   "item/sanidi_duetclicks": "@items('For_each_row_adgroup_d')?['duetclicks']",
+                   "item/sanidi_stitchclicks": "@items('For_each_row_adgroup_d')?['stitchclicks']",
+                   "item/sanidi_soundusageclicks": "@items('For_each_row_adgroup_d')?['soundusageclicks']",
+                   "item/sanidi_anchorclicks": "@items('For_each_row_adgroup_d')?['anchorclicks']",
+                   "item/sanidi_anchorclickrate": "@items('For_each_row_adgroup_d')?['anchorclickrate']",
+                   "item/sanidi_clicksonhashtagchallenge": "@items('For_each_row_adgroup_d')?['clicksonhashtagchallenge']",
+                   "item/sanidi_follows": "@items('For_each_row_adgroup_d')?['follows']",
+                   "item/sanidi_likes": "@items('For_each_row_adgroup_d')?['likes']",
+                   "item/sanidi_comments": "@items('For_each_row_adgroup_d')?['comments']",
+                   "item/sanidi_shares": "@items('For_each_row_adgroup_d')?['shares']",
+                   "item/sanidi_profilevisits": "@items('For_each_row_adgroup_d')?['profilevisits']",
+                   "item/sanidi_profilevisitsrate": "@items('For_each_row_adgroup_d')?['profilevisitsrate']",
+                   "item/sanidi_ttplaylistvisit": "@items('For_each_row_adgroup_d')?['ttplaylistvisit']",
+                   "item/sanidi_ttplaylistvisitrate": "@items('For_each_row_adgroup_d')?['ttplaylistvisitrate']",
+                   "item/sanidi_costperconsideration": "@items('For_each_row_adgroup_d')?['costperconsideration']",
+                   "item/sanidi_newconsiderationrate": "@items('For_each_row_adgroup_d')?['newconsiderationrate']",
+                   "item/sanidi_newconsiderationsize": "@items('For_each_row_adgroup_d')?['newconsiderationsize']",
+                   "item/sanidi_completepaymentroas": "@items('For_each_row_adgroup_d')?['completepaymentroas']",
+                   "item/sanidi_completepayment": "@items('For_each_row_adgroup_d')?['completepayment']",
+                   "item/sanidi_costpercompletepayment": "@items('For_each_row_adgroup_d')?['costpercompletepayment']",
+                   "item/sanidi_completepaymentrate": "@items('For_each_row_adgroup_d')?['completepaymentrate']",
+                   "item/sanidi_valuepercompletepayment": "@items('For_each_row_adgroup_d')?['valuepercompletepayment']",
+                   "item/sanidi_totalcompletepaymentrate": "@items('For_each_row_adgroup_d')?['totalcompletepaymentrate']",
+                   "item/sanidi_totallandingpageview": "@items('For_each_row_adgroup_d')?['totallandingpageview']",
+                   "item/sanidi_costperlandingpageview": "@items('For_each_row_adgroup_d')?['costperlandingpageview']",
+                   "item/sanidi_landingpageviewrate": "@items('For_each_row_adgroup_d')?['landingpageviewrate']",
+                   "item/sanidi_totalpageview": "@items('For_each_row_adgroup_d')?['totalpageview']",
+                   "item/sanidi_costperpageview": "@items('For_each_row_adgroup_d')?['costperpageview']",
+                   "item/sanidi_pageviewrate": "@items('For_each_row_adgroup_d')?['pageviewrate']",
+                   "item/sanidi_avgvalueperpageview": "@items('For_each_row_adgroup_d')?['avgvalueperpageview']",
+                   "item/sanidi_totalvalueperpageview": "@items('For_each_row_adgroup_d')?['totalvalueperpageview']",
+                   "item/sanidi_pagebrowseview": "@items('For_each_row_adgroup_d')?['pagebrowseview']",
+                   "item/sanidi_costperpagebrowseview": "@items('For_each_row_adgroup_d')?['costperpagebrowseview']",
+                   "item/sanidi_pagebrowseviewrate": "@items('For_each_row_adgroup_d')?['pagebrowseviewrate']",
+                   "item/sanidi_totalpagebrowseviewvalue": "@items('For_each_row_adgroup_d')?['totalpagebrowseviewvalue']",
+                   "item/sanidi_valueperpagebrowseview": "@items('For_each_row_adgroup_d')?['valueperpagebrowseview']",
+                   "item/sanidi_buttonclick": "@items('For_each_row_adgroup_d')?['buttonclick']",
+                   "item/sanidi_costperbuttonclick": "@items('For_each_row_adgroup_d')?['costperbuttonclick']",
+                   "item/sanidi_buttonclickrate": "@items('For_each_row_adgroup_d')?['buttonclickrate']",
+                   "item/sanidi_valueperbuttonclick": "@items('For_each_row_adgroup_d')?['valueperbuttonclick']",
+                   "item/sanidi_totalbuttonclickvalue": "@items('For_each_row_adgroup_d')?['totalbuttonclickvalue']",
+                   "item/sanidi_onlineconsult": "@items('For_each_row_adgroup_d')?['onlineconsult']",
+                   "item/sanidi_costperonlineconsult": "@items('For_each_row_adgroup_d')?['costperonlineconsult']",
+                   "item/sanidi_onlineconsultrate": "@items('For_each_row_adgroup_d')?['onlineconsultrate']",
+                   "item/sanidi_valueperonlineconsult": "@items('For_each_row_adgroup_d')?['valueperonlineconsult']",
+                   "item/sanidi_totalonlineconsultvalue": "@items('For_each_row_adgroup_d')?['totalonlineconsultvalue']",
+                   "item/sanidi_userregistration": "@items('For_each_row_adgroup_d')?['userregistration']",
+                   "item/sanidi_costperuserregistration": "@items('For_each_row_adgroup_d')?['costperuserregistration']",
+                   "item/sanidi_userregistrationrate": "@items('For_each_row_adgroup_d')?['userregistrationrate']",
+                   "item/sanidi_valueperuserregistration": "@items('For_each_row_adgroup_d')?['valueperuserregistration']",
+                   "item/sanidi_totaluserregistrationvalue": "@items('For_each_row_adgroup_d')?['totaluserregistrationvalue']",
+                   "item/sanidi_pagecontentviewevents": "@items('For_each_row_adgroup_d')?['pagecontentviewevents']",
+                   "item/sanidi_costperpagecontentviewevent": "@items('For_each_row_adgroup_d')?['costperpagecontentviewevent']",
+                   "item/sanidi_pagecontentvieweventrate": "@items('For_each_row_adgroup_d')?['pagecontentvieweventrate']",
+                   "item/sanidi_valueperpagecontentviewevent": "@items('For_each_row_adgroup_d')?['valueperpagecontentviewevent']",
+                   "item/sanidi_totalpageviewcontenteventsvalue": "@items('For_each_row_adgroup_d')?['totalpageviewcontenteventsvalue']",
+                   "item/sanidi_productdetailspagebrowse": "@items('For_each_row_adgroup_d')?['productdetailspagebrowse']",
+                   "item/sanidi_costperproductdetailspagebrowse": "@items('For_each_row_adgroup_d')?['costperproductdetailspagebrowse']",
+                   "item/sanidi_productdetailspagebrowserate": "@items('For_each_row_adgroup_d')?['productdetailspagebrowserate']",
+                   "item/sanidi_valueperproductdetailspagebrowse": "@items('For_each_row_adgroup_d')?['valueperproductdetailspagebrowse']",
+                   "item/sanidi_totalproductdetailspagebrowsevalue": "@items('For_each_row_adgroup_d')?['totalproductdetailspagebrowsevalue']",
+                   "item/sanidi_webeventaddtocart": "@items('For_each_row_adgroup_d')?['webeventaddtocart']",
+                   "item/sanidi_costperwebeventaddtocart": "@items('For_each_row_adgroup_d')?['costperwebeventaddtocart']",
+                   "item/sanidi_webeventaddtocartrate": "@items('For_each_row_adgroup_d')?['webeventaddtocartrate']",
+                   "item/sanidi_valueperwebeventaddtocart": "@items('For_each_row_adgroup_d')?['valueperwebeventaddtocart']",
+                   "item/sanidi_totalwebeventaddtocartvalue": "@items('For_each_row_adgroup_d')?['totalwebeventaddtocartvalue']",
+                   "item/sanidi_onweborder": "@items('For_each_row_adgroup_d')?['onweborder']",
+                   "item/sanidi_costperonweborder": "@items('For_each_row_adgroup_d')?['costperonweborder']",
+                   "item/sanidi_onweborderrate": "@items('For_each_row_adgroup_d')?['onweborderrate']",
+                   "item/sanidi_valueperonweborder": "@items('For_each_row_adgroup_d')?['valueperonweborder']",
+                   "item/sanidi_totalonwebordervalue": "@items('For_each_row_adgroup_d')?['totalonwebordervalue']",
+                   "item/sanidi_initiatecheckout": "@items('For_each_row_adgroup_d')?['initiatecheckout']",
+                   "item/sanidi_costperinitiatecheckout": "@items('For_each_row_adgroup_d')?['costperinitiatecheckout']",
+                   "item/sanidi_initiatecheckoutrate": "@items('For_each_row_adgroup_d')?['initiatecheckoutrate']",
+                   "item/sanidi_valueperinitiatecheckout": "@items('For_each_row_adgroup_d')?['valueperinitiatecheckout']",
+                   "item/sanidi_totalinitiatecheckoutvalue": "@items('For_each_row_adgroup_d')?['totalinitiatecheckoutvalue']",
+                   "item/sanidi_addbilling": "@items('For_each_row_adgroup_d')?['addbilling']",
+                   "item/sanidi_costperaddbilling": "@items('For_each_row_adgroup_d')?['costperaddbilling']",
+                   "item/sanidi_addbillingrate": "@items('For_each_row_adgroup_d')?['addbillingrate']",
+                   "item/sanidi_valueperaddbilling": "@items('For_each_row_adgroup_d')?['valueperaddbilling']",
+                   "item/sanidi_totaladdbillingvalue": "@items('For_each_row_adgroup_d')?['totaladdbillingvalue']",
+                   "item/sanidi_pageeventsearch": "@items('For_each_row_adgroup_d')?['pageeventsearch']",
+                   "item/sanidi_costperpageeventsearch": "@items('For_each_row_adgroup_d')?['costperpageeventsearch']",
+                   "item/sanidi_pageeventsearchrate": "@items('For_each_row_adgroup_d')?['pageeventsearchrate']",
+                   "item/sanidi_valueperpageeventsearch": "@items('For_each_row_adgroup_d')?['valueperpageeventsearch']",
+                   "item/sanidi_totalpageeventsearchvalue": "@items('For_each_row_adgroup_d')?['totalpageeventsearchvalue']",
+                   "item/sanidi_form": "@items('For_each_row_adgroup_d')?['form']",
+                   "item/sanidi_costperform": "@items('For_each_row_adgroup_d')?['costperform']",
+                   "item/sanidi_formrate": "@items('For_each_row_adgroup_d')?['formrate']",
+                   "item/sanidi_valueperform": "@items('For_each_row_adgroup_d')?['valueperform']",
+                   "item/sanidi_totalformvalue": "@items('For_each_row_adgroup_d')?['totalformvalue']",
+                   "item/sanidi_downloadstart": "@items('For_each_row_adgroup_d')?['downloadstart']",
+                   "item/sanidi_costperdownloadstart": "@items('For_each_row_adgroup_d')?['costperdownloadstart']",
+                   "item/sanidi_downloadstartrate": "@items('For_each_row_adgroup_d')?['downloadstartrate']",
+                   "item/sanidi_valueperdownloadstart": "@items('For_each_row_adgroup_d')?['valueperdownloadstart']",
+                   "item/sanidi_totaldownloadstartvalue": "@items('For_each_row_adgroup_d')?['totaldownloadstartvalue']",
+                   "item/sanidi_onwebaddtowishlist": "@items('For_each_row_adgroup_d')?['onwebaddtowishlist']",
+                   "item/sanidi_costperonwebaddtowishlist": "@items('For_each_row_adgroup_d')?['costperonwebaddtowishlist']",
+                   "item/sanidi_onwebaddtowishlistperclick": "@items('For_each_row_adgroup_d')?['onwebaddtowishlistperclick']",
+                   "item/sanidi_valueperonwebaddtowishlist": "@items('For_each_row_adgroup_d')?['valueperonwebaddtowishlist']",
+                   "item/sanidi_totalonwebaddtowishlistvalue": "@items('For_each_row_adgroup_d')?['totalonwebaddtowishlistvalue']",
+                   "item/sanidi_onwebsubscribe": "@items('For_each_row_adgroup_d')?['onwebsubscribe']",
+                   "item/sanidi_costperonwebsubscribe": "@items('For_each_row_adgroup_d')?['costperonwebsubscribe']",
+                   "item/sanidi_onwebsubscribeperclick": "@items('For_each_row_adgroup_d')?['onwebsubscribeperclick']",
+                   "item/sanidi_valueperonwebsubscribe": "@items('For_each_row_adgroup_d')?['valueperonwebsubscribe']",
+                   "item/sanidi_totalonwebsubscribevalue": "@items('For_each_row_adgroup_d')?['totalonwebsubscribevalue']",
+                   "item/sanidi_websitetotalfindlocation": "@items('For_each_row_adgroup_d')?['websitetotalfindlocation']",
+                   "item/sanidi_websitecostperfindlocation": "@items('For_each_row_adgroup_d')?['websitecostperfindlocation']",
+                   "item/sanidi_websitefindlocationrate": "@items('For_each_row_adgroup_d')?['websitefindlocationrate']",
+                   "item/sanidi_websitevalueperfindlocation": "@items('For_each_row_adgroup_d')?['websitevalueperfindlocation']",
+                   "item/sanidi_websitetotalfindlocationvalue": "@items('For_each_row_adgroup_d')?['websitetotalfindlocationvalue']",
+                   "item/sanidi_websitetotalschedule": "@items('For_each_row_adgroup_d')?['websitetotalschedule']",
+                   "item/sanidi_websitecostperschedule": "@items('For_each_row_adgroup_d')?['websitecostperschedule']",
+                   "item/sanidi_websiteschedulerate": "@items('For_each_row_adgroup_d')?['websiteschedulerate']",
+                   "item/sanidi_websitevalueperschedule": "@items('For_each_row_adgroup_d')?['websitevalueperschedule']",
+                   "item/sanidi_websitetotalschedulevalue": "@items('For_each_row_adgroup_d')?['websitetotalschedulevalue']",
+                   "item/sanidi_websitetotalcustomizeproduct": "@items('For_each_row_adgroup_d')?['websitetotalcustomizeproduct']",
+                   "item/sanidi_websitecostpercustomizeproduct": "@items('For_each_row_adgroup_d')?['websitecostpercustomizeproduct']",
+                   "item/sanidi_websitecustomizeproductrate": "@items('For_each_row_adgroup_d')?['websitecustomizeproductrate']",
+                   "item/sanidi_websitevaluepercustomizeproduct": "@items('For_each_row_adgroup_d')?['websitevaluepercustomizeproduct']",
+                   "item/sanidi_websitetotalcustomizeproductvalue": "@items('For_each_row_adgroup_d')?['websitetotalcustomizeproductvalue']",
+                   "item/sanidi_vtaconversion": "@items('For_each_row_adgroup_d')?['vtaconversion']",
+                   "item/sanidi_costpervtaconversion": "@items('For_each_row_adgroup_d')?['costpervtaconversion']",
+                   "item/sanidi_ctaconversion": "@items('For_each_row_adgroup_d')?['ctaconversion']",
+                   "item/sanidi_costperctaconversion": "@items('For_each_row_adgroup_d')?['costperctaconversion']",
+                   "item/sanidi_engagedviewthroughconversions": "@items('For_each_row_adgroup_d')?['engagedviewthroughconversions']",
+                   "item/sanidi_costperengagedviewthroughconversion": "@items('For_each_row_adgroup_d')?['costperengagedviewthroughconversion']",
+                   "item/sanidi_vtaappinstall": "@items('For_each_row_adgroup_d')?['vtaappinstall']",
+                   "item/sanidi_costpervtaappinstall": "@items('For_each_row_adgroup_d')?['costpervtaappinstall']",
+                   "item/sanidi_ctaappinstall": "@items('For_each_row_adgroup_d')?['ctaappinstall']",
+                   "item/sanidi_costperctaappinstall": "@items('For_each_row_adgroup_d')?['costperctaappinstall']",
+                   "item/sanidi_evtaappinstall": "@items('For_each_row_adgroup_d')?['evtaappinstall']",
+                   "item/sanidi_costperevtaappinstall": "@items('For_each_row_adgroup_d')?['costperevtaappinstall']",
+                   "item/sanidi_vtaregistration": "@items('For_each_row_adgroup_d')?['vtaregistration']",
+                   "item/sanidi_costpervtaregistration": "@items('For_each_row_adgroup_d')?['costpervtaregistration']",
+                   "item/sanidi_ctaregistration": "@items('For_each_row_adgroup_d')?['ctaregistration']",
+                   "item/sanidi_costperctaregistration": "@items('For_each_row_adgroup_d')?['costperctaregistration']",
+                   "item/sanidi_evtaregistration": "@items('For_each_row_adgroup_d')?['evtaregistration']",
+                   "item/sanidi_costperevtaregistration": "@items('For_each_row_adgroup_d')?['costperevtaregistration']",
+                   "item/sanidi_vtapurchase": "@items('For_each_row_adgroup_d')?['vtapurchase']",
+                   "item/sanidi_costpervtapurchase": "@items('For_each_row_adgroup_d')?['costpervtapurchase']",
+                   "item/sanidi_ctapurchase": "@items('For_each_row_adgroup_d')?['ctapurchase']",
+                   "item/sanidi_costperctapurchase": "@items('For_each_row_adgroup_d')?['costperctapurchase']",
+                   "item/sanidi_evtapurchase": "@items('For_each_row_adgroup_d')?['evtapurchase']",
+                   "item/sanidi_costperevtapurchase": "@items('For_each_row_adgroup_d')?['costperevtapurchase']",
+                   "item/sanidi_vtacompletepayment": "@items('For_each_row_adgroup_d')?['vtacompletepayment']",
+                   "item/sanidi_costpervtapaymentscompleted": "@items('For_each_row_adgroup_d')?['costpervtapaymentscompleted']",
+                   "item/sanidi_evtapaymentscompleted": "@items('For_each_row_adgroup_d')?['evtapaymentscompleted']",
+                   "item/sanidi_costperevtapaymentscompleted": "@items('For_each_row_adgroup_d')?['costperevtapaymentscompleted']",
+                   "item/sanidi_vtacompletepaymentvalue": "@items('For_each_row_adgroup_d')?['vtacompletepaymentvalue']",
+                   "item/sanidi_vtacompletepaymentroas": "@items('For_each_row_adgroup_d')?['vtacompletepaymentroas']"
+                  },
+                  "host": {
+                   "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                   "operationId": "UpdateOnlyRecord",
+                   "connectionName": "shared_commondataserviceforapps"
+                  }
+                 }
+                }
+               },
+               "else": {
+                "actions": {
+                 "Create_adgroup_d": {
+                  "runAfter": {},
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                   "parameters": {
+                    "entityName": "sanidi_tiktokadgroupdailyinsights",
+                    "item/sanidi_name": "@concat(coalesce(outputs('Parent_adgroup_d')?['sanidi_adgroupname'], string(items('For_each_row_adgroup_d')?['adgroupid'])), ' · ', items('For_each_row_adgroup_d')?['date'])",
+                    "item/sanidi_platformid": "@string(items('For_each_row_adgroup_d')?['adgroupid'])",
+                    "item/sanidi_insightkey": "@concat(string(items('For_each_row_adgroup_d')?['adgroupid']), '_', formatDateTime(items('For_each_row_adgroup_d')?['date'], 'yyyyMMdd'))",
+                    "item/sanidi_date": "@items('For_each_row_adgroup_d')?['date']",
+                    "item/sanidi_month": "@int(formatDateTime(items('For_each_row_adgroup_d')?['date'], 'MM'))",
+                    "item/sanidi_year": "@int(formatDateTime(items('For_each_row_adgroup_d')?['date'], 'yyyy'))",
+                    "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_adgroup_d')?['date']), ticks(triggerBody()?['closed_through'])))",
+                    "item/sanidi_nodata": false,
+                    "item/sanidi_lastsyncedon": "@utcNow()",
+                    "item/sanidi_tiktokadgroup@odata.bind": "/sanidi_tiktokadgroups(@{outputs('Parent_adgroup_d')?['sanidi_tiktokadgroupid']})",
+                    "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_adgroup_d')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                    "item/sanidi_rawpayload": "@if(greater(length(string(coalesce(items('For_each_row_adgroup_d')?['rawpayload'], items('For_each_row_adgroup_d')))), 100000), substring(string(coalesce(items('For_each_row_adgroup_d')?['rawpayload'], items('For_each_row_adgroup_d'))), 0, 100000), string(coalesce(items('For_each_row_adgroup_d')?['rawpayload'], items('For_each_row_adgroup_d'))))",
+                    "item/sanidi_day": "@int(formatDateTime(items('For_each_row_adgroup_d')?['date'], 'dd'))",
+                    "item/sanidi_weekday": "@add(dayOfWeek(items('For_each_row_adgroup_d')?['date']), 1)",
+                    "item/sanidi_spend": "@items('For_each_row_adgroup_d')?['spend']",
+                    "item/sanidi_billedcost": "@items('For_each_row_adgroup_d')?['billedcost']",
+                    "item/sanidi_cpc": "@items('For_each_row_adgroup_d')?['cpc']",
+                    "item/sanidi_cpm": "@items('For_each_row_adgroup_d')?['cpm']",
+                    "item/sanidi_impressions": "@items('For_each_row_adgroup_d')?['impressions']",
+                    "item/sanidi_grossimpressions": "@items('For_each_row_adgroup_d')?['grossimpressions']",
+                    "item/sanidi_clicks": "@items('For_each_row_adgroup_d')?['clicks']",
+                    "item/sanidi_ctr": "@items('For_each_row_adgroup_d')?['ctr']",
+                    "item/sanidi_reach": "@items('For_each_row_adgroup_d')?['reach']",
+                    "item/sanidi_costper1000reached": "@items('For_each_row_adgroup_d')?['costper1000reached']",
+                    "item/sanidi_frequency": "@items('For_each_row_adgroup_d')?['frequency']",
+                    "item/sanidi_conversion": "@items('For_each_row_adgroup_d')?['conversion']",
+                    "item/sanidi_costperconversion": "@items('For_each_row_adgroup_d')?['costperconversion']",
+                    "item/sanidi_conversionrate": "@items('For_each_row_adgroup_d')?['conversionrate']",
+                    "item/sanidi_conversionratev2": "@items('For_each_row_adgroup_d')?['conversionratev2']",
+                    "item/sanidi_realtimeconversion": "@items('For_each_row_adgroup_d')?['realtimeconversion']",
+                    "item/sanidi_realtimecostperconversion": "@items('For_each_row_adgroup_d')?['realtimecostperconversion']",
+                    "item/sanidi_realtimeconversionrate": "@items('For_each_row_adgroup_d')?['realtimeconversionrate']",
+                    "item/sanidi_realtimeconversionratev2": "@items('For_each_row_adgroup_d')?['realtimeconversionratev2']",
+                    "item/sanidi_result": "@items('For_each_row_adgroup_d')?['result']",
+                    "item/sanidi_costperresult": "@items('For_each_row_adgroup_d')?['costperresult']",
+                    "item/sanidi_resultrate": "@items('For_each_row_adgroup_d')?['resultrate']",
+                    "item/sanidi_realtimeresult": "@items('For_each_row_adgroup_d')?['realtimeresult']",
+                    "item/sanidi_realtimecostperresult": "@items('For_each_row_adgroup_d')?['realtimecostperresult']",
+                    "item/sanidi_realtimeresultrate": "@items('For_each_row_adgroup_d')?['realtimeresultrate']",
+                    "item/sanidi_secondarygoalresult": "@items('For_each_row_adgroup_d')?['secondarygoalresult']",
+                    "item/sanidi_costpersecondarygoalresult": "@items('For_each_row_adgroup_d')?['costpersecondarygoalresult']",
+                    "item/sanidi_secondarygoalresultrate": "@items('For_each_row_adgroup_d')?['secondarygoalresultrate']",
+                    "item/sanidi_videoplayactions": "@items('For_each_row_adgroup_d')?['videoplayactions']",
+                    "item/sanidi_videowatched2s": "@items('For_each_row_adgroup_d')?['videowatched2s']",
+                    "item/sanidi_videowatched6s": "@items('For_each_row_adgroup_d')?['videowatched6s']",
+                    "item/sanidi_videoviewsp25": "@items('For_each_row_adgroup_d')?['videoviewsp25']",
+                    "item/sanidi_videoviewsp50": "@items('For_each_row_adgroup_d')?['videoviewsp50']",
+                    "item/sanidi_videoviewsp75": "@items('For_each_row_adgroup_d')?['videoviewsp75']",
+                    "item/sanidi_videoviewsp100": "@items('For_each_row_adgroup_d')?['videoviewsp100']",
+                    "item/sanidi_averagevideoplay": "@items('For_each_row_adgroup_d')?['averagevideoplay']",
+                    "item/sanidi_averagevideoplayperuser": "@items('For_each_row_adgroup_d')?['averagevideoplayperuser']",
+                    "item/sanidi_engagedview": "@items('For_each_row_adgroup_d')?['engagedview']",
+                    "item/sanidi_paidengagedview": "@items('For_each_row_adgroup_d')?['paidengagedview']",
+                    "item/sanidi_paidengagementengagedview": "@items('For_each_row_adgroup_d')?['paidengagementengagedview']",
+                    "item/sanidi_engagedview15s": "@items('For_each_row_adgroup_d')?['engagedview15s']",
+                    "item/sanidi_paidengagedview15s": "@items('For_each_row_adgroup_d')?['paidengagedview15s']",
+                    "item/sanidi_paidengagementengagedview15s": "@items('For_each_row_adgroup_d')?['paidengagementengagedview15s']",
+                    "item/sanidi_engagements": "@items('For_each_row_adgroup_d')?['engagements']",
+                    "item/sanidi_engagementrate": "@items('For_each_row_adgroup_d')?['engagementrate']",
+                    "item/sanidi_clicksonmusicdisc": "@items('For_each_row_adgroup_d')?['clicksonmusicdisc']",
+                    "item/sanidi_duetclicks": "@items('For_each_row_adgroup_d')?['duetclicks']",
+                    "item/sanidi_stitchclicks": "@items('For_each_row_adgroup_d')?['stitchclicks']",
+                    "item/sanidi_soundusageclicks": "@items('For_each_row_adgroup_d')?['soundusageclicks']",
+                    "item/sanidi_anchorclicks": "@items('For_each_row_adgroup_d')?['anchorclicks']",
+                    "item/sanidi_anchorclickrate": "@items('For_each_row_adgroup_d')?['anchorclickrate']",
+                    "item/sanidi_clicksonhashtagchallenge": "@items('For_each_row_adgroup_d')?['clicksonhashtagchallenge']",
+                    "item/sanidi_follows": "@items('For_each_row_adgroup_d')?['follows']",
+                    "item/sanidi_likes": "@items('For_each_row_adgroup_d')?['likes']",
+                    "item/sanidi_comments": "@items('For_each_row_adgroup_d')?['comments']",
+                    "item/sanidi_shares": "@items('For_each_row_adgroup_d')?['shares']",
+                    "item/sanidi_profilevisits": "@items('For_each_row_adgroup_d')?['profilevisits']",
+                    "item/sanidi_profilevisitsrate": "@items('For_each_row_adgroup_d')?['profilevisitsrate']",
+                    "item/sanidi_ttplaylistvisit": "@items('For_each_row_adgroup_d')?['ttplaylistvisit']",
+                    "item/sanidi_ttplaylistvisitrate": "@items('For_each_row_adgroup_d')?['ttplaylistvisitrate']",
+                    "item/sanidi_costperconsideration": "@items('For_each_row_adgroup_d')?['costperconsideration']",
+                    "item/sanidi_newconsiderationrate": "@items('For_each_row_adgroup_d')?['newconsiderationrate']",
+                    "item/sanidi_newconsiderationsize": "@items('For_each_row_adgroup_d')?['newconsiderationsize']",
+                    "item/sanidi_completepaymentroas": "@items('For_each_row_adgroup_d')?['completepaymentroas']",
+                    "item/sanidi_completepayment": "@items('For_each_row_adgroup_d')?['completepayment']",
+                    "item/sanidi_costpercompletepayment": "@items('For_each_row_adgroup_d')?['costpercompletepayment']",
+                    "item/sanidi_completepaymentrate": "@items('For_each_row_adgroup_d')?['completepaymentrate']",
+                    "item/sanidi_valuepercompletepayment": "@items('For_each_row_adgroup_d')?['valuepercompletepayment']",
+                    "item/sanidi_totalcompletepaymentrate": "@items('For_each_row_adgroup_d')?['totalcompletepaymentrate']",
+                    "item/sanidi_totallandingpageview": "@items('For_each_row_adgroup_d')?['totallandingpageview']",
+                    "item/sanidi_costperlandingpageview": "@items('For_each_row_adgroup_d')?['costperlandingpageview']",
+                    "item/sanidi_landingpageviewrate": "@items('For_each_row_adgroup_d')?['landingpageviewrate']",
+                    "item/sanidi_totalpageview": "@items('For_each_row_adgroup_d')?['totalpageview']",
+                    "item/sanidi_costperpageview": "@items('For_each_row_adgroup_d')?['costperpageview']",
+                    "item/sanidi_pageviewrate": "@items('For_each_row_adgroup_d')?['pageviewrate']",
+                    "item/sanidi_avgvalueperpageview": "@items('For_each_row_adgroup_d')?['avgvalueperpageview']",
+                    "item/sanidi_totalvalueperpageview": "@items('For_each_row_adgroup_d')?['totalvalueperpageview']",
+                    "item/sanidi_pagebrowseview": "@items('For_each_row_adgroup_d')?['pagebrowseview']",
+                    "item/sanidi_costperpagebrowseview": "@items('For_each_row_adgroup_d')?['costperpagebrowseview']",
+                    "item/sanidi_pagebrowseviewrate": "@items('For_each_row_adgroup_d')?['pagebrowseviewrate']",
+                    "item/sanidi_totalpagebrowseviewvalue": "@items('For_each_row_adgroup_d')?['totalpagebrowseviewvalue']",
+                    "item/sanidi_valueperpagebrowseview": "@items('For_each_row_adgroup_d')?['valueperpagebrowseview']",
+                    "item/sanidi_buttonclick": "@items('For_each_row_adgroup_d')?['buttonclick']",
+                    "item/sanidi_costperbuttonclick": "@items('For_each_row_adgroup_d')?['costperbuttonclick']",
+                    "item/sanidi_buttonclickrate": "@items('For_each_row_adgroup_d')?['buttonclickrate']",
+                    "item/sanidi_valueperbuttonclick": "@items('For_each_row_adgroup_d')?['valueperbuttonclick']",
+                    "item/sanidi_totalbuttonclickvalue": "@items('For_each_row_adgroup_d')?['totalbuttonclickvalue']",
+                    "item/sanidi_onlineconsult": "@items('For_each_row_adgroup_d')?['onlineconsult']",
+                    "item/sanidi_costperonlineconsult": "@items('For_each_row_adgroup_d')?['costperonlineconsult']",
+                    "item/sanidi_onlineconsultrate": "@items('For_each_row_adgroup_d')?['onlineconsultrate']",
+                    "item/sanidi_valueperonlineconsult": "@items('For_each_row_adgroup_d')?['valueperonlineconsult']",
+                    "item/sanidi_totalonlineconsultvalue": "@items('For_each_row_adgroup_d')?['totalonlineconsultvalue']",
+                    "item/sanidi_userregistration": "@items('For_each_row_adgroup_d')?['userregistration']",
+                    "item/sanidi_costperuserregistration": "@items('For_each_row_adgroup_d')?['costperuserregistration']",
+                    "item/sanidi_userregistrationrate": "@items('For_each_row_adgroup_d')?['userregistrationrate']",
+                    "item/sanidi_valueperuserregistration": "@items('For_each_row_adgroup_d')?['valueperuserregistration']",
+                    "item/sanidi_totaluserregistrationvalue": "@items('For_each_row_adgroup_d')?['totaluserregistrationvalue']",
+                    "item/sanidi_pagecontentviewevents": "@items('For_each_row_adgroup_d')?['pagecontentviewevents']",
+                    "item/sanidi_costperpagecontentviewevent": "@items('For_each_row_adgroup_d')?['costperpagecontentviewevent']",
+                    "item/sanidi_pagecontentvieweventrate": "@items('For_each_row_adgroup_d')?['pagecontentvieweventrate']",
+                    "item/sanidi_valueperpagecontentviewevent": "@items('For_each_row_adgroup_d')?['valueperpagecontentviewevent']",
+                    "item/sanidi_totalpageviewcontenteventsvalue": "@items('For_each_row_adgroup_d')?['totalpageviewcontenteventsvalue']",
+                    "item/sanidi_productdetailspagebrowse": "@items('For_each_row_adgroup_d')?['productdetailspagebrowse']",
+                    "item/sanidi_costperproductdetailspagebrowse": "@items('For_each_row_adgroup_d')?['costperproductdetailspagebrowse']",
+                    "item/sanidi_productdetailspagebrowserate": "@items('For_each_row_adgroup_d')?['productdetailspagebrowserate']",
+                    "item/sanidi_valueperproductdetailspagebrowse": "@items('For_each_row_adgroup_d')?['valueperproductdetailspagebrowse']",
+                    "item/sanidi_totalproductdetailspagebrowsevalue": "@items('For_each_row_adgroup_d')?['totalproductdetailspagebrowsevalue']",
+                    "item/sanidi_webeventaddtocart": "@items('For_each_row_adgroup_d')?['webeventaddtocart']",
+                    "item/sanidi_costperwebeventaddtocart": "@items('For_each_row_adgroup_d')?['costperwebeventaddtocart']",
+                    "item/sanidi_webeventaddtocartrate": "@items('For_each_row_adgroup_d')?['webeventaddtocartrate']",
+                    "item/sanidi_valueperwebeventaddtocart": "@items('For_each_row_adgroup_d')?['valueperwebeventaddtocart']",
+                    "item/sanidi_totalwebeventaddtocartvalue": "@items('For_each_row_adgroup_d')?['totalwebeventaddtocartvalue']",
+                    "item/sanidi_onweborder": "@items('For_each_row_adgroup_d')?['onweborder']",
+                    "item/sanidi_costperonweborder": "@items('For_each_row_adgroup_d')?['costperonweborder']",
+                    "item/sanidi_onweborderrate": "@items('For_each_row_adgroup_d')?['onweborderrate']",
+                    "item/sanidi_valueperonweborder": "@items('For_each_row_adgroup_d')?['valueperonweborder']",
+                    "item/sanidi_totalonwebordervalue": "@items('For_each_row_adgroup_d')?['totalonwebordervalue']",
+                    "item/sanidi_initiatecheckout": "@items('For_each_row_adgroup_d')?['initiatecheckout']",
+                    "item/sanidi_costperinitiatecheckout": "@items('For_each_row_adgroup_d')?['costperinitiatecheckout']",
+                    "item/sanidi_initiatecheckoutrate": "@items('For_each_row_adgroup_d')?['initiatecheckoutrate']",
+                    "item/sanidi_valueperinitiatecheckout": "@items('For_each_row_adgroup_d')?['valueperinitiatecheckout']",
+                    "item/sanidi_totalinitiatecheckoutvalue": "@items('For_each_row_adgroup_d')?['totalinitiatecheckoutvalue']",
+                    "item/sanidi_addbilling": "@items('For_each_row_adgroup_d')?['addbilling']",
+                    "item/sanidi_costperaddbilling": "@items('For_each_row_adgroup_d')?['costperaddbilling']",
+                    "item/sanidi_addbillingrate": "@items('For_each_row_adgroup_d')?['addbillingrate']",
+                    "item/sanidi_valueperaddbilling": "@items('For_each_row_adgroup_d')?['valueperaddbilling']",
+                    "item/sanidi_totaladdbillingvalue": "@items('For_each_row_adgroup_d')?['totaladdbillingvalue']",
+                    "item/sanidi_pageeventsearch": "@items('For_each_row_adgroup_d')?['pageeventsearch']",
+                    "item/sanidi_costperpageeventsearch": "@items('For_each_row_adgroup_d')?['costperpageeventsearch']",
+                    "item/sanidi_pageeventsearchrate": "@items('For_each_row_adgroup_d')?['pageeventsearchrate']",
+                    "item/sanidi_valueperpageeventsearch": "@items('For_each_row_adgroup_d')?['valueperpageeventsearch']",
+                    "item/sanidi_totalpageeventsearchvalue": "@items('For_each_row_adgroup_d')?['totalpageeventsearchvalue']",
+                    "item/sanidi_form": "@items('For_each_row_adgroup_d')?['form']",
+                    "item/sanidi_costperform": "@items('For_each_row_adgroup_d')?['costperform']",
+                    "item/sanidi_formrate": "@items('For_each_row_adgroup_d')?['formrate']",
+                    "item/sanidi_valueperform": "@items('For_each_row_adgroup_d')?['valueperform']",
+                    "item/sanidi_totalformvalue": "@items('For_each_row_adgroup_d')?['totalformvalue']",
+                    "item/sanidi_downloadstart": "@items('For_each_row_adgroup_d')?['downloadstart']",
+                    "item/sanidi_costperdownloadstart": "@items('For_each_row_adgroup_d')?['costperdownloadstart']",
+                    "item/sanidi_downloadstartrate": "@items('For_each_row_adgroup_d')?['downloadstartrate']",
+                    "item/sanidi_valueperdownloadstart": "@items('For_each_row_adgroup_d')?['valueperdownloadstart']",
+                    "item/sanidi_totaldownloadstartvalue": "@items('For_each_row_adgroup_d')?['totaldownloadstartvalue']",
+                    "item/sanidi_onwebaddtowishlist": "@items('For_each_row_adgroup_d')?['onwebaddtowishlist']",
+                    "item/sanidi_costperonwebaddtowishlist": "@items('For_each_row_adgroup_d')?['costperonwebaddtowishlist']",
+                    "item/sanidi_onwebaddtowishlistperclick": "@items('For_each_row_adgroup_d')?['onwebaddtowishlistperclick']",
+                    "item/sanidi_valueperonwebaddtowishlist": "@items('For_each_row_adgroup_d')?['valueperonwebaddtowishlist']",
+                    "item/sanidi_totalonwebaddtowishlistvalue": "@items('For_each_row_adgroup_d')?['totalonwebaddtowishlistvalue']",
+                    "item/sanidi_onwebsubscribe": "@items('For_each_row_adgroup_d')?['onwebsubscribe']",
+                    "item/sanidi_costperonwebsubscribe": "@items('For_each_row_adgroup_d')?['costperonwebsubscribe']",
+                    "item/sanidi_onwebsubscribeperclick": "@items('For_each_row_adgroup_d')?['onwebsubscribeperclick']",
+                    "item/sanidi_valueperonwebsubscribe": "@items('For_each_row_adgroup_d')?['valueperonwebsubscribe']",
+                    "item/sanidi_totalonwebsubscribevalue": "@items('For_each_row_adgroup_d')?['totalonwebsubscribevalue']",
+                    "item/sanidi_websitetotalfindlocation": "@items('For_each_row_adgroup_d')?['websitetotalfindlocation']",
+                    "item/sanidi_websitecostperfindlocation": "@items('For_each_row_adgroup_d')?['websitecostperfindlocation']",
+                    "item/sanidi_websitefindlocationrate": "@items('For_each_row_adgroup_d')?['websitefindlocationrate']",
+                    "item/sanidi_websitevalueperfindlocation": "@items('For_each_row_adgroup_d')?['websitevalueperfindlocation']",
+                    "item/sanidi_websitetotalfindlocationvalue": "@items('For_each_row_adgroup_d')?['websitetotalfindlocationvalue']",
+                    "item/sanidi_websitetotalschedule": "@items('For_each_row_adgroup_d')?['websitetotalschedule']",
+                    "item/sanidi_websitecostperschedule": "@items('For_each_row_adgroup_d')?['websitecostperschedule']",
+                    "item/sanidi_websiteschedulerate": "@items('For_each_row_adgroup_d')?['websiteschedulerate']",
+                    "item/sanidi_websitevalueperschedule": "@items('For_each_row_adgroup_d')?['websitevalueperschedule']",
+                    "item/sanidi_websitetotalschedulevalue": "@items('For_each_row_adgroup_d')?['websitetotalschedulevalue']",
+                    "item/sanidi_websitetotalcustomizeproduct": "@items('For_each_row_adgroup_d')?['websitetotalcustomizeproduct']",
+                    "item/sanidi_websitecostpercustomizeproduct": "@items('For_each_row_adgroup_d')?['websitecostpercustomizeproduct']",
+                    "item/sanidi_websitecustomizeproductrate": "@items('For_each_row_adgroup_d')?['websitecustomizeproductrate']",
+                    "item/sanidi_websitevaluepercustomizeproduct": "@items('For_each_row_adgroup_d')?['websitevaluepercustomizeproduct']",
+                    "item/sanidi_websitetotalcustomizeproductvalue": "@items('For_each_row_adgroup_d')?['websitetotalcustomizeproductvalue']",
+                    "item/sanidi_vtaconversion": "@items('For_each_row_adgroup_d')?['vtaconversion']",
+                    "item/sanidi_costpervtaconversion": "@items('For_each_row_adgroup_d')?['costpervtaconversion']",
+                    "item/sanidi_ctaconversion": "@items('For_each_row_adgroup_d')?['ctaconversion']",
+                    "item/sanidi_costperctaconversion": "@items('For_each_row_adgroup_d')?['costperctaconversion']",
+                    "item/sanidi_engagedviewthroughconversions": "@items('For_each_row_adgroup_d')?['engagedviewthroughconversions']",
+                    "item/sanidi_costperengagedviewthroughconversion": "@items('For_each_row_adgroup_d')?['costperengagedviewthroughconversion']",
+                    "item/sanidi_vtaappinstall": "@items('For_each_row_adgroup_d')?['vtaappinstall']",
+                    "item/sanidi_costpervtaappinstall": "@items('For_each_row_adgroup_d')?['costpervtaappinstall']",
+                    "item/sanidi_ctaappinstall": "@items('For_each_row_adgroup_d')?['ctaappinstall']",
+                    "item/sanidi_costperctaappinstall": "@items('For_each_row_adgroup_d')?['costperctaappinstall']",
+                    "item/sanidi_evtaappinstall": "@items('For_each_row_adgroup_d')?['evtaappinstall']",
+                    "item/sanidi_costperevtaappinstall": "@items('For_each_row_adgroup_d')?['costperevtaappinstall']",
+                    "item/sanidi_vtaregistration": "@items('For_each_row_adgroup_d')?['vtaregistration']",
+                    "item/sanidi_costpervtaregistration": "@items('For_each_row_adgroup_d')?['costpervtaregistration']",
+                    "item/sanidi_ctaregistration": "@items('For_each_row_adgroup_d')?['ctaregistration']",
+                    "item/sanidi_costperctaregistration": "@items('For_each_row_adgroup_d')?['costperctaregistration']",
+                    "item/sanidi_evtaregistration": "@items('For_each_row_adgroup_d')?['evtaregistration']",
+                    "item/sanidi_costperevtaregistration": "@items('For_each_row_adgroup_d')?['costperevtaregistration']",
+                    "item/sanidi_vtapurchase": "@items('For_each_row_adgroup_d')?['vtapurchase']",
+                    "item/sanidi_costpervtapurchase": "@items('For_each_row_adgroup_d')?['costpervtapurchase']",
+                    "item/sanidi_ctapurchase": "@items('For_each_row_adgroup_d')?['ctapurchase']",
+                    "item/sanidi_costperctapurchase": "@items('For_each_row_adgroup_d')?['costperctapurchase']",
+                    "item/sanidi_evtapurchase": "@items('For_each_row_adgroup_d')?['evtapurchase']",
+                    "item/sanidi_costperevtapurchase": "@items('For_each_row_adgroup_d')?['costperevtapurchase']",
+                    "item/sanidi_vtacompletepayment": "@items('For_each_row_adgroup_d')?['vtacompletepayment']",
+                    "item/sanidi_costpervtapaymentscompleted": "@items('For_each_row_adgroup_d')?['costpervtapaymentscompleted']",
+                    "item/sanidi_evtapaymentscompleted": "@items('For_each_row_adgroup_d')?['evtapaymentscompleted']",
+                    "item/sanidi_costperevtapaymentscompleted": "@items('For_each_row_adgroup_d')?['costperevtapaymentscompleted']",
+                    "item/sanidi_vtacompletepaymentvalue": "@items('For_each_row_adgroup_d')?['vtacompletepaymentvalue']",
+                    "item/sanidi_vtacompletepaymentroas": "@items('For_each_row_adgroup_d')?['vtacompletepaymentroas']"
+                   },
+                   "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                    "operationId": "CreateRecord",
+                    "connectionName": "shared_commondataserviceforapps"
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              "Count_written_adgroup_d": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_adgroup_d": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Written",
+                "value": 1
+               }
+              },
+              "Count_failed_adgroup_d": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_adgroup_d": [
+                 "Failed",
+                 "TimedOut"
+                ]
+               },
+               "inputs": {
+                "name": "Failed",
+                "value": 1
+               }
+              }
+             },
+             "else": {
+              "actions": {
+               "Count_skipped_adgroup_d": {
+                "type": "IncrementVariable",
+                "runAfter": {},
+                "inputs": {
+                 "name": "Skipped",
+                 "value": 1
+                }
+               }
+              }
+             }
+            }
+           },
+           "runtimeConfiguration": {
+            "concurrency": {
+             "repetitions": 20
+            }
+           }
+          },
+          "Note_failed_Get_adgroup_d": {
+           "type": "AppendToStringVariable",
+           "runAfter": {
+            "Get_adgroup_d": [
+             "Failed",
+             "TimedOut"
+            ]
+           },
+           "inputs": {
+            "name": "Errors",
+            "value": "@{concat('adgroup_d ', outputs('Window_start_adgroup_d'), ': ', take(string(coalesce(body('Get_adgroup_d'), '')), 400), ' | ')}"
+           }
+          }
+         },
+         "runtimeConfiguration": {
+          "concurrency": {
+           "repetitions": 1
+          }
+         }
+        }
+       },
+       "runtimeConfiguration": {
+        "concurrency": {
+         "repetitions": 1
+        }
+       }
+      }
+     }
+    },
+    "Level_ad": {
+     "type": "Scope",
+     "runAfter": {
+      "Level_adgroup": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "actions": {
+      "List_items_ad_d": {
+       "runAfter": {},
+       "type": "OpenApiConnection",
+       "inputs": {
+        "parameters": {
+         "entityName": "sanidi_tiktokadvertisements",
+         "$select": "sanidi_tiktokadvertisementid,sanidi_adid,sanidi_adname,_transactioncurrencyid_value,createdon,sanidi_createtime",
+         "$filter": "sanidi_adid ne null"
+        },
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "operationId": "ListRecords",
+         "connectionName": "shared_commondataserviceforapps"
+        }
+       },
+       "runtimeConfiguration": {
+        "paginationPolicy": {
+         "minimumItemCount": 100000
+        }
+       }
+      },
+      "Select_items_ad_d": {
+       "type": "Select",
+       "runAfter": {
+        "List_items_ad_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@coalesce(outputs('List_items_ad_d')?['body/value'], json('[]'))",
+        "select": "@concat('\"', item()?['sanidi_adid'], '\":', string(item()))"
+       }
+      },
+      "Map_items_ad_d": {
+       "type": "Compose",
+       "runAfter": {
+        "Select_items_ad_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@json(concat('{', join(body('Select_items_ad_d'), ','), '}'))"
+      },
+      "Window_count_ad_d": {
+       "type": "Compose",
+       "runAfter": {
+        "Map_items_ad_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@add(div(div(sub(ticks(triggerBody()?['end_date']), ticks(triggerBody()?['start_date'])), 864000000000), 30), 1)"
+      },
+      "For_each_window_ad_d": {
+       "type": "Foreach",
+       "foreach": "@range(0, outputs('Window_count_ad_d'))",
+       "runAfter": {
+        "Window_count_ad_d": [
+         "Succeeded"
+        ]
+       },
+       "actions": {
+        "Window_start_ad_d": {
+         "type": "Compose",
+         "runAfter": {},
+         "inputs": "@formatDateTime(addDays(triggerBody()?['start_date'], mul(items('For_each_window_ad_d'), 30)), 'yyyy-MM-dd')"
+        },
+        "Window_end_ad_d": {
+         "type": "Compose",
+         "runAfter": {
+          "Window_start_ad_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(greater(ticks(addDays(outputs('Window_start_ad_d'), 29)), ticks(triggerBody()?['end_date'])), triggerBody()?['end_date'], formatDateTime(addDays(outputs('Window_start_ad_d'), 29), 'yyyy-MM-dd'))"
+        },
+        "List_existing_ad_d": {
+         "runAfter": {
+          "Window_end_ad_d": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_tiktokadvertisementdailyinsights",
+           "$select": "sanidi_tiktokadvertisementdailyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date ge @{outputs('Window_start_ad_d')} and sanidi_date le @{outputs('Window_end_ad_d')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_existing_ad_d": {
+         "type": "Select",
+         "runAfter": {
+          "List_existing_ad_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_existing_ad_d')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', concat('\"', item()?['sanidi_tiktokadvertisementdailyinsightid'], '\"'))"
+         }
+        },
+        "Map_existing_ad_d": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_existing_ad_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_existing_ad_d'), ','), '}'))"
+        },
+        "For_each_advertiser_ad_d": {
+         "type": "Foreach",
+         "foreach": "@body('Advertiser_IDs')",
+         "runAfter": {
+          "Map_existing_ad_d": [
+           "Succeeded"
+          ]
+         },
+         "actions": {
+          "Get_ad_d": {
+           "runAfter": {},
+           "type": "OpenApiConnection",
+           "inputs": {
+            "parameters": {
+             "Access-Token": "@trim(parameters('TikTok Ads Access Token (sanidi_TikTokAdsAccessToken)'))",
+             "advertiser_id": "@items('For_each_advertiser_ad_d')",
+             "level": "ad",
+             "period": "day",
+             "start_date": "@outputs('Window_start_ad_d')",
+             "end_date": "@outputs('Window_end_ad_d')"
+            },
+            "host": {
+             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5ftiktok-5f43b530b23a0dc933",
+             "operationId": "GetPeriodInsights",
+             "connectionName": "shared_sanidi-5ftiktok-5f43b530b23a0dc933"
+            }
+           }
+          },
+          "For_each_row_ad_d": {
+           "type": "Foreach",
+           "foreach": "@coalesce(outputs('Get_ad_d')?['body/rows'], json('[]'))",
+           "runAfter": {
+            "Get_ad_d": [
+             "Succeeded"
+            ]
+           },
+           "actions": {
+            "Parent_ad_d": {
+             "type": "Compose",
+             "runAfter": {},
+             "inputs": "@outputs('Map_items_ad_d')?[string(items('For_each_row_ad_d')?['adid'])]"
+            },
+            "If_synced_ad_d": {
+             "type": "If",
+             "runAfter": {
+              "Parent_ad_d": [
+               "Succeeded"
+              ]
+             },
+             "expression": {
+              "and": [
+               {
+                "not": {
+                 "equals": [
+                  "@outputs('Parent_ad_d')",
+                  "@null"
+                 ]
+                }
+               }
+              ]
+             },
+             "actions": {
+              "Key_ad_d": {
+               "type": "Compose",
+               "runAfter": {},
+               "inputs": "@concat(string(items('For_each_row_ad_d')?['adid']), '_', formatDateTime(items('For_each_row_ad_d')?['date'], 'yyyyMMdd'))"
+              },
+              "If_exists_ad_d": {
+               "type": "If",
+               "runAfter": {
+                "Key_ad_d": [
+                 "Succeeded"
+                ]
+               },
+               "expression": {
+                "and": [
+                 {
+                  "not": {
+                   "equals": [
+                    "@coalesce(outputs('Map_existing_ad_d')?[outputs('Key_ad_d')], '')",
+                    ""
+                   ]
+                  }
+                 }
+                ]
+               },
+               "actions": {
+                "Update_ad_d": {
+                 "runAfter": {},
+                 "type": "OpenApiConnection",
+                 "inputs": {
+                  "parameters": {
+                   "entityName": "sanidi_tiktokadvertisementdailyinsights",
+                   "recordId": "@outputs('Map_existing_ad_d')?[outputs('Key_ad_d')]",
+                   "item/sanidi_name": "@concat(coalesce(outputs('Parent_ad_d')?['sanidi_adname'], string(items('For_each_row_ad_d')?['adid'])), ' · ', items('For_each_row_ad_d')?['date'])",
+                   "item/sanidi_platformid": "@string(items('For_each_row_ad_d')?['adid'])",
+                   "item/sanidi_insightkey": "@concat(string(items('For_each_row_ad_d')?['adid']), '_', formatDateTime(items('For_each_row_ad_d')?['date'], 'yyyyMMdd'))",
+                   "item/sanidi_date": "@items('For_each_row_ad_d')?['date']",
+                   "item/sanidi_month": "@int(formatDateTime(items('For_each_row_ad_d')?['date'], 'MM'))",
+                   "item/sanidi_year": "@int(formatDateTime(items('For_each_row_ad_d')?['date'], 'yyyy'))",
+                   "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_ad_d')?['date']), ticks(triggerBody()?['closed_through'])))",
+                   "item/sanidi_nodata": false,
+                   "item/sanidi_lastsyncedon": "@utcNow()",
+                   "item/sanidi_tiktokadvertisement@odata.bind": "/sanidi_tiktokadvertisements(@{outputs('Parent_ad_d')?['sanidi_tiktokadvertisementid']})",
+                   "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_ad_d')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                   "item/sanidi_rawpayload": "@if(greater(length(string(coalesce(items('For_each_row_ad_d')?['rawpayload'], items('For_each_row_ad_d')))), 100000), substring(string(coalesce(items('For_each_row_ad_d')?['rawpayload'], items('For_each_row_ad_d'))), 0, 100000), string(coalesce(items('For_each_row_ad_d')?['rawpayload'], items('For_each_row_ad_d'))))",
+                   "item/sanidi_day": "@int(formatDateTime(items('For_each_row_ad_d')?['date'], 'dd'))",
+                   "item/sanidi_weekday": "@add(dayOfWeek(items('For_each_row_ad_d')?['date']), 1)",
+                   "item/sanidi_spend": "@items('For_each_row_ad_d')?['spend']",
+                   "item/sanidi_billedcost": "@items('For_each_row_ad_d')?['billedcost']",
+                   "item/sanidi_cpc": "@items('For_each_row_ad_d')?['cpc']",
+                   "item/sanidi_cpm": "@items('For_each_row_ad_d')?['cpm']",
+                   "item/sanidi_impressions": "@items('For_each_row_ad_d')?['impressions']",
+                   "item/sanidi_grossimpressions": "@items('For_each_row_ad_d')?['grossimpressions']",
+                   "item/sanidi_clicks": "@items('For_each_row_ad_d')?['clicks']",
+                   "item/sanidi_ctr": "@items('For_each_row_ad_d')?['ctr']",
+                   "item/sanidi_reach": "@items('For_each_row_ad_d')?['reach']",
+                   "item/sanidi_costper1000reached": "@items('For_each_row_ad_d')?['costper1000reached']",
+                   "item/sanidi_frequency": "@items('For_each_row_ad_d')?['frequency']",
+                   "item/sanidi_conversion": "@items('For_each_row_ad_d')?['conversion']",
+                   "item/sanidi_costperconversion": "@items('For_each_row_ad_d')?['costperconversion']",
+                   "item/sanidi_conversionrate": "@items('For_each_row_ad_d')?['conversionrate']",
+                   "item/sanidi_conversionratev2": "@items('For_each_row_ad_d')?['conversionratev2']",
+                   "item/sanidi_realtimeconversion": "@items('For_each_row_ad_d')?['realtimeconversion']",
+                   "item/sanidi_realtimecostperconversion": "@items('For_each_row_ad_d')?['realtimecostperconversion']",
+                   "item/sanidi_realtimeconversionrate": "@items('For_each_row_ad_d')?['realtimeconversionrate']",
+                   "item/sanidi_realtimeconversionratev2": "@items('For_each_row_ad_d')?['realtimeconversionratev2']",
+                   "item/sanidi_result": "@items('For_each_row_ad_d')?['result']",
+                   "item/sanidi_costperresult": "@items('For_each_row_ad_d')?['costperresult']",
+                   "item/sanidi_resultrate": "@items('For_each_row_ad_d')?['resultrate']",
+                   "item/sanidi_realtimeresult": "@items('For_each_row_ad_d')?['realtimeresult']",
+                   "item/sanidi_realtimecostperresult": "@items('For_each_row_ad_d')?['realtimecostperresult']",
+                   "item/sanidi_realtimeresultrate": "@items('For_each_row_ad_d')?['realtimeresultrate']",
+                   "item/sanidi_secondarygoalresult": "@items('For_each_row_ad_d')?['secondarygoalresult']",
+                   "item/sanidi_costpersecondarygoalresult": "@items('For_each_row_ad_d')?['costpersecondarygoalresult']",
+                   "item/sanidi_secondarygoalresultrate": "@items('For_each_row_ad_d')?['secondarygoalresultrate']",
+                   "item/sanidi_videoplayactions": "@items('For_each_row_ad_d')?['videoplayactions']",
+                   "item/sanidi_videowatched2s": "@items('For_each_row_ad_d')?['videowatched2s']",
+                   "item/sanidi_videowatched6s": "@items('For_each_row_ad_d')?['videowatched6s']",
+                   "item/sanidi_videoviewsp25": "@items('For_each_row_ad_d')?['videoviewsp25']",
+                   "item/sanidi_videoviewsp50": "@items('For_each_row_ad_d')?['videoviewsp50']",
+                   "item/sanidi_videoviewsp75": "@items('For_each_row_ad_d')?['videoviewsp75']",
+                   "item/sanidi_videoviewsp100": "@items('For_each_row_ad_d')?['videoviewsp100']",
+                   "item/sanidi_averagevideoplay": "@items('For_each_row_ad_d')?['averagevideoplay']",
+                   "item/sanidi_averagevideoplayperuser": "@items('For_each_row_ad_d')?['averagevideoplayperuser']",
+                   "item/sanidi_engagedview": "@items('For_each_row_ad_d')?['engagedview']",
+                   "item/sanidi_paidengagedview": "@items('For_each_row_ad_d')?['paidengagedview']",
+                   "item/sanidi_paidengagementengagedview": "@items('For_each_row_ad_d')?['paidengagementengagedview']",
+                   "item/sanidi_engagedview15s": "@items('For_each_row_ad_d')?['engagedview15s']",
+                   "item/sanidi_paidengagedview15s": "@items('For_each_row_ad_d')?['paidengagedview15s']",
+                   "item/sanidi_paidengagementengagedview15s": "@items('For_each_row_ad_d')?['paidengagementengagedview15s']",
+                   "item/sanidi_engagements": "@items('For_each_row_ad_d')?['engagements']",
+                   "item/sanidi_engagementrate": "@items('For_each_row_ad_d')?['engagementrate']",
+                   "item/sanidi_clicksonmusicdisc": "@items('For_each_row_ad_d')?['clicksonmusicdisc']",
+                   "item/sanidi_duetclicks": "@items('For_each_row_ad_d')?['duetclicks']",
+                   "item/sanidi_stitchclicks": "@items('For_each_row_ad_d')?['stitchclicks']",
+                   "item/sanidi_soundusageclicks": "@items('For_each_row_ad_d')?['soundusageclicks']",
+                   "item/sanidi_anchorclicks": "@items('For_each_row_ad_d')?['anchorclicks']",
+                   "item/sanidi_anchorclickrate": "@items('For_each_row_ad_d')?['anchorclickrate']",
+                   "item/sanidi_clicksonhashtagchallenge": "@items('For_each_row_ad_d')?['clicksonhashtagchallenge']",
+                   "item/sanidi_follows": "@items('For_each_row_ad_d')?['follows']",
+                   "item/sanidi_likes": "@items('For_each_row_ad_d')?['likes']",
+                   "item/sanidi_comments": "@items('For_each_row_ad_d')?['comments']",
+                   "item/sanidi_shares": "@items('For_each_row_ad_d')?['shares']",
+                   "item/sanidi_profilevisits": "@items('For_each_row_ad_d')?['profilevisits']",
+                   "item/sanidi_profilevisitsrate": "@items('For_each_row_ad_d')?['profilevisitsrate']",
+                   "item/sanidi_ttplaylistvisit": "@items('For_each_row_ad_d')?['ttplaylistvisit']",
+                   "item/sanidi_ttplaylistvisitrate": "@items('For_each_row_ad_d')?['ttplaylistvisitrate']",
+                   "item/sanidi_costperconsideration": "@items('For_each_row_ad_d')?['costperconsideration']",
+                   "item/sanidi_newconsiderationrate": "@items('For_each_row_ad_d')?['newconsiderationrate']",
+                   "item/sanidi_newconsiderationsize": "@items('For_each_row_ad_d')?['newconsiderationsize']",
+                   "item/sanidi_completepaymentroas": "@items('For_each_row_ad_d')?['completepaymentroas']",
+                   "item/sanidi_completepayment": "@items('For_each_row_ad_d')?['completepayment']",
+                   "item/sanidi_costpercompletepayment": "@items('For_each_row_ad_d')?['costpercompletepayment']",
+                   "item/sanidi_completepaymentrate": "@items('For_each_row_ad_d')?['completepaymentrate']",
+                   "item/sanidi_valuepercompletepayment": "@items('For_each_row_ad_d')?['valuepercompletepayment']",
+                   "item/sanidi_totalcompletepaymentrate": "@items('For_each_row_ad_d')?['totalcompletepaymentrate']",
+                   "item/sanidi_totallandingpageview": "@items('For_each_row_ad_d')?['totallandingpageview']",
+                   "item/sanidi_costperlandingpageview": "@items('For_each_row_ad_d')?['costperlandingpageview']",
+                   "item/sanidi_landingpageviewrate": "@items('For_each_row_ad_d')?['landingpageviewrate']",
+                   "item/sanidi_totalpageview": "@items('For_each_row_ad_d')?['totalpageview']",
+                   "item/sanidi_costperpageview": "@items('For_each_row_ad_d')?['costperpageview']",
+                   "item/sanidi_pageviewrate": "@items('For_each_row_ad_d')?['pageviewrate']",
+                   "item/sanidi_avgvalueperpageview": "@items('For_each_row_ad_d')?['avgvalueperpageview']",
+                   "item/sanidi_totalvalueperpageview": "@items('For_each_row_ad_d')?['totalvalueperpageview']",
+                   "item/sanidi_pagebrowseview": "@items('For_each_row_ad_d')?['pagebrowseview']",
+                   "item/sanidi_costperpagebrowseview": "@items('For_each_row_ad_d')?['costperpagebrowseview']",
+                   "item/sanidi_pagebrowseviewrate": "@items('For_each_row_ad_d')?['pagebrowseviewrate']",
+                   "item/sanidi_totalpagebrowseviewvalue": "@items('For_each_row_ad_d')?['totalpagebrowseviewvalue']",
+                   "item/sanidi_valueperpagebrowseview": "@items('For_each_row_ad_d')?['valueperpagebrowseview']",
+                   "item/sanidi_buttonclick": "@items('For_each_row_ad_d')?['buttonclick']",
+                   "item/sanidi_costperbuttonclick": "@items('For_each_row_ad_d')?['costperbuttonclick']",
+                   "item/sanidi_buttonclickrate": "@items('For_each_row_ad_d')?['buttonclickrate']",
+                   "item/sanidi_valueperbuttonclick": "@items('For_each_row_ad_d')?['valueperbuttonclick']",
+                   "item/sanidi_totalbuttonclickvalue": "@items('For_each_row_ad_d')?['totalbuttonclickvalue']",
+                   "item/sanidi_onlineconsult": "@items('For_each_row_ad_d')?['onlineconsult']",
+                   "item/sanidi_costperonlineconsult": "@items('For_each_row_ad_d')?['costperonlineconsult']",
+                   "item/sanidi_onlineconsultrate": "@items('For_each_row_ad_d')?['onlineconsultrate']",
+                   "item/sanidi_valueperonlineconsult": "@items('For_each_row_ad_d')?['valueperonlineconsult']",
+                   "item/sanidi_totalonlineconsultvalue": "@items('For_each_row_ad_d')?['totalonlineconsultvalue']",
+                   "item/sanidi_userregistration": "@items('For_each_row_ad_d')?['userregistration']",
+                   "item/sanidi_costperuserregistration": "@items('For_each_row_ad_d')?['costperuserregistration']",
+                   "item/sanidi_userregistrationrate": "@items('For_each_row_ad_d')?['userregistrationrate']",
+                   "item/sanidi_valueperuserregistration": "@items('For_each_row_ad_d')?['valueperuserregistration']",
+                   "item/sanidi_totaluserregistrationvalue": "@items('For_each_row_ad_d')?['totaluserregistrationvalue']",
+                   "item/sanidi_pagecontentviewevents": "@items('For_each_row_ad_d')?['pagecontentviewevents']",
+                   "item/sanidi_costperpagecontentviewevent": "@items('For_each_row_ad_d')?['costperpagecontentviewevent']",
+                   "item/sanidi_pagecontentvieweventrate": "@items('For_each_row_ad_d')?['pagecontentvieweventrate']",
+                   "item/sanidi_valueperpagecontentviewevent": "@items('For_each_row_ad_d')?['valueperpagecontentviewevent']",
+                   "item/sanidi_totalpageviewcontenteventsvalue": "@items('For_each_row_ad_d')?['totalpageviewcontenteventsvalue']",
+                   "item/sanidi_productdetailspagebrowse": "@items('For_each_row_ad_d')?['productdetailspagebrowse']",
+                   "item/sanidi_costperproductdetailspagebrowse": "@items('For_each_row_ad_d')?['costperproductdetailspagebrowse']",
+                   "item/sanidi_productdetailspagebrowserate": "@items('For_each_row_ad_d')?['productdetailspagebrowserate']",
+                   "item/sanidi_valueperproductdetailspagebrowse": "@items('For_each_row_ad_d')?['valueperproductdetailspagebrowse']",
+                   "item/sanidi_totalproductdetailspagebrowsevalue": "@items('For_each_row_ad_d')?['totalproductdetailspagebrowsevalue']",
+                   "item/sanidi_webeventaddtocart": "@items('For_each_row_ad_d')?['webeventaddtocart']",
+                   "item/sanidi_costperwebeventaddtocart": "@items('For_each_row_ad_d')?['costperwebeventaddtocart']",
+                   "item/sanidi_webeventaddtocartrate": "@items('For_each_row_ad_d')?['webeventaddtocartrate']",
+                   "item/sanidi_valueperwebeventaddtocart": "@items('For_each_row_ad_d')?['valueperwebeventaddtocart']",
+                   "item/sanidi_totalwebeventaddtocartvalue": "@items('For_each_row_ad_d')?['totalwebeventaddtocartvalue']",
+                   "item/sanidi_onweborder": "@items('For_each_row_ad_d')?['onweborder']",
+                   "item/sanidi_costperonweborder": "@items('For_each_row_ad_d')?['costperonweborder']",
+                   "item/sanidi_onweborderrate": "@items('For_each_row_ad_d')?['onweborderrate']",
+                   "item/sanidi_valueperonweborder": "@items('For_each_row_ad_d')?['valueperonweborder']",
+                   "item/sanidi_totalonwebordervalue": "@items('For_each_row_ad_d')?['totalonwebordervalue']",
+                   "item/sanidi_initiatecheckout": "@items('For_each_row_ad_d')?['initiatecheckout']",
+                   "item/sanidi_costperinitiatecheckout": "@items('For_each_row_ad_d')?['costperinitiatecheckout']",
+                   "item/sanidi_initiatecheckoutrate": "@items('For_each_row_ad_d')?['initiatecheckoutrate']",
+                   "item/sanidi_valueperinitiatecheckout": "@items('For_each_row_ad_d')?['valueperinitiatecheckout']",
+                   "item/sanidi_totalinitiatecheckoutvalue": "@items('For_each_row_ad_d')?['totalinitiatecheckoutvalue']",
+                   "item/sanidi_addbilling": "@items('For_each_row_ad_d')?['addbilling']",
+                   "item/sanidi_costperaddbilling": "@items('For_each_row_ad_d')?['costperaddbilling']",
+                   "item/sanidi_addbillingrate": "@items('For_each_row_ad_d')?['addbillingrate']",
+                   "item/sanidi_valueperaddbilling": "@items('For_each_row_ad_d')?['valueperaddbilling']",
+                   "item/sanidi_totaladdbillingvalue": "@items('For_each_row_ad_d')?['totaladdbillingvalue']",
+                   "item/sanidi_pageeventsearch": "@items('For_each_row_ad_d')?['pageeventsearch']",
+                   "item/sanidi_costperpageeventsearch": "@items('For_each_row_ad_d')?['costperpageeventsearch']",
+                   "item/sanidi_pageeventsearchrate": "@items('For_each_row_ad_d')?['pageeventsearchrate']",
+                   "item/sanidi_valueperpageeventsearch": "@items('For_each_row_ad_d')?['valueperpageeventsearch']",
+                   "item/sanidi_totalpageeventsearchvalue": "@items('For_each_row_ad_d')?['totalpageeventsearchvalue']",
+                   "item/sanidi_form": "@items('For_each_row_ad_d')?['form']",
+                   "item/sanidi_costperform": "@items('For_each_row_ad_d')?['costperform']",
+                   "item/sanidi_formrate": "@items('For_each_row_ad_d')?['formrate']",
+                   "item/sanidi_valueperform": "@items('For_each_row_ad_d')?['valueperform']",
+                   "item/sanidi_totalformvalue": "@items('For_each_row_ad_d')?['totalformvalue']",
+                   "item/sanidi_downloadstart": "@items('For_each_row_ad_d')?['downloadstart']",
+                   "item/sanidi_costperdownloadstart": "@items('For_each_row_ad_d')?['costperdownloadstart']",
+                   "item/sanidi_downloadstartrate": "@items('For_each_row_ad_d')?['downloadstartrate']",
+                   "item/sanidi_valueperdownloadstart": "@items('For_each_row_ad_d')?['valueperdownloadstart']",
+                   "item/sanidi_totaldownloadstartvalue": "@items('For_each_row_ad_d')?['totaldownloadstartvalue']",
+                   "item/sanidi_onwebaddtowishlist": "@items('For_each_row_ad_d')?['onwebaddtowishlist']",
+                   "item/sanidi_costperonwebaddtowishlist": "@items('For_each_row_ad_d')?['costperonwebaddtowishlist']",
+                   "item/sanidi_onwebaddtowishlistperclick": "@items('For_each_row_ad_d')?['onwebaddtowishlistperclick']",
+                   "item/sanidi_valueperonwebaddtowishlist": "@items('For_each_row_ad_d')?['valueperonwebaddtowishlist']",
+                   "item/sanidi_totalonwebaddtowishlistvalue": "@items('For_each_row_ad_d')?['totalonwebaddtowishlistvalue']",
+                   "item/sanidi_onwebsubscribe": "@items('For_each_row_ad_d')?['onwebsubscribe']",
+                   "item/sanidi_costperonwebsubscribe": "@items('For_each_row_ad_d')?['costperonwebsubscribe']",
+                   "item/sanidi_onwebsubscribeperclick": "@items('For_each_row_ad_d')?['onwebsubscribeperclick']",
+                   "item/sanidi_valueperonwebsubscribe": "@items('For_each_row_ad_d')?['valueperonwebsubscribe']",
+                   "item/sanidi_totalonwebsubscribevalue": "@items('For_each_row_ad_d')?['totalonwebsubscribevalue']",
+                   "item/sanidi_websitetotalfindlocation": "@items('For_each_row_ad_d')?['websitetotalfindlocation']",
+                   "item/sanidi_websitecostperfindlocation": "@items('For_each_row_ad_d')?['websitecostperfindlocation']",
+                   "item/sanidi_websitefindlocationrate": "@items('For_each_row_ad_d')?['websitefindlocationrate']",
+                   "item/sanidi_websitevalueperfindlocation": "@items('For_each_row_ad_d')?['websitevalueperfindlocation']",
+                   "item/sanidi_websitetotalfindlocationvalue": "@items('For_each_row_ad_d')?['websitetotalfindlocationvalue']",
+                   "item/sanidi_websitetotalschedule": "@items('For_each_row_ad_d')?['websitetotalschedule']",
+                   "item/sanidi_websitecostperschedule": "@items('For_each_row_ad_d')?['websitecostperschedule']",
+                   "item/sanidi_websiteschedulerate": "@items('For_each_row_ad_d')?['websiteschedulerate']",
+                   "item/sanidi_websitevalueperschedule": "@items('For_each_row_ad_d')?['websitevalueperschedule']",
+                   "item/sanidi_websitetotalschedulevalue": "@items('For_each_row_ad_d')?['websitetotalschedulevalue']",
+                   "item/sanidi_websitetotalcustomizeproduct": "@items('For_each_row_ad_d')?['websitetotalcustomizeproduct']",
+                   "item/sanidi_websitecostpercustomizeproduct": "@items('For_each_row_ad_d')?['websitecostpercustomizeproduct']",
+                   "item/sanidi_websitecustomizeproductrate": "@items('For_each_row_ad_d')?['websitecustomizeproductrate']",
+                   "item/sanidi_websitevaluepercustomizeproduct": "@items('For_each_row_ad_d')?['websitevaluepercustomizeproduct']",
+                   "item/sanidi_websitetotalcustomizeproductvalue": "@items('For_each_row_ad_d')?['websitetotalcustomizeproductvalue']",
+                   "item/sanidi_vtaconversion": "@items('For_each_row_ad_d')?['vtaconversion']",
+                   "item/sanidi_costpervtaconversion": "@items('For_each_row_ad_d')?['costpervtaconversion']",
+                   "item/sanidi_ctaconversion": "@items('For_each_row_ad_d')?['ctaconversion']",
+                   "item/sanidi_costperctaconversion": "@items('For_each_row_ad_d')?['costperctaconversion']",
+                   "item/sanidi_engagedviewthroughconversions": "@items('For_each_row_ad_d')?['engagedviewthroughconversions']",
+                   "item/sanidi_costperengagedviewthroughconversion": "@items('For_each_row_ad_d')?['costperengagedviewthroughconversion']",
+                   "item/sanidi_vtaappinstall": "@items('For_each_row_ad_d')?['vtaappinstall']",
+                   "item/sanidi_costpervtaappinstall": "@items('For_each_row_ad_d')?['costpervtaappinstall']",
+                   "item/sanidi_ctaappinstall": "@items('For_each_row_ad_d')?['ctaappinstall']",
+                   "item/sanidi_costperctaappinstall": "@items('For_each_row_ad_d')?['costperctaappinstall']",
+                   "item/sanidi_evtaappinstall": "@items('For_each_row_ad_d')?['evtaappinstall']",
+                   "item/sanidi_costperevtaappinstall": "@items('For_each_row_ad_d')?['costperevtaappinstall']",
+                   "item/sanidi_vtaregistration": "@items('For_each_row_ad_d')?['vtaregistration']",
+                   "item/sanidi_costpervtaregistration": "@items('For_each_row_ad_d')?['costpervtaregistration']",
+                   "item/sanidi_ctaregistration": "@items('For_each_row_ad_d')?['ctaregistration']",
+                   "item/sanidi_costperctaregistration": "@items('For_each_row_ad_d')?['costperctaregistration']",
+                   "item/sanidi_evtaregistration": "@items('For_each_row_ad_d')?['evtaregistration']",
+                   "item/sanidi_costperevtaregistration": "@items('For_each_row_ad_d')?['costperevtaregistration']",
+                   "item/sanidi_vtapurchase": "@items('For_each_row_ad_d')?['vtapurchase']",
+                   "item/sanidi_costpervtapurchase": "@items('For_each_row_ad_d')?['costpervtapurchase']",
+                   "item/sanidi_ctapurchase": "@items('For_each_row_ad_d')?['ctapurchase']",
+                   "item/sanidi_costperctapurchase": "@items('For_each_row_ad_d')?['costperctapurchase']",
+                   "item/sanidi_evtapurchase": "@items('For_each_row_ad_d')?['evtapurchase']",
+                   "item/sanidi_costperevtapurchase": "@items('For_each_row_ad_d')?['costperevtapurchase']",
+                   "item/sanidi_vtacompletepayment": "@items('For_each_row_ad_d')?['vtacompletepayment']",
+                   "item/sanidi_costpervtapaymentscompleted": "@items('For_each_row_ad_d')?['costpervtapaymentscompleted']",
+                   "item/sanidi_evtapaymentscompleted": "@items('For_each_row_ad_d')?['evtapaymentscompleted']",
+                   "item/sanidi_costperevtapaymentscompleted": "@items('For_each_row_ad_d')?['costperevtapaymentscompleted']",
+                   "item/sanidi_vtacompletepaymentvalue": "@items('For_each_row_ad_d')?['vtacompletepaymentvalue']",
+                   "item/sanidi_vtacompletepaymentroas": "@items('For_each_row_ad_d')?['vtacompletepaymentroas']"
+                  },
+                  "host": {
+                   "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                   "operationId": "UpdateOnlyRecord",
+                   "connectionName": "shared_commondataserviceforapps"
+                  }
+                 }
+                }
+               },
+               "else": {
+                "actions": {
+                 "Create_ad_d": {
+                  "runAfter": {},
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                   "parameters": {
+                    "entityName": "sanidi_tiktokadvertisementdailyinsights",
+                    "item/sanidi_name": "@concat(coalesce(outputs('Parent_ad_d')?['sanidi_adname'], string(items('For_each_row_ad_d')?['adid'])), ' · ', items('For_each_row_ad_d')?['date'])",
+                    "item/sanidi_platformid": "@string(items('For_each_row_ad_d')?['adid'])",
+                    "item/sanidi_insightkey": "@concat(string(items('For_each_row_ad_d')?['adid']), '_', formatDateTime(items('For_each_row_ad_d')?['date'], 'yyyyMMdd'))",
+                    "item/sanidi_date": "@items('For_each_row_ad_d')?['date']",
+                    "item/sanidi_month": "@int(formatDateTime(items('For_each_row_ad_d')?['date'], 'MM'))",
+                    "item/sanidi_year": "@int(formatDateTime(items('For_each_row_ad_d')?['date'], 'yyyy'))",
+                    "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_ad_d')?['date']), ticks(triggerBody()?['closed_through'])))",
+                    "item/sanidi_nodata": false,
+                    "item/sanidi_lastsyncedon": "@utcNow()",
+                    "item/sanidi_tiktokadvertisement@odata.bind": "/sanidi_tiktokadvertisements(@{outputs('Parent_ad_d')?['sanidi_tiktokadvertisementid']})",
+                    "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_ad_d')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                    "item/sanidi_rawpayload": "@if(greater(length(string(coalesce(items('For_each_row_ad_d')?['rawpayload'], items('For_each_row_ad_d')))), 100000), substring(string(coalesce(items('For_each_row_ad_d')?['rawpayload'], items('For_each_row_ad_d'))), 0, 100000), string(coalesce(items('For_each_row_ad_d')?['rawpayload'], items('For_each_row_ad_d'))))",
+                    "item/sanidi_day": "@int(formatDateTime(items('For_each_row_ad_d')?['date'], 'dd'))",
+                    "item/sanidi_weekday": "@add(dayOfWeek(items('For_each_row_ad_d')?['date']), 1)",
+                    "item/sanidi_spend": "@items('For_each_row_ad_d')?['spend']",
+                    "item/sanidi_billedcost": "@items('For_each_row_ad_d')?['billedcost']",
+                    "item/sanidi_cpc": "@items('For_each_row_ad_d')?['cpc']",
+                    "item/sanidi_cpm": "@items('For_each_row_ad_d')?['cpm']",
+                    "item/sanidi_impressions": "@items('For_each_row_ad_d')?['impressions']",
+                    "item/sanidi_grossimpressions": "@items('For_each_row_ad_d')?['grossimpressions']",
+                    "item/sanidi_clicks": "@items('For_each_row_ad_d')?['clicks']",
+                    "item/sanidi_ctr": "@items('For_each_row_ad_d')?['ctr']",
+                    "item/sanidi_reach": "@items('For_each_row_ad_d')?['reach']",
+                    "item/sanidi_costper1000reached": "@items('For_each_row_ad_d')?['costper1000reached']",
+                    "item/sanidi_frequency": "@items('For_each_row_ad_d')?['frequency']",
+                    "item/sanidi_conversion": "@items('For_each_row_ad_d')?['conversion']",
+                    "item/sanidi_costperconversion": "@items('For_each_row_ad_d')?['costperconversion']",
+                    "item/sanidi_conversionrate": "@items('For_each_row_ad_d')?['conversionrate']",
+                    "item/sanidi_conversionratev2": "@items('For_each_row_ad_d')?['conversionratev2']",
+                    "item/sanidi_realtimeconversion": "@items('For_each_row_ad_d')?['realtimeconversion']",
+                    "item/sanidi_realtimecostperconversion": "@items('For_each_row_ad_d')?['realtimecostperconversion']",
+                    "item/sanidi_realtimeconversionrate": "@items('For_each_row_ad_d')?['realtimeconversionrate']",
+                    "item/sanidi_realtimeconversionratev2": "@items('For_each_row_ad_d')?['realtimeconversionratev2']",
+                    "item/sanidi_result": "@items('For_each_row_ad_d')?['result']",
+                    "item/sanidi_costperresult": "@items('For_each_row_ad_d')?['costperresult']",
+                    "item/sanidi_resultrate": "@items('For_each_row_ad_d')?['resultrate']",
+                    "item/sanidi_realtimeresult": "@items('For_each_row_ad_d')?['realtimeresult']",
+                    "item/sanidi_realtimecostperresult": "@items('For_each_row_ad_d')?['realtimecostperresult']",
+                    "item/sanidi_realtimeresultrate": "@items('For_each_row_ad_d')?['realtimeresultrate']",
+                    "item/sanidi_secondarygoalresult": "@items('For_each_row_ad_d')?['secondarygoalresult']",
+                    "item/sanidi_costpersecondarygoalresult": "@items('For_each_row_ad_d')?['costpersecondarygoalresult']",
+                    "item/sanidi_secondarygoalresultrate": "@items('For_each_row_ad_d')?['secondarygoalresultrate']",
+                    "item/sanidi_videoplayactions": "@items('For_each_row_ad_d')?['videoplayactions']",
+                    "item/sanidi_videowatched2s": "@items('For_each_row_ad_d')?['videowatched2s']",
+                    "item/sanidi_videowatched6s": "@items('For_each_row_ad_d')?['videowatched6s']",
+                    "item/sanidi_videoviewsp25": "@items('For_each_row_ad_d')?['videoviewsp25']",
+                    "item/sanidi_videoviewsp50": "@items('For_each_row_ad_d')?['videoviewsp50']",
+                    "item/sanidi_videoviewsp75": "@items('For_each_row_ad_d')?['videoviewsp75']",
+                    "item/sanidi_videoviewsp100": "@items('For_each_row_ad_d')?['videoviewsp100']",
+                    "item/sanidi_averagevideoplay": "@items('For_each_row_ad_d')?['averagevideoplay']",
+                    "item/sanidi_averagevideoplayperuser": "@items('For_each_row_ad_d')?['averagevideoplayperuser']",
+                    "item/sanidi_engagedview": "@items('For_each_row_ad_d')?['engagedview']",
+                    "item/sanidi_paidengagedview": "@items('For_each_row_ad_d')?['paidengagedview']",
+                    "item/sanidi_paidengagementengagedview": "@items('For_each_row_ad_d')?['paidengagementengagedview']",
+                    "item/sanidi_engagedview15s": "@items('For_each_row_ad_d')?['engagedview15s']",
+                    "item/sanidi_paidengagedview15s": "@items('For_each_row_ad_d')?['paidengagedview15s']",
+                    "item/sanidi_paidengagementengagedview15s": "@items('For_each_row_ad_d')?['paidengagementengagedview15s']",
+                    "item/sanidi_engagements": "@items('For_each_row_ad_d')?['engagements']",
+                    "item/sanidi_engagementrate": "@items('For_each_row_ad_d')?['engagementrate']",
+                    "item/sanidi_clicksonmusicdisc": "@items('For_each_row_ad_d')?['clicksonmusicdisc']",
+                    "item/sanidi_duetclicks": "@items('For_each_row_ad_d')?['duetclicks']",
+                    "item/sanidi_stitchclicks": "@items('For_each_row_ad_d')?['stitchclicks']",
+                    "item/sanidi_soundusageclicks": "@items('For_each_row_ad_d')?['soundusageclicks']",
+                    "item/sanidi_anchorclicks": "@items('For_each_row_ad_d')?['anchorclicks']",
+                    "item/sanidi_anchorclickrate": "@items('For_each_row_ad_d')?['anchorclickrate']",
+                    "item/sanidi_clicksonhashtagchallenge": "@items('For_each_row_ad_d')?['clicksonhashtagchallenge']",
+                    "item/sanidi_follows": "@items('For_each_row_ad_d')?['follows']",
+                    "item/sanidi_likes": "@items('For_each_row_ad_d')?['likes']",
+                    "item/sanidi_comments": "@items('For_each_row_ad_d')?['comments']",
+                    "item/sanidi_shares": "@items('For_each_row_ad_d')?['shares']",
+                    "item/sanidi_profilevisits": "@items('For_each_row_ad_d')?['profilevisits']",
+                    "item/sanidi_profilevisitsrate": "@items('For_each_row_ad_d')?['profilevisitsrate']",
+                    "item/sanidi_ttplaylistvisit": "@items('For_each_row_ad_d')?['ttplaylistvisit']",
+                    "item/sanidi_ttplaylistvisitrate": "@items('For_each_row_ad_d')?['ttplaylistvisitrate']",
+                    "item/sanidi_costperconsideration": "@items('For_each_row_ad_d')?['costperconsideration']",
+                    "item/sanidi_newconsiderationrate": "@items('For_each_row_ad_d')?['newconsiderationrate']",
+                    "item/sanidi_newconsiderationsize": "@items('For_each_row_ad_d')?['newconsiderationsize']",
+                    "item/sanidi_completepaymentroas": "@items('For_each_row_ad_d')?['completepaymentroas']",
+                    "item/sanidi_completepayment": "@items('For_each_row_ad_d')?['completepayment']",
+                    "item/sanidi_costpercompletepayment": "@items('For_each_row_ad_d')?['costpercompletepayment']",
+                    "item/sanidi_completepaymentrate": "@items('For_each_row_ad_d')?['completepaymentrate']",
+                    "item/sanidi_valuepercompletepayment": "@items('For_each_row_ad_d')?['valuepercompletepayment']",
+                    "item/sanidi_totalcompletepaymentrate": "@items('For_each_row_ad_d')?['totalcompletepaymentrate']",
+                    "item/sanidi_totallandingpageview": "@items('For_each_row_ad_d')?['totallandingpageview']",
+                    "item/sanidi_costperlandingpageview": "@items('For_each_row_ad_d')?['costperlandingpageview']",
+                    "item/sanidi_landingpageviewrate": "@items('For_each_row_ad_d')?['landingpageviewrate']",
+                    "item/sanidi_totalpageview": "@items('For_each_row_ad_d')?['totalpageview']",
+                    "item/sanidi_costperpageview": "@items('For_each_row_ad_d')?['costperpageview']",
+                    "item/sanidi_pageviewrate": "@items('For_each_row_ad_d')?['pageviewrate']",
+                    "item/sanidi_avgvalueperpageview": "@items('For_each_row_ad_d')?['avgvalueperpageview']",
+                    "item/sanidi_totalvalueperpageview": "@items('For_each_row_ad_d')?['totalvalueperpageview']",
+                    "item/sanidi_pagebrowseview": "@items('For_each_row_ad_d')?['pagebrowseview']",
+                    "item/sanidi_costperpagebrowseview": "@items('For_each_row_ad_d')?['costperpagebrowseview']",
+                    "item/sanidi_pagebrowseviewrate": "@items('For_each_row_ad_d')?['pagebrowseviewrate']",
+                    "item/sanidi_totalpagebrowseviewvalue": "@items('For_each_row_ad_d')?['totalpagebrowseviewvalue']",
+                    "item/sanidi_valueperpagebrowseview": "@items('For_each_row_ad_d')?['valueperpagebrowseview']",
+                    "item/sanidi_buttonclick": "@items('For_each_row_ad_d')?['buttonclick']",
+                    "item/sanidi_costperbuttonclick": "@items('For_each_row_ad_d')?['costperbuttonclick']",
+                    "item/sanidi_buttonclickrate": "@items('For_each_row_ad_d')?['buttonclickrate']",
+                    "item/sanidi_valueperbuttonclick": "@items('For_each_row_ad_d')?['valueperbuttonclick']",
+                    "item/sanidi_totalbuttonclickvalue": "@items('For_each_row_ad_d')?['totalbuttonclickvalue']",
+                    "item/sanidi_onlineconsult": "@items('For_each_row_ad_d')?['onlineconsult']",
+                    "item/sanidi_costperonlineconsult": "@items('For_each_row_ad_d')?['costperonlineconsult']",
+                    "item/sanidi_onlineconsultrate": "@items('For_each_row_ad_d')?['onlineconsultrate']",
+                    "item/sanidi_valueperonlineconsult": "@items('For_each_row_ad_d')?['valueperonlineconsult']",
+                    "item/sanidi_totalonlineconsultvalue": "@items('For_each_row_ad_d')?['totalonlineconsultvalue']",
+                    "item/sanidi_userregistration": "@items('For_each_row_ad_d')?['userregistration']",
+                    "item/sanidi_costperuserregistration": "@items('For_each_row_ad_d')?['costperuserregistration']",
+                    "item/sanidi_userregistrationrate": "@items('For_each_row_ad_d')?['userregistrationrate']",
+                    "item/sanidi_valueperuserregistration": "@items('For_each_row_ad_d')?['valueperuserregistration']",
+                    "item/sanidi_totaluserregistrationvalue": "@items('For_each_row_ad_d')?['totaluserregistrationvalue']",
+                    "item/sanidi_pagecontentviewevents": "@items('For_each_row_ad_d')?['pagecontentviewevents']",
+                    "item/sanidi_costperpagecontentviewevent": "@items('For_each_row_ad_d')?['costperpagecontentviewevent']",
+                    "item/sanidi_pagecontentvieweventrate": "@items('For_each_row_ad_d')?['pagecontentvieweventrate']",
+                    "item/sanidi_valueperpagecontentviewevent": "@items('For_each_row_ad_d')?['valueperpagecontentviewevent']",
+                    "item/sanidi_totalpageviewcontenteventsvalue": "@items('For_each_row_ad_d')?['totalpageviewcontenteventsvalue']",
+                    "item/sanidi_productdetailspagebrowse": "@items('For_each_row_ad_d')?['productdetailspagebrowse']",
+                    "item/sanidi_costperproductdetailspagebrowse": "@items('For_each_row_ad_d')?['costperproductdetailspagebrowse']",
+                    "item/sanidi_productdetailspagebrowserate": "@items('For_each_row_ad_d')?['productdetailspagebrowserate']",
+                    "item/sanidi_valueperproductdetailspagebrowse": "@items('For_each_row_ad_d')?['valueperproductdetailspagebrowse']",
+                    "item/sanidi_totalproductdetailspagebrowsevalue": "@items('For_each_row_ad_d')?['totalproductdetailspagebrowsevalue']",
+                    "item/sanidi_webeventaddtocart": "@items('For_each_row_ad_d')?['webeventaddtocart']",
+                    "item/sanidi_costperwebeventaddtocart": "@items('For_each_row_ad_d')?['costperwebeventaddtocart']",
+                    "item/sanidi_webeventaddtocartrate": "@items('For_each_row_ad_d')?['webeventaddtocartrate']",
+                    "item/sanidi_valueperwebeventaddtocart": "@items('For_each_row_ad_d')?['valueperwebeventaddtocart']",
+                    "item/sanidi_totalwebeventaddtocartvalue": "@items('For_each_row_ad_d')?['totalwebeventaddtocartvalue']",
+                    "item/sanidi_onweborder": "@items('For_each_row_ad_d')?['onweborder']",
+                    "item/sanidi_costperonweborder": "@items('For_each_row_ad_d')?['costperonweborder']",
+                    "item/sanidi_onweborderrate": "@items('For_each_row_ad_d')?['onweborderrate']",
+                    "item/sanidi_valueperonweborder": "@items('For_each_row_ad_d')?['valueperonweborder']",
+                    "item/sanidi_totalonwebordervalue": "@items('For_each_row_ad_d')?['totalonwebordervalue']",
+                    "item/sanidi_initiatecheckout": "@items('For_each_row_ad_d')?['initiatecheckout']",
+                    "item/sanidi_costperinitiatecheckout": "@items('For_each_row_ad_d')?['costperinitiatecheckout']",
+                    "item/sanidi_initiatecheckoutrate": "@items('For_each_row_ad_d')?['initiatecheckoutrate']",
+                    "item/sanidi_valueperinitiatecheckout": "@items('For_each_row_ad_d')?['valueperinitiatecheckout']",
+                    "item/sanidi_totalinitiatecheckoutvalue": "@items('For_each_row_ad_d')?['totalinitiatecheckoutvalue']",
+                    "item/sanidi_addbilling": "@items('For_each_row_ad_d')?['addbilling']",
+                    "item/sanidi_costperaddbilling": "@items('For_each_row_ad_d')?['costperaddbilling']",
+                    "item/sanidi_addbillingrate": "@items('For_each_row_ad_d')?['addbillingrate']",
+                    "item/sanidi_valueperaddbilling": "@items('For_each_row_ad_d')?['valueperaddbilling']",
+                    "item/sanidi_totaladdbillingvalue": "@items('For_each_row_ad_d')?['totaladdbillingvalue']",
+                    "item/sanidi_pageeventsearch": "@items('For_each_row_ad_d')?['pageeventsearch']",
+                    "item/sanidi_costperpageeventsearch": "@items('For_each_row_ad_d')?['costperpageeventsearch']",
+                    "item/sanidi_pageeventsearchrate": "@items('For_each_row_ad_d')?['pageeventsearchrate']",
+                    "item/sanidi_valueperpageeventsearch": "@items('For_each_row_ad_d')?['valueperpageeventsearch']",
+                    "item/sanidi_totalpageeventsearchvalue": "@items('For_each_row_ad_d')?['totalpageeventsearchvalue']",
+                    "item/sanidi_form": "@items('For_each_row_ad_d')?['form']",
+                    "item/sanidi_costperform": "@items('For_each_row_ad_d')?['costperform']",
+                    "item/sanidi_formrate": "@items('For_each_row_ad_d')?['formrate']",
+                    "item/sanidi_valueperform": "@items('For_each_row_ad_d')?['valueperform']",
+                    "item/sanidi_totalformvalue": "@items('For_each_row_ad_d')?['totalformvalue']",
+                    "item/sanidi_downloadstart": "@items('For_each_row_ad_d')?['downloadstart']",
+                    "item/sanidi_costperdownloadstart": "@items('For_each_row_ad_d')?['costperdownloadstart']",
+                    "item/sanidi_downloadstartrate": "@items('For_each_row_ad_d')?['downloadstartrate']",
+                    "item/sanidi_valueperdownloadstart": "@items('For_each_row_ad_d')?['valueperdownloadstart']",
+                    "item/sanidi_totaldownloadstartvalue": "@items('For_each_row_ad_d')?['totaldownloadstartvalue']",
+                    "item/sanidi_onwebaddtowishlist": "@items('For_each_row_ad_d')?['onwebaddtowishlist']",
+                    "item/sanidi_costperonwebaddtowishlist": "@items('For_each_row_ad_d')?['costperonwebaddtowishlist']",
+                    "item/sanidi_onwebaddtowishlistperclick": "@items('For_each_row_ad_d')?['onwebaddtowishlistperclick']",
+                    "item/sanidi_valueperonwebaddtowishlist": "@items('For_each_row_ad_d')?['valueperonwebaddtowishlist']",
+                    "item/sanidi_totalonwebaddtowishlistvalue": "@items('For_each_row_ad_d')?['totalonwebaddtowishlistvalue']",
+                    "item/sanidi_onwebsubscribe": "@items('For_each_row_ad_d')?['onwebsubscribe']",
+                    "item/sanidi_costperonwebsubscribe": "@items('For_each_row_ad_d')?['costperonwebsubscribe']",
+                    "item/sanidi_onwebsubscribeperclick": "@items('For_each_row_ad_d')?['onwebsubscribeperclick']",
+                    "item/sanidi_valueperonwebsubscribe": "@items('For_each_row_ad_d')?['valueperonwebsubscribe']",
+                    "item/sanidi_totalonwebsubscribevalue": "@items('For_each_row_ad_d')?['totalonwebsubscribevalue']",
+                    "item/sanidi_websitetotalfindlocation": "@items('For_each_row_ad_d')?['websitetotalfindlocation']",
+                    "item/sanidi_websitecostperfindlocation": "@items('For_each_row_ad_d')?['websitecostperfindlocation']",
+                    "item/sanidi_websitefindlocationrate": "@items('For_each_row_ad_d')?['websitefindlocationrate']",
+                    "item/sanidi_websitevalueperfindlocation": "@items('For_each_row_ad_d')?['websitevalueperfindlocation']",
+                    "item/sanidi_websitetotalfindlocationvalue": "@items('For_each_row_ad_d')?['websitetotalfindlocationvalue']",
+                    "item/sanidi_websitetotalschedule": "@items('For_each_row_ad_d')?['websitetotalschedule']",
+                    "item/sanidi_websitecostperschedule": "@items('For_each_row_ad_d')?['websitecostperschedule']",
+                    "item/sanidi_websiteschedulerate": "@items('For_each_row_ad_d')?['websiteschedulerate']",
+                    "item/sanidi_websitevalueperschedule": "@items('For_each_row_ad_d')?['websitevalueperschedule']",
+                    "item/sanidi_websitetotalschedulevalue": "@items('For_each_row_ad_d')?['websitetotalschedulevalue']",
+                    "item/sanidi_websitetotalcustomizeproduct": "@items('For_each_row_ad_d')?['websitetotalcustomizeproduct']",
+                    "item/sanidi_websitecostpercustomizeproduct": "@items('For_each_row_ad_d')?['websitecostpercustomizeproduct']",
+                    "item/sanidi_websitecustomizeproductrate": "@items('For_each_row_ad_d')?['websitecustomizeproductrate']",
+                    "item/sanidi_websitevaluepercustomizeproduct": "@items('For_each_row_ad_d')?['websitevaluepercustomizeproduct']",
+                    "item/sanidi_websitetotalcustomizeproductvalue": "@items('For_each_row_ad_d')?['websitetotalcustomizeproductvalue']",
+                    "item/sanidi_vtaconversion": "@items('For_each_row_ad_d')?['vtaconversion']",
+                    "item/sanidi_costpervtaconversion": "@items('For_each_row_ad_d')?['costpervtaconversion']",
+                    "item/sanidi_ctaconversion": "@items('For_each_row_ad_d')?['ctaconversion']",
+                    "item/sanidi_costperctaconversion": "@items('For_each_row_ad_d')?['costperctaconversion']",
+                    "item/sanidi_engagedviewthroughconversions": "@items('For_each_row_ad_d')?['engagedviewthroughconversions']",
+                    "item/sanidi_costperengagedviewthroughconversion": "@items('For_each_row_ad_d')?['costperengagedviewthroughconversion']",
+                    "item/sanidi_vtaappinstall": "@items('For_each_row_ad_d')?['vtaappinstall']",
+                    "item/sanidi_costpervtaappinstall": "@items('For_each_row_ad_d')?['costpervtaappinstall']",
+                    "item/sanidi_ctaappinstall": "@items('For_each_row_ad_d')?['ctaappinstall']",
+                    "item/sanidi_costperctaappinstall": "@items('For_each_row_ad_d')?['costperctaappinstall']",
+                    "item/sanidi_evtaappinstall": "@items('For_each_row_ad_d')?['evtaappinstall']",
+                    "item/sanidi_costperevtaappinstall": "@items('For_each_row_ad_d')?['costperevtaappinstall']",
+                    "item/sanidi_vtaregistration": "@items('For_each_row_ad_d')?['vtaregistration']",
+                    "item/sanidi_costpervtaregistration": "@items('For_each_row_ad_d')?['costpervtaregistration']",
+                    "item/sanidi_ctaregistration": "@items('For_each_row_ad_d')?['ctaregistration']",
+                    "item/sanidi_costperctaregistration": "@items('For_each_row_ad_d')?['costperctaregistration']",
+                    "item/sanidi_evtaregistration": "@items('For_each_row_ad_d')?['evtaregistration']",
+                    "item/sanidi_costperevtaregistration": "@items('For_each_row_ad_d')?['costperevtaregistration']",
+                    "item/sanidi_vtapurchase": "@items('For_each_row_ad_d')?['vtapurchase']",
+                    "item/sanidi_costpervtapurchase": "@items('For_each_row_ad_d')?['costpervtapurchase']",
+                    "item/sanidi_ctapurchase": "@items('For_each_row_ad_d')?['ctapurchase']",
+                    "item/sanidi_costperctapurchase": "@items('For_each_row_ad_d')?['costperctapurchase']",
+                    "item/sanidi_evtapurchase": "@items('For_each_row_ad_d')?['evtapurchase']",
+                    "item/sanidi_costperevtapurchase": "@items('For_each_row_ad_d')?['costperevtapurchase']",
+                    "item/sanidi_vtacompletepayment": "@items('For_each_row_ad_d')?['vtacompletepayment']",
+                    "item/sanidi_costpervtapaymentscompleted": "@items('For_each_row_ad_d')?['costpervtapaymentscompleted']",
+                    "item/sanidi_evtapaymentscompleted": "@items('For_each_row_ad_d')?['evtapaymentscompleted']",
+                    "item/sanidi_costperevtapaymentscompleted": "@items('For_each_row_ad_d')?['costperevtapaymentscompleted']",
+                    "item/sanidi_vtacompletepaymentvalue": "@items('For_each_row_ad_d')?['vtacompletepaymentvalue']",
+                    "item/sanidi_vtacompletepaymentroas": "@items('For_each_row_ad_d')?['vtacompletepaymentroas']"
+                   },
+                   "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                    "operationId": "CreateRecord",
+                    "connectionName": "shared_commondataserviceforapps"
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              "Count_written_ad_d": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_ad_d": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Written",
+                "value": 1
+               }
+              },
+              "Count_failed_ad_d": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_ad_d": [
+                 "Failed",
+                 "TimedOut"
+                ]
+               },
+               "inputs": {
+                "name": "Failed",
+                "value": 1
+               }
+              }
+             },
+             "else": {
+              "actions": {
+               "Count_skipped_ad_d": {
+                "type": "IncrementVariable",
+                "runAfter": {},
+                "inputs": {
+                 "name": "Skipped",
+                 "value": 1
+                }
+               }
+              }
+             }
+            }
+           },
+           "runtimeConfiguration": {
+            "concurrency": {
+             "repetitions": 20
+            }
+           }
+          },
+          "Note_failed_Get_ad_d": {
+           "type": "AppendToStringVariable",
+           "runAfter": {
+            "Get_ad_d": [
+             "Failed",
+             "TimedOut"
+            ]
+           },
+           "inputs": {
+            "name": "Errors",
+            "value": "@{concat('ad_d ', outputs('Window_start_ad_d'), ': ', take(string(coalesce(body('Get_ad_d'), '')), 400), ' | ')}"
+           }
+          }
+         },
+         "runtimeConfiguration": {
+          "concurrency": {
+           "repetitions": 1
+          }
+         }
+        }
+       },
+       "runtimeConfiguration": {
+        "concurrency": {
+         "repetitions": 1
+        }
+       }
+      }
+     }
+    },
+    "Respond_to_a_Power_App_or_flow": {
+     "type": "Response",
+     "kind": "PowerApp",
+     "runAfter": {
+      "Level_ad": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "inputs": {
+      "statusCode": 200,
+      "body": {
+       "written": "@variables('Written')",
+       "empty_months": "@variables('Empty')",
+       "skipped": "@variables('Skipped')",
+       "failed": "@variables('Failed')",
+       "errors": "@{take(variables('Errors'), 4000)}"
+      },
+      "schema": {
+       "type": "object",
+       "properties": {
+        "written": {
+         "title": "written",
+         "type": "integer"
+        },
+        "empty_months": {
+         "title": "empty_months",
+         "type": "integer"
+        },
+        "skipped": {
+         "title": "skipped",
+         "type": "integer"
+        },
+        "failed": {
+         "title": "failed",
+         "type": "integer"
+        },
+        "errors": {
+         "title": "errors",
+         "type": "string"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "templateName": ""
+ },
+ "schemaVersion": "1.0.0.0"
+}

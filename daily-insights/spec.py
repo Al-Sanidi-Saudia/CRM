@@ -12,7 +12,7 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 PREFIX = "sanidi_"
-SOLUTION = "AlSanidiMarketing_Patch_DailyMonthlyInsights"  # created by deploy_tables.py (see PATCH)
+SOLUTION = "AlSanidiMarketing_Patch_14289281"  # "AlSanidi | Marketing | Daily & Monthly Insights", created by deploy_tables.py
 PATCH = {"uniquename": SOLUTION, "displayname": "AlSanidi | Marketing | Daily & Monthly Insights",
          "parent": "AlSanidiMarketing", "version": "1.0.3.0"}
 

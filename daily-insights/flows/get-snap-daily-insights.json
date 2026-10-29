@@ -1,0 +1,1717 @@
+{
+ "properties": {
+  "connectionReferences": {
+   "shared_commondataserviceforapps": {
+    "api": {
+     "name": "shared_commondataserviceforapps"
+    },
+    "connection": {
+     "connectionReferenceLogicalName": "sanidi_sharedcommondataserviceforapps_79822"
+    },
+    "runtimeSource": "embedded"
+   },
+   "shared_sanidi-5fsnap-5f43b530b23a0dc933": {
+    "api": {
+     "name": "shared_sanidi-5fsnap-5f43b530b23a0dc933",
+     "logicalName": "sanidi_snap"
+    },
+    "connection": {
+     "connectionReferenceLogicalName": "sanidi_sharedsanidi5fsnap5f43b530b23a0dc933_a4073"
+    },
+    "runtimeSource": "embedded"
+   }
+  },
+  "definition": {
+   "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+   "contentVersion": "1.0.0.0",
+   "parameters": {
+    "$authentication": {
+     "defaultValue": {},
+     "type": "SecureObject"
+    },
+    "$connections": {
+     "defaultValue": {},
+     "type": "Object"
+    }
+   },
+   "triggers": {
+    "manual": {
+     "type": "Request",
+     "kind": "Button",
+     "inputs": {
+      "schema": {
+       "type": "object",
+       "properties": {
+        "start_date": {
+         "title": "Start date",
+         "type": "string",
+         "description": "First day (YYYY-MM-DD); for monthly, any day of the first month.",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "TEXT"
+        },
+        "end_date": {
+         "title": "End date",
+         "type": "string",
+         "description": "Last day (YYYY-MM-DD), inclusive; usually today.",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "TEXT"
+        },
+        "closed_through": {
+         "title": "Closed through",
+         "type": "string",
+         "description": "Rows dated on or before this date get Period Closed = Yes (YYYY-MM-DD, may be empty).",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "TEXT"
+        }
+       },
+       "required": [
+        "start_date",
+        "end_date"
+       ]
+      }
+     }
+    }
+   },
+   "actions": {
+    "Init_written": {
+     "type": "InitializeVariable",
+     "runAfter": {},
+     "inputs": {
+      "variables": [
+       {
+        "name": "Written",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Init_skipped": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_written": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "Skipped",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Init_failed": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_skipped": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "Failed",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Init_empty": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_failed": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "Empty",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Init_errors": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_empty": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "Errors",
+        "type": "string",
+        "value": ""
+       }
+      ]
+     }
+    },
+    "Init_snap_cursor": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_errors": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "SnapCursor",
+        "type": "string",
+        "value": ""
+       }
+      ]
+     }
+    },
+    "Organization": {
+     "runAfter": {
+      "Init_snap_cursor": [
+       "Succeeded"
+      ]
+     },
+     "type": "OpenApiConnection",
+     "inputs": {
+      "parameters": {
+       "entityName": "organizations",
+       "$select": "_basecurrencyid_value",
+       "$top": 1
+      },
+      "host": {
+       "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+       "operationId": "ListRecords",
+       "connectionName": "shared_commondataserviceforapps"
+      }
+     }
+    },
+    "Base_currency": {
+     "type": "Compose",
+     "runAfter": {
+      "Organization": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@first(outputs('Organization')?['body/value'])?['_basecurrencyid_value']"
+    },
+    "List_snap_campaigns": {
+     "runAfter": {
+      "Base_currency": [
+       "Succeeded"
+      ]
+     },
+     "type": "OpenApiConnection",
+     "inputs": {
+      "parameters": {
+       "entityName": "sanidi_snapcampaigns",
+       "$select": "sanidi_campaignid,sanidi_adaccountid,sanidi_starttime,sanidi_endtime,sanidi_createdat,createdon",
+       "$filter": "sanidi_campaignid ne null"
+      },
+      "host": {
+       "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+       "operationId": "ListRecords",
+       "connectionName": "shared_commondataserviceforapps"
+      }
+     },
+     "runtimeConfiguration": {
+      "paginationPolicy": {
+       "minimumItemCount": 100000
+      }
+     }
+    },
+    "Snap_account_id": {
+     "type": "Compose",
+     "runAfter": {
+      "List_snap_campaigns": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@first(outputs('List_snap_campaigns')?['body/value'])?['sanidi_adaccountid']"
+    },
+    "Snap_account": {
+     "runAfter": {
+      "Snap_account_id": [
+       "Succeeded"
+      ]
+     },
+     "type": "OpenApiConnection",
+     "inputs": {
+      "parameters": {
+       "ad_account_id": "@outputs('Snap_account_id')"
+      },
+      "host": {
+       "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fsnap-5f43b530b23a0dc933",
+       "operationId": "GetAdAccount",
+       "connectionName": "shared_sanidi-5fsnap-5f43b530b23a0dc933"
+      }
+     }
+    },
+    "Snap_offsets": {
+     "type": "Compose",
+     "runAfter": {
+      "Snap_account": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "Asia/Riyadh": "+03:00",
+      "Asia/Kuwait": "+03:00",
+      "Asia/Qatar": "+03:00",
+      "Asia/Bahrain": "+03:00",
+      "Asia/Aden": "+03:00",
+      "Asia/Baghdad": "+03:00",
+      "Asia/Dubai": "+04:00",
+      "Asia/Muscat": "+04:00",
+      "UTC": "+00:00",
+      "Etc/UTC": "+00:00",
+      "GMT": "+00:00"
+     }
+    },
+    "Snap_offset": {
+     "type": "Compose",
+     "runAfter": {
+      "Snap_offsets": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@coalesce(outputs('Snap_offsets')?[coalesce(outputs('Snap_account')?['body/adaccounts']?[0]?['adaccount']?['timezone'], '')], int(concat('Unsupported Snap ad account time zone: ', string(outputs('Snap_account')?['body/adaccounts']?[0]?['adaccount']?['timezone']))))"
+    },
+    "Level_campaign": {
+     "type": "Scope",
+     "runAfter": {
+      "Snap_offset": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "actions": {
+      "List_items_campaign_d": {
+       "runAfter": {},
+       "type": "OpenApiConnection",
+       "inputs": {
+        "parameters": {
+         "entityName": "sanidi_snapcampaigns",
+         "$select": "sanidi_snapcampaignid,sanidi_campaignid,sanidi_campaignname,_transactioncurrencyid_value,createdon,sanidi_starttime,sanidi_createdat,sanidi_endtime",
+         "$filter": "sanidi_campaignid ne null"
+        },
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "operationId": "ListRecords",
+         "connectionName": "shared_commondataserviceforapps"
+        }
+       },
+       "runtimeConfiguration": {
+        "paginationPolicy": {
+         "minimumItemCount": 100000
+        }
+       }
+      },
+      "Select_items_campaign_d": {
+       "type": "Select",
+       "runAfter": {
+        "List_items_campaign_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@coalesce(outputs('List_items_campaign_d')?['body/value'], json('[]'))",
+        "select": "@concat('\"', item()?['sanidi_campaignid'], '\":', string(item()))"
+       }
+      },
+      "Map_items_campaign_d": {
+       "type": "Compose",
+       "runAfter": {
+        "Select_items_campaign_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@json(concat('{', join(body('Select_items_campaign_d'), ','), '}'))"
+      },
+      "Window_count_campaign_d": {
+       "type": "Compose",
+       "runAfter": {
+        "Map_items_campaign_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@add(div(div(sub(ticks(triggerBody()?['end_date']), ticks(triggerBody()?['start_date'])), 864000000000), 30), 1)"
+      },
+      "For_each_window_campaign_d": {
+       "type": "Foreach",
+       "foreach": "@range(0, outputs('Window_count_campaign_d'))",
+       "runAfter": {
+        "Window_count_campaign_d": [
+         "Succeeded"
+        ]
+       },
+       "actions": {
+        "Window_start_campaign_d": {
+         "type": "Compose",
+         "runAfter": {},
+         "inputs": "@formatDateTime(addDays(triggerBody()?['start_date'], mul(items('For_each_window_campaign_d'), 30)), 'yyyy-MM-dd')"
+        },
+        "Window_end_campaign_d": {
+         "type": "Compose",
+         "runAfter": {
+          "Window_start_campaign_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(greater(ticks(addDays(outputs('Window_start_campaign_d'), 29)), ticks(triggerBody()?['end_date'])), triggerBody()?['end_date'], formatDateTime(addDays(outputs('Window_start_campaign_d'), 29), 'yyyy-MM-dd'))"
+        },
+        "List_existing_campaign_d": {
+         "runAfter": {
+          "Window_end_campaign_d": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_snapcampaigndailyinsights",
+           "$select": "sanidi_snapcampaigndailyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date ge @{outputs('Window_start_campaign_d')} and sanidi_date le @{outputs('Window_end_campaign_d')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_existing_campaign_d": {
+         "type": "Select",
+         "runAfter": {
+          "List_existing_campaign_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_existing_campaign_d')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', concat('\"', item()?['sanidi_snapcampaigndailyinsightid'], '\"'))"
+         }
+        },
+        "Map_existing_campaign_d": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_existing_campaign_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_existing_campaign_d'), ','), '}'))"
+        },
+        "Reset_cursor_campaign_d": {
+         "type": "SetVariable",
+         "runAfter": {
+          "Map_existing_campaign_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "name": "SnapCursor",
+          "value": ""
+         }
+        },
+        "Pages_campaign_d": {
+         "type": "Until",
+         "runAfter": {
+          "Reset_cursor_campaign_d": [
+           "Succeeded"
+          ]
+         },
+         "expression": "@or(empty(variables('SnapCursor')), equals(actions('Get_campaign_d')?['status'], 'Failed'))",
+         "limit": {
+          "count": 200,
+          "timeout": "PT6H"
+         },
+         "actions": {
+          "Get_campaign_d": {
+           "runAfter": {},
+           "type": "OpenApiConnection",
+           "inputs": {
+            "parameters": {
+             "ad_account_id": "@outputs('Snap_account_id')",
+             "granularity": "DAY",
+             "breakdown": "campaign",
+             "start_time": "@concat(outputs('Window_start_campaign_d'), 'T00:00:00', outputs('Snap_offset'))",
+             "end_time": "@concat(formatDateTime(addDays(outputs('Window_end_campaign_d'), 1), 'yyyy-MM-dd'), 'T00:00:00', outputs('Snap_offset'))",
+             "fields": "impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups",
+             "omit_empty": true,
+             "limit": 200,
+             "cursor": "@if(empty(variables('SnapCursor')), null, variables('SnapCursor'))"
+            },
+            "host": {
+             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fsnap-5f43b530b23a0dc933",
+             "operationId": "GetAdAccountStats",
+             "connectionName": "shared_sanidi-5fsnap-5f43b530b23a0dc933"
+            }
+           }
+          },
+          "For_each_entity_campaign_d": {
+           "type": "Foreach",
+           "foreach": "@coalesce(outputs('Get_campaign_d')?['body/timeseries_stats']?[0]?['timeseries_stat']?['breakdown_stats']?['campaign'], json('[]'))",
+           "runAfter": {
+            "Get_campaign_d": [
+             "Succeeded"
+            ]
+           },
+           "actions": {
+            "Active_days_campaign_d": {
+             "type": "Query",
+             "runAfter": {},
+             "inputs": {
+              "from": "@coalesce(items('For_each_entity_campaign_d')?['timeseries'], json('[]'))",
+              "where": "@or(greater(float(coalesce(item()?['stats']?['impressions'], 0)), 0), greater(float(coalesce(item()?['stats']?['spend'], 0)), 0))"
+             }
+            },
+            "For_each_day_campaign_d": {
+             "type": "Foreach",
+             "foreach": "@body('Active_days_campaign_d')",
+             "runAfter": {
+              "Active_days_campaign_d": [
+               "Succeeded"
+              ]
+             },
+             "actions": {
+              "Parent_campaign_d": {
+               "type": "Compose",
+               "runAfter": {},
+               "inputs": "@outputs('Map_items_campaign_d')?[string(items('For_each_entity_campaign_d')?['id'])]"
+              },
+              "If_synced_campaign_d": {
+               "type": "If",
+               "runAfter": {
+                "Parent_campaign_d": [
+                 "Succeeded"
+                ]
+               },
+               "expression": {
+                "and": [
+                 {
+                  "not": {
+                   "equals": [
+                    "@outputs('Parent_campaign_d')",
+                    "@null"
+                   ]
+                  }
+                 }
+                ]
+               },
+               "actions": {
+                "Key_campaign_d": {
+                 "type": "Compose",
+                 "runAfter": {},
+                 "inputs": "@concat(string(items('For_each_entity_campaign_d')?['id']), '_', formatDateTime(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10), 'yyyyMMdd'))"
+                },
+                "If_exists_campaign_d": {
+                 "type": "If",
+                 "runAfter": {
+                  "Key_campaign_d": [
+                   "Succeeded"
+                  ]
+                 },
+                 "expression": {
+                  "and": [
+                   {
+                    "not": {
+                     "equals": [
+                      "@coalesce(outputs('Map_existing_campaign_d')?[outputs('Key_campaign_d')], '')",
+                      ""
+                     ]
+                    }
+                   }
+                  ]
+                 },
+                 "actions": {
+                  "Update_campaign_d": {
+                   "runAfter": {},
+                   "type": "OpenApiConnection",
+                   "inputs": {
+                    "parameters": {
+                     "entityName": "sanidi_snapcampaigndailyinsights",
+                     "recordId": "@outputs('Map_existing_campaign_d')?[outputs('Key_campaign_d')]",
+                     "item/sanidi_name": "@concat(coalesce(outputs('Parent_campaign_d')?['sanidi_campaignname'], string(items('For_each_entity_campaign_d')?['id'])), ' · ', substring(items('For_each_day_campaign_d')?['start_time'], 0, 10))",
+                     "item/sanidi_platformid": "@string(items('For_each_entity_campaign_d')?['id'])",
+                     "item/sanidi_insightkey": "@concat(string(items('For_each_entity_campaign_d')?['id']), '_', formatDateTime(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10), 'yyyyMMdd'))",
+                     "item/sanidi_date": "@substring(items('For_each_day_campaign_d')?['start_time'], 0, 10)",
+                     "item/sanidi_month": "@int(formatDateTime(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10), 'MM'))",
+                     "item/sanidi_year": "@int(formatDateTime(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10), 'yyyy'))",
+                     "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10)), ticks(triggerBody()?['closed_through'])))",
+                     "item/sanidi_nodata": false,
+                     "item/sanidi_lastsyncedon": "@utcNow()",
+                     "item/sanidi_snapcampaign@odata.bind": "/sanidi_snapcampaigns(@{outputs('Parent_campaign_d')?['sanidi_snapcampaignid']})",
+                     "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_campaign_d')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                     "item/sanidi_rawpayload": "@if(greater(length(string(addProperty(items('For_each_day_campaign_d'), 'id', items('For_each_entity_campaign_d')?['id']))), 100000), substring(string(addProperty(items('For_each_day_campaign_d'), 'id', items('For_each_entity_campaign_d')?['id'])), 0, 100000), string(addProperty(items('For_each_day_campaign_d'), 'id', items('For_each_entity_campaign_d')?['id'])))",
+                     "item/sanidi_day": "@int(formatDateTime(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10), 'dd'))",
+                     "item/sanidi_weekday": "@add(dayOfWeek(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10)), 1)",
+                     "item/sanidi_impressions": "@items('For_each_day_campaign_d')?['stats']?['impressions']",
+                     "item/sanidi_reach": "@items('For_each_day_campaign_d')?['stats']?['uniques']",
+                     "item/sanidi_frequency": "@if(not(equals(items('For_each_day_campaign_d')?['stats']?['frequency'], null)), items('For_each_day_campaign_d')?['stats']?['frequency'], if(greater(float(coalesce(items('For_each_day_campaign_d')?['stats']?['uniques'], 0)), 0), div(float(coalesce(items('For_each_day_campaign_d')?['stats']?['impressions'], 0)), float(coalesce(items('For_each_day_campaign_d')?['stats']?['uniques'], 0))), null))",
+                     "item/sanidi_swipes": "@items('For_each_day_campaign_d')?['stats']?['swipes']",
+                     "item/sanidi_spend": "@if(equals(items('For_each_day_campaign_d')?['stats']?['spend'], null), null, div(float(items('For_each_day_campaign_d')?['stats']?['spend']), 1000000))",
+                     "item/sanidi_videoviews": "@items('For_each_day_campaign_d')?['stats']?['video_views']",
+                     "item/sanidi_engagedviews": "@items('For_each_day_campaign_d')?['stats']?['engaged_views']",
+                     "item/sanidi_screentimeseconds": "@if(equals(items('For_each_day_campaign_d')?['stats']?['screen_time_millis'], null), null, div(float(items('For_each_day_campaign_d')?['stats']?['screen_time_millis']), 1000))",
+                     "item/sanidi_quartile1": "@items('For_each_day_campaign_d')?['stats']?['quartile_1']",
+                     "item/sanidi_quartile2": "@items('For_each_day_campaign_d')?['stats']?['quartile_2']",
+                     "item/sanidi_quartile3": "@items('For_each_day_campaign_d')?['stats']?['quartile_3']",
+                     "item/sanidi_viewcompletion": "@items('For_each_day_campaign_d')?['stats']?['view_completion']",
+                     "item/sanidi_landingpageviews": "@items('For_each_day_campaign_d')?['stats']?['landing_page_views']",
+                     "item/sanidi_placeopens": "@items('For_each_day_campaign_d')?['stats']?['place_opens']",
+                     "item/sanidi_placeactions": "@items('For_each_day_campaign_d')?['stats']?['place_actions']",
+                     "item/sanidi_purchases": "@items('For_each_day_campaign_d')?['stats']?['conversion_purchases']",
+                     "item/sanidi_purchasevalue": "@if(equals(items('For_each_day_campaign_d')?['stats']?['conversion_purchases_value'], null), null, div(float(items('For_each_day_campaign_d')?['stats']?['conversion_purchases_value']), 1000000))",
+                     "item/sanidi_addtocart": "@items('For_each_day_campaign_d')?['stats']?['conversion_add_cart']",
+                     "item/sanidi_startcheckout": "@items('For_each_day_campaign_d')?['stats']?['conversion_start_checkout']",
+                     "item/sanidi_viewcontent": "@items('For_each_day_campaign_d')?['stats']?['conversion_view_content']",
+                     "item/sanidi_pixelpageviews": "@items('For_each_day_campaign_d')?['stats']?['conversion_page_views']",
+                     "item/sanidi_signups": "@items('For_each_day_campaign_d')?['stats']?['conversion_sign_ups']",
+                     "item/sanidi_swiperate": "@if(greater(float(coalesce(items('For_each_day_campaign_d')?['stats']?['impressions'], 0)), 0), div(mul(float(coalesce(items('For_each_day_campaign_d')?['stats']?['swipes'], 0)), 100), float(coalesce(items('For_each_day_campaign_d')?['stats']?['impressions'], 0))), null)",
+                     "item/sanidi_cpm": "@if(greater(float(coalesce(items('For_each_day_campaign_d')?['stats']?['impressions'], 0)), 0), div(mul(div(float(coalesce(items('For_each_day_campaign_d')?['stats']?['spend'], 0)), 1000000), 1000), float(coalesce(items('For_each_day_campaign_d')?['stats']?['impressions'], 0))), null)",
+                     "item/sanidi_costperswipe": "@if(greater(float(coalesce(items('For_each_day_campaign_d')?['stats']?['swipes'], 0)), 0), div(div(float(coalesce(items('For_each_day_campaign_d')?['stats']?['spend'], 0)), 1000000), float(coalesce(items('For_each_day_campaign_d')?['stats']?['swipes'], 0))), null)",
+                     "item/sanidi_costperpurchase": "@if(greater(float(coalesce(items('For_each_day_campaign_d')?['stats']?['conversion_purchases'], 0)), 0), div(div(float(coalesce(items('For_each_day_campaign_d')?['stats']?['spend'], 0)), 1000000), float(coalesce(items('For_each_day_campaign_d')?['stats']?['conversion_purchases'], 0))), null)",
+                     "item/sanidi_roas": "@if(greater(float(coalesce(items('For_each_day_campaign_d')?['stats']?['spend'], 0)), 0), div(float(coalesce(items('For_each_day_campaign_d')?['stats']?['conversion_purchases_value'], 0)), float(coalesce(items('For_each_day_campaign_d')?['stats']?['spend'], 0))), null)",
+                     "item/sanidi_statsfinalizedthrough": "@outputs('Get_campaign_d')?['body/timeseries_stats']?[0]?['timeseries_stat']?['finalized_data_end_time']"
+                    },
+                    "host": {
+                     "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                     "operationId": "UpdateOnlyRecord",
+                     "connectionName": "shared_commondataserviceforapps"
+                    }
+                   }
+                  }
+                 },
+                 "else": {
+                  "actions": {
+                   "Create_campaign_d": {
+                    "runAfter": {},
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                     "parameters": {
+                      "entityName": "sanidi_snapcampaigndailyinsights",
+                      "item/sanidi_name": "@concat(coalesce(outputs('Parent_campaign_d')?['sanidi_campaignname'], string(items('For_each_entity_campaign_d')?['id'])), ' · ', substring(items('For_each_day_campaign_d')?['start_time'], 0, 10))",
+                      "item/sanidi_platformid": "@string(items('For_each_entity_campaign_d')?['id'])",
+                      "item/sanidi_insightkey": "@concat(string(items('For_each_entity_campaign_d')?['id']), '_', formatDateTime(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10), 'yyyyMMdd'))",
+                      "item/sanidi_date": "@substring(items('For_each_day_campaign_d')?['start_time'], 0, 10)",
+                      "item/sanidi_month": "@int(formatDateTime(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10), 'MM'))",
+                      "item/sanidi_year": "@int(formatDateTime(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10), 'yyyy'))",
+                      "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10)), ticks(triggerBody()?['closed_through'])))",
+                      "item/sanidi_nodata": false,
+                      "item/sanidi_lastsyncedon": "@utcNow()",
+                      "item/sanidi_snapcampaign@odata.bind": "/sanidi_snapcampaigns(@{outputs('Parent_campaign_d')?['sanidi_snapcampaignid']})",
+                      "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_campaign_d')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                      "item/sanidi_rawpayload": "@if(greater(length(string(addProperty(items('For_each_day_campaign_d'), 'id', items('For_each_entity_campaign_d')?['id']))), 100000), substring(string(addProperty(items('For_each_day_campaign_d'), 'id', items('For_each_entity_campaign_d')?['id'])), 0, 100000), string(addProperty(items('For_each_day_campaign_d'), 'id', items('For_each_entity_campaign_d')?['id'])))",
+                      "item/sanidi_day": "@int(formatDateTime(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10), 'dd'))",
+                      "item/sanidi_weekday": "@add(dayOfWeek(substring(items('For_each_day_campaign_d')?['start_time'], 0, 10)), 1)",
+                      "item/sanidi_impressions": "@items('For_each_day_campaign_d')?['stats']?['impressions']",
+                      "item/sanidi_reach": "@items('For_each_day_campaign_d')?['stats']?['uniques']",
+                      "item/sanidi_frequency": "@if(not(equals(items('For_each_day_campaign_d')?['stats']?['frequency'], null)), items('For_each_day_campaign_d')?['stats']?['frequency'], if(greater(float(coalesce(items('For_each_day_campaign_d')?['stats']?['uniques'], 0)), 0), div(float(coalesce(items('For_each_day_campaign_d')?['stats']?['impressions'], 0)), float(coalesce(items('For_each_day_campaign_d')?['stats']?['uniques'], 0))), null))",
+                      "item/sanidi_swipes": "@items('For_each_day_campaign_d')?['stats']?['swipes']",
+                      "item/sanidi_spend": "@if(equals(items('For_each_day_campaign_d')?['stats']?['spend'], null), null, div(float(items('For_each_day_campaign_d')?['stats']?['spend']), 1000000))",
+                      "item/sanidi_videoviews": "@items('For_each_day_campaign_d')?['stats']?['video_views']",
+                      "item/sanidi_engagedviews": "@items('For_each_day_campaign_d')?['stats']?['engaged_views']",
+                      "item/sanidi_screentimeseconds": "@if(equals(items('For_each_day_campaign_d')?['stats']?['screen_time_millis'], null), null, div(float(items('For_each_day_campaign_d')?['stats']?['screen_time_millis']), 1000))",
+                      "item/sanidi_quartile1": "@items('For_each_day_campaign_d')?['stats']?['quartile_1']",
+                      "item/sanidi_quartile2": "@items('For_each_day_campaign_d')?['stats']?['quartile_2']",
+                      "item/sanidi_quartile3": "@items('For_each_day_campaign_d')?['stats']?['quartile_3']",
+                      "item/sanidi_viewcompletion": "@items('For_each_day_campaign_d')?['stats']?['view_completion']",
+                      "item/sanidi_landingpageviews": "@items('For_each_day_campaign_d')?['stats']?['landing_page_views']",
+                      "item/sanidi_placeopens": "@items('For_each_day_campaign_d')?['stats']?['place_opens']",
+                      "item/sanidi_placeactions": "@items('For_each_day_campaign_d')?['stats']?['place_actions']",
+                      "item/sanidi_purchases": "@items('For_each_day_campaign_d')?['stats']?['conversion_purchases']",
+                      "item/sanidi_purchasevalue": "@if(equals(items('For_each_day_campaign_d')?['stats']?['conversion_purchases_value'], null), null, div(float(items('For_each_day_campaign_d')?['stats']?['conversion_purchases_value']), 1000000))",
+                      "item/sanidi_addtocart": "@items('For_each_day_campaign_d')?['stats']?['conversion_add_cart']",
+                      "item/sanidi_startcheckout": "@items('For_each_day_campaign_d')?['stats']?['conversion_start_checkout']",
+                      "item/sanidi_viewcontent": "@items('For_each_day_campaign_d')?['stats']?['conversion_view_content']",
+                      "item/sanidi_pixelpageviews": "@items('For_each_day_campaign_d')?['stats']?['conversion_page_views']",
+                      "item/sanidi_signups": "@items('For_each_day_campaign_d')?['stats']?['conversion_sign_ups']",
+                      "item/sanidi_swiperate": "@if(greater(float(coalesce(items('For_each_day_campaign_d')?['stats']?['impressions'], 0)), 0), div(mul(float(coalesce(items('For_each_day_campaign_d')?['stats']?['swipes'], 0)), 100), float(coalesce(items('For_each_day_campaign_d')?['stats']?['impressions'], 0))), null)",
+                      "item/sanidi_cpm": "@if(greater(float(coalesce(items('For_each_day_campaign_d')?['stats']?['impressions'], 0)), 0), div(mul(div(float(coalesce(items('For_each_day_campaign_d')?['stats']?['spend'], 0)), 1000000), 1000), float(coalesce(items('For_each_day_campaign_d')?['stats']?['impressions'], 0))), null)",
+                      "item/sanidi_costperswipe": "@if(greater(float(coalesce(items('For_each_day_campaign_d')?['stats']?['swipes'], 0)), 0), div(div(float(coalesce(items('For_each_day_campaign_d')?['stats']?['spend'], 0)), 1000000), float(coalesce(items('For_each_day_campaign_d')?['stats']?['swipes'], 0))), null)",
+                      "item/sanidi_costperpurchase": "@if(greater(float(coalesce(items('For_each_day_campaign_d')?['stats']?['conversion_purchases'], 0)), 0), div(div(float(coalesce(items('For_each_day_campaign_d')?['stats']?['spend'], 0)), 1000000), float(coalesce(items('For_each_day_campaign_d')?['stats']?['conversion_purchases'], 0))), null)",
+                      "item/sanidi_roas": "@if(greater(float(coalesce(items('For_each_day_campaign_d')?['stats']?['spend'], 0)), 0), div(float(coalesce(items('For_each_day_campaign_d')?['stats']?['conversion_purchases_value'], 0)), float(coalesce(items('For_each_day_campaign_d')?['stats']?['spend'], 0))), null)",
+                      "item/sanidi_statsfinalizedthrough": "@outputs('Get_campaign_d')?['body/timeseries_stats']?[0]?['timeseries_stat']?['finalized_data_end_time']"
+                     },
+                     "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "CreateRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "Count_written_campaign_d": {
+                 "type": "IncrementVariable",
+                 "runAfter": {
+                  "If_exists_campaign_d": [
+                   "Succeeded"
+                  ]
+                 },
+                 "inputs": {
+                  "name": "Written",
+                  "value": 1
+                 }
+                },
+                "Count_failed_campaign_d": {
+                 "type": "IncrementVariable",
+                 "runAfter": {
+                  "If_exists_campaign_d": [
+                   "Failed",
+                   "TimedOut"
+                  ]
+                 },
+                 "inputs": {
+                  "name": "Failed",
+                  "value": 1
+                 }
+                }
+               },
+               "else": {
+                "actions": {
+                 "Count_skipped_campaign_d": {
+                  "type": "IncrementVariable",
+                  "runAfter": {},
+                  "inputs": {
+                   "name": "Skipped",
+                   "value": 1
+                  }
+                 }
+                }
+               }
+              }
+             },
+             "runtimeConfiguration": {
+              "concurrency": {
+               "repetitions": 5
+              }
+             }
+            }
+           },
+           "runtimeConfiguration": {
+            "concurrency": {
+             "repetitions": 4
+            }
+           }
+          },
+          "Note_failed_Get_campaign_d": {
+           "type": "AppendToStringVariable",
+           "runAfter": {
+            "Get_campaign_d": [
+             "Failed",
+             "TimedOut"
+            ]
+           },
+           "inputs": {
+            "name": "Errors",
+            "value": "@{concat('campaign_d ', outputs('Window_start_campaign_d'), ': ', take(string(coalesce(body('Get_campaign_d'), '')), 400), ' | ')}"
+           }
+          },
+          "Next_campaign_d": {
+           "type": "SetVariable",
+           "runAfter": {
+            "For_each_entity_campaign_d": [
+             "Succeeded",
+             "Failed",
+             "TimedOut",
+             "Skipped"
+            ]
+           },
+           "inputs": {
+            "name": "SnapCursor",
+            "value": "@if(empty(outputs('Get_campaign_d')?['body/paging']?['next_link']), '', decodeUriComponent(first(split(last(split(outputs('Get_campaign_d')?['body/paging']?['next_link'], 'cursor=')), '&'))))"
+           }
+          }
+         }
+        }
+       },
+       "runtimeConfiguration": {
+        "concurrency": {
+         "repetitions": 1
+        }
+       }
+      }
+     }
+    },
+    "Level_adsquad": {
+     "type": "Scope",
+     "runAfter": {
+      "Level_campaign": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "actions": {
+      "List_items_adsquad_d": {
+       "runAfter": {},
+       "type": "OpenApiConnection",
+       "inputs": {
+        "parameters": {
+         "entityName": "sanidi_snapadsquads",
+         "$select": "sanidi_snapadsquadid,sanidi_adsquadid,sanidi_adsquadname,_transactioncurrencyid_value,createdon,sanidi_starttime,sanidi_createdat,sanidi_endtime",
+         "$filter": "sanidi_adsquadid ne null"
+        },
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "operationId": "ListRecords",
+         "connectionName": "shared_commondataserviceforapps"
+        }
+       },
+       "runtimeConfiguration": {
+        "paginationPolicy": {
+         "minimumItemCount": 100000
+        }
+       }
+      },
+      "Select_items_adsquad_d": {
+       "type": "Select",
+       "runAfter": {
+        "List_items_adsquad_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@coalesce(outputs('List_items_adsquad_d')?['body/value'], json('[]'))",
+        "select": "@concat('\"', item()?['sanidi_adsquadid'], '\":', string(item()))"
+       }
+      },
+      "Map_items_adsquad_d": {
+       "type": "Compose",
+       "runAfter": {
+        "Select_items_adsquad_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@json(concat('{', join(body('Select_items_adsquad_d'), ','), '}'))"
+      },
+      "Window_count_adsquad_d": {
+       "type": "Compose",
+       "runAfter": {
+        "Map_items_adsquad_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@add(div(div(sub(ticks(triggerBody()?['end_date']), ticks(triggerBody()?['start_date'])), 864000000000), 30), 1)"
+      },
+      "For_each_window_adsquad_d": {
+       "type": "Foreach",
+       "foreach": "@range(0, outputs('Window_count_adsquad_d'))",
+       "runAfter": {
+        "Window_count_adsquad_d": [
+         "Succeeded"
+        ]
+       },
+       "actions": {
+        "Window_start_adsquad_d": {
+         "type": "Compose",
+         "runAfter": {},
+         "inputs": "@formatDateTime(addDays(triggerBody()?['start_date'], mul(items('For_each_window_adsquad_d'), 30)), 'yyyy-MM-dd')"
+        },
+        "Window_end_adsquad_d": {
+         "type": "Compose",
+         "runAfter": {
+          "Window_start_adsquad_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(greater(ticks(addDays(outputs('Window_start_adsquad_d'), 29)), ticks(triggerBody()?['end_date'])), triggerBody()?['end_date'], formatDateTime(addDays(outputs('Window_start_adsquad_d'), 29), 'yyyy-MM-dd'))"
+        },
+        "List_existing_adsquad_d": {
+         "runAfter": {
+          "Window_end_adsquad_d": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_snapadsquaddailyinsights",
+           "$select": "sanidi_snapadsquaddailyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date ge @{outputs('Window_start_adsquad_d')} and sanidi_date le @{outputs('Window_end_adsquad_d')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_existing_adsquad_d": {
+         "type": "Select",
+         "runAfter": {
+          "List_existing_adsquad_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_existing_adsquad_d')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', concat('\"', item()?['sanidi_snapadsquaddailyinsightid'], '\"'))"
+         }
+        },
+        "Map_existing_adsquad_d": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_existing_adsquad_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_existing_adsquad_d'), ','), '}'))"
+        },
+        "Live_campaigns_adsquad_d": {
+         "type": "Query",
+         "runAfter": {
+          "Map_existing_adsquad_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@outputs('List_snap_campaigns')?['body/value']",
+          "where": "@and(lessOrEquals(ticks(formatDateTime(coalesce(item()?['sanidi_starttime'], item()?['sanidi_createdat'], item()?['createdon']), 'yyyy-MM-dd')), ticks(outputs('Window_end_adsquad_d'))), or(equals(item()?['sanidi_endtime'], null), greaterOrEquals(ticks(formatDateTime(item()?['sanidi_endtime'], 'yyyy-MM-dd')), ticks(outputs('Window_start_adsquad_d')))))"
+         }
+        },
+        "For_each_campaign_adsquad_d": {
+         "type": "Foreach",
+         "foreach": "@body('Live_campaigns_adsquad_d')",
+         "runAfter": {
+          "Live_campaigns_adsquad_d": [
+           "Succeeded"
+          ]
+         },
+         "actions": {
+          "Get_adsquad_d": {
+           "runAfter": {},
+           "type": "OpenApiConnection",
+           "inputs": {
+            "parameters": {
+             "campaign_id": "@items('For_each_campaign_adsquad_d')?['sanidi_campaignid']",
+             "granularity": "DAY",
+             "breakdown": "adsquad",
+             "start_time": "@concat(outputs('Window_start_adsquad_d'), 'T00:00:00', outputs('Snap_offset'))",
+             "end_time": "@concat(formatDateTime(addDays(outputs('Window_end_adsquad_d'), 1), 'yyyy-MM-dd'), 'T00:00:00', outputs('Snap_offset'))",
+             "fields": "impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups",
+             "omit_empty": true,
+             "limit": 200
+            },
+            "host": {
+             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fsnap-5f43b530b23a0dc933",
+             "operationId": "GetCampaignStats",
+             "connectionName": "shared_sanidi-5fsnap-5f43b530b23a0dc933"
+            }
+           }
+          },
+          "For_each_entity_adsquad_d": {
+           "type": "Foreach",
+           "foreach": "@coalesce(outputs('Get_adsquad_d')?['body/timeseries_stats']?[0]?['timeseries_stat']?['breakdown_stats']?['adsquad'], json('[]'))",
+           "runAfter": {
+            "Get_adsquad_d": [
+             "Succeeded"
+            ]
+           },
+           "actions": {
+            "Active_days_adsquad_d": {
+             "type": "Query",
+             "runAfter": {},
+             "inputs": {
+              "from": "@coalesce(items('For_each_entity_adsquad_d')?['timeseries'], json('[]'))",
+              "where": "@or(greater(float(coalesce(item()?['stats']?['impressions'], 0)), 0), greater(float(coalesce(item()?['stats']?['spend'], 0)), 0))"
+             }
+            },
+            "For_each_day_adsquad_d": {
+             "type": "Foreach",
+             "foreach": "@body('Active_days_adsquad_d')",
+             "runAfter": {
+              "Active_days_adsquad_d": [
+               "Succeeded"
+              ]
+             },
+             "actions": {
+              "Parent_adsquad_d": {
+               "type": "Compose",
+               "runAfter": {},
+               "inputs": "@outputs('Map_items_adsquad_d')?[string(items('For_each_entity_adsquad_d')?['id'])]"
+              },
+              "If_synced_adsquad_d": {
+               "type": "If",
+               "runAfter": {
+                "Parent_adsquad_d": [
+                 "Succeeded"
+                ]
+               },
+               "expression": {
+                "and": [
+                 {
+                  "not": {
+                   "equals": [
+                    "@outputs('Parent_adsquad_d')",
+                    "@null"
+                   ]
+                  }
+                 }
+                ]
+               },
+               "actions": {
+                "Key_adsquad_d": {
+                 "type": "Compose",
+                 "runAfter": {},
+                 "inputs": "@concat(string(items('For_each_entity_adsquad_d')?['id']), '_', formatDateTime(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10), 'yyyyMMdd'))"
+                },
+                "If_exists_adsquad_d": {
+                 "type": "If",
+                 "runAfter": {
+                  "Key_adsquad_d": [
+                   "Succeeded"
+                  ]
+                 },
+                 "expression": {
+                  "and": [
+                   {
+                    "not": {
+                     "equals": [
+                      "@coalesce(outputs('Map_existing_adsquad_d')?[outputs('Key_adsquad_d')], '')",
+                      ""
+                     ]
+                    }
+                   }
+                  ]
+                 },
+                 "actions": {
+                  "Update_adsquad_d": {
+                   "runAfter": {},
+                   "type": "OpenApiConnection",
+                   "inputs": {
+                    "parameters": {
+                     "entityName": "sanidi_snapadsquaddailyinsights",
+                     "recordId": "@outputs('Map_existing_adsquad_d')?[outputs('Key_adsquad_d')]",
+                     "item/sanidi_name": "@concat(coalesce(outputs('Parent_adsquad_d')?['sanidi_adsquadname'], string(items('For_each_entity_adsquad_d')?['id'])), ' · ', substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10))",
+                     "item/sanidi_platformid": "@string(items('For_each_entity_adsquad_d')?['id'])",
+                     "item/sanidi_insightkey": "@concat(string(items('For_each_entity_adsquad_d')?['id']), '_', formatDateTime(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10), 'yyyyMMdd'))",
+                     "item/sanidi_date": "@substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10)",
+                     "item/sanidi_month": "@int(formatDateTime(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10), 'MM'))",
+                     "item/sanidi_year": "@int(formatDateTime(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10), 'yyyy'))",
+                     "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10)), ticks(triggerBody()?['closed_through'])))",
+                     "item/sanidi_nodata": false,
+                     "item/sanidi_lastsyncedon": "@utcNow()",
+                     "item/sanidi_snapadsquad@odata.bind": "/sanidi_snapadsquads(@{outputs('Parent_adsquad_d')?['sanidi_snapadsquadid']})",
+                     "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_adsquad_d')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                     "item/sanidi_rawpayload": "@if(greater(length(string(addProperty(items('For_each_day_adsquad_d'), 'id', items('For_each_entity_adsquad_d')?['id']))), 100000), substring(string(addProperty(items('For_each_day_adsquad_d'), 'id', items('For_each_entity_adsquad_d')?['id'])), 0, 100000), string(addProperty(items('For_each_day_adsquad_d'), 'id', items('For_each_entity_adsquad_d')?['id'])))",
+                     "item/sanidi_day": "@int(formatDateTime(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10), 'dd'))",
+                     "item/sanidi_weekday": "@add(dayOfWeek(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10)), 1)",
+                     "item/sanidi_impressions": "@items('For_each_day_adsquad_d')?['stats']?['impressions']",
+                     "item/sanidi_reach": "@items('For_each_day_adsquad_d')?['stats']?['uniques']",
+                     "item/sanidi_frequency": "@if(not(equals(items('For_each_day_adsquad_d')?['stats']?['frequency'], null)), items('For_each_day_adsquad_d')?['stats']?['frequency'], if(greater(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['uniques'], 0)), 0), div(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['impressions'], 0)), float(coalesce(items('For_each_day_adsquad_d')?['stats']?['uniques'], 0))), null))",
+                     "item/sanidi_swipes": "@items('For_each_day_adsquad_d')?['stats']?['swipes']",
+                     "item/sanidi_spend": "@if(equals(items('For_each_day_adsquad_d')?['stats']?['spend'], null), null, div(float(items('For_each_day_adsquad_d')?['stats']?['spend']), 1000000))",
+                     "item/sanidi_videoviews": "@items('For_each_day_adsquad_d')?['stats']?['video_views']",
+                     "item/sanidi_engagedviews": "@items('For_each_day_adsquad_d')?['stats']?['engaged_views']",
+                     "item/sanidi_screentimeseconds": "@if(equals(items('For_each_day_adsquad_d')?['stats']?['screen_time_millis'], null), null, div(float(items('For_each_day_adsquad_d')?['stats']?['screen_time_millis']), 1000))",
+                     "item/sanidi_quartile1": "@items('For_each_day_adsquad_d')?['stats']?['quartile_1']",
+                     "item/sanidi_quartile2": "@items('For_each_day_adsquad_d')?['stats']?['quartile_2']",
+                     "item/sanidi_quartile3": "@items('For_each_day_adsquad_d')?['stats']?['quartile_3']",
+                     "item/sanidi_viewcompletion": "@items('For_each_day_adsquad_d')?['stats']?['view_completion']",
+                     "item/sanidi_landingpageviews": "@items('For_each_day_adsquad_d')?['stats']?['landing_page_views']",
+                     "item/sanidi_placeopens": "@items('For_each_day_adsquad_d')?['stats']?['place_opens']",
+                     "item/sanidi_placeactions": "@items('For_each_day_adsquad_d')?['stats']?['place_actions']",
+                     "item/sanidi_purchases": "@items('For_each_day_adsquad_d')?['stats']?['conversion_purchases']",
+                     "item/sanidi_purchasevalue": "@if(equals(items('For_each_day_adsquad_d')?['stats']?['conversion_purchases_value'], null), null, div(float(items('For_each_day_adsquad_d')?['stats']?['conversion_purchases_value']), 1000000))",
+                     "item/sanidi_addtocart": "@items('For_each_day_adsquad_d')?['stats']?['conversion_add_cart']",
+                     "item/sanidi_startcheckout": "@items('For_each_day_adsquad_d')?['stats']?['conversion_start_checkout']",
+                     "item/sanidi_viewcontent": "@items('For_each_day_adsquad_d')?['stats']?['conversion_view_content']",
+                     "item/sanidi_pixelpageviews": "@items('For_each_day_adsquad_d')?['stats']?['conversion_page_views']",
+                     "item/sanidi_signups": "@items('For_each_day_adsquad_d')?['stats']?['conversion_sign_ups']",
+                     "item/sanidi_swiperate": "@if(greater(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['impressions'], 0)), 0), div(mul(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['swipes'], 0)), 100), float(coalesce(items('For_each_day_adsquad_d')?['stats']?['impressions'], 0))), null)",
+                     "item/sanidi_cpm": "@if(greater(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['impressions'], 0)), 0), div(mul(div(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['spend'], 0)), 1000000), 1000), float(coalesce(items('For_each_day_adsquad_d')?['stats']?['impressions'], 0))), null)",
+                     "item/sanidi_costperswipe": "@if(greater(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['swipes'], 0)), 0), div(div(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['spend'], 0)), 1000000), float(coalesce(items('For_each_day_adsquad_d')?['stats']?['swipes'], 0))), null)",
+                     "item/sanidi_costperpurchase": "@if(greater(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['conversion_purchases'], 0)), 0), div(div(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['spend'], 0)), 1000000), float(coalesce(items('For_each_day_adsquad_d')?['stats']?['conversion_purchases'], 0))), null)",
+                     "item/sanidi_roas": "@if(greater(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['spend'], 0)), 0), div(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['conversion_purchases_value'], 0)), float(coalesce(items('For_each_day_adsquad_d')?['stats']?['spend'], 0))), null)",
+                     "item/sanidi_statsfinalizedthrough": "@outputs('Get_adsquad_d')?['body/timeseries_stats']?[0]?['timeseries_stat']?['finalized_data_end_time']"
+                    },
+                    "host": {
+                     "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                     "operationId": "UpdateOnlyRecord",
+                     "connectionName": "shared_commondataserviceforapps"
+                    }
+                   }
+                  }
+                 },
+                 "else": {
+                  "actions": {
+                   "Create_adsquad_d": {
+                    "runAfter": {},
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                     "parameters": {
+                      "entityName": "sanidi_snapadsquaddailyinsights",
+                      "item/sanidi_name": "@concat(coalesce(outputs('Parent_adsquad_d')?['sanidi_adsquadname'], string(items('For_each_entity_adsquad_d')?['id'])), ' · ', substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10))",
+                      "item/sanidi_platformid": "@string(items('For_each_entity_adsquad_d')?['id'])",
+                      "item/sanidi_insightkey": "@concat(string(items('For_each_entity_adsquad_d')?['id']), '_', formatDateTime(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10), 'yyyyMMdd'))",
+                      "item/sanidi_date": "@substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10)",
+                      "item/sanidi_month": "@int(formatDateTime(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10), 'MM'))",
+                      "item/sanidi_year": "@int(formatDateTime(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10), 'yyyy'))",
+                      "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10)), ticks(triggerBody()?['closed_through'])))",
+                      "item/sanidi_nodata": false,
+                      "item/sanidi_lastsyncedon": "@utcNow()",
+                      "item/sanidi_snapadsquad@odata.bind": "/sanidi_snapadsquads(@{outputs('Parent_adsquad_d')?['sanidi_snapadsquadid']})",
+                      "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_adsquad_d')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                      "item/sanidi_rawpayload": "@if(greater(length(string(addProperty(items('For_each_day_adsquad_d'), 'id', items('For_each_entity_adsquad_d')?['id']))), 100000), substring(string(addProperty(items('For_each_day_adsquad_d'), 'id', items('For_each_entity_adsquad_d')?['id'])), 0, 100000), string(addProperty(items('For_each_day_adsquad_d'), 'id', items('For_each_entity_adsquad_d')?['id'])))",
+                      "item/sanidi_day": "@int(formatDateTime(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10), 'dd'))",
+                      "item/sanidi_weekday": "@add(dayOfWeek(substring(items('For_each_day_adsquad_d')?['start_time'], 0, 10)), 1)",
+                      "item/sanidi_impressions": "@items('For_each_day_adsquad_d')?['stats']?['impressions']",
+                      "item/sanidi_reach": "@items('For_each_day_adsquad_d')?['stats']?['uniques']",
+                      "item/sanidi_frequency": "@if(not(equals(items('For_each_day_adsquad_d')?['stats']?['frequency'], null)), items('For_each_day_adsquad_d')?['stats']?['frequency'], if(greater(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['uniques'], 0)), 0), div(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['impressions'], 0)), float(coalesce(items('For_each_day_adsquad_d')?['stats']?['uniques'], 0))), null))",
+                      "item/sanidi_swipes": "@items('For_each_day_adsquad_d')?['stats']?['swipes']",
+                      "item/sanidi_spend": "@if(equals(items('For_each_day_adsquad_d')?['stats']?['spend'], null), null, div(float(items('For_each_day_adsquad_d')?['stats']?['spend']), 1000000))",
+                      "item/sanidi_videoviews": "@items('For_each_day_adsquad_d')?['stats']?['video_views']",
+                      "item/sanidi_engagedviews": "@items('For_each_day_adsquad_d')?['stats']?['engaged_views']",
+                      "item/sanidi_screentimeseconds": "@if(equals(items('For_each_day_adsquad_d')?['stats']?['screen_time_millis'], null), null, div(float(items('For_each_day_adsquad_d')?['stats']?['screen_time_millis']), 1000))",
+                      "item/sanidi_quartile1": "@items('For_each_day_adsquad_d')?['stats']?['quartile_1']",
+                      "item/sanidi_quartile2": "@items('For_each_day_adsquad_d')?['stats']?['quartile_2']",
+                      "item/sanidi_quartile3": "@items('For_each_day_adsquad_d')?['stats']?['quartile_3']",
+                      "item/sanidi_viewcompletion": "@items('For_each_day_adsquad_d')?['stats']?['view_completion']",
+                      "item/sanidi_landingpageviews": "@items('For_each_day_adsquad_d')?['stats']?['landing_page_views']",
+                      "item/sanidi_placeopens": "@items('For_each_day_adsquad_d')?['stats']?['place_opens']",
+                      "item/sanidi_placeactions": "@items('For_each_day_adsquad_d')?['stats']?['place_actions']",
+                      "item/sanidi_purchases": "@items('For_each_day_adsquad_d')?['stats']?['conversion_purchases']",
+                      "item/sanidi_purchasevalue": "@if(equals(items('For_each_day_adsquad_d')?['stats']?['conversion_purchases_value'], null), null, div(float(items('For_each_day_adsquad_d')?['stats']?['conversion_purchases_value']), 1000000))",
+                      "item/sanidi_addtocart": "@items('For_each_day_adsquad_d')?['stats']?['conversion_add_cart']",
+                      "item/sanidi_startcheckout": "@items('For_each_day_adsquad_d')?['stats']?['conversion_start_checkout']",
+                      "item/sanidi_viewcontent": "@items('For_each_day_adsquad_d')?['stats']?['conversion_view_content']",
+                      "item/sanidi_pixelpageviews": "@items('For_each_day_adsquad_d')?['stats']?['conversion_page_views']",
+                      "item/sanidi_signups": "@items('For_each_day_adsquad_d')?['stats']?['conversion_sign_ups']",
+                      "item/sanidi_swiperate": "@if(greater(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['impressions'], 0)), 0), div(mul(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['swipes'], 0)), 100), float(coalesce(items('For_each_day_adsquad_d')?['stats']?['impressions'], 0))), null)",
+                      "item/sanidi_cpm": "@if(greater(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['impressions'], 0)), 0), div(mul(div(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['spend'], 0)), 1000000), 1000), float(coalesce(items('For_each_day_adsquad_d')?['stats']?['impressions'], 0))), null)",
+                      "item/sanidi_costperswipe": "@if(greater(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['swipes'], 0)), 0), div(div(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['spend'], 0)), 1000000), float(coalesce(items('For_each_day_adsquad_d')?['stats']?['swipes'], 0))), null)",
+                      "item/sanidi_costperpurchase": "@if(greater(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['conversion_purchases'], 0)), 0), div(div(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['spend'], 0)), 1000000), float(coalesce(items('For_each_day_adsquad_d')?['stats']?['conversion_purchases'], 0))), null)",
+                      "item/sanidi_roas": "@if(greater(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['spend'], 0)), 0), div(float(coalesce(items('For_each_day_adsquad_d')?['stats']?['conversion_purchases_value'], 0)), float(coalesce(items('For_each_day_adsquad_d')?['stats']?['spend'], 0))), null)",
+                      "item/sanidi_statsfinalizedthrough": "@outputs('Get_adsquad_d')?['body/timeseries_stats']?[0]?['timeseries_stat']?['finalized_data_end_time']"
+                     },
+                     "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "CreateRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "Count_written_adsquad_d": {
+                 "type": "IncrementVariable",
+                 "runAfter": {
+                  "If_exists_adsquad_d": [
+                   "Succeeded"
+                  ]
+                 },
+                 "inputs": {
+                  "name": "Written",
+                  "value": 1
+                 }
+                },
+                "Count_failed_adsquad_d": {
+                 "type": "IncrementVariable",
+                 "runAfter": {
+                  "If_exists_adsquad_d": [
+                   "Failed",
+                   "TimedOut"
+                  ]
+                 },
+                 "inputs": {
+                  "name": "Failed",
+                  "value": 1
+                 }
+                }
+               },
+               "else": {
+                "actions": {
+                 "Count_skipped_adsquad_d": {
+                  "type": "IncrementVariable",
+                  "runAfter": {},
+                  "inputs": {
+                   "name": "Skipped",
+                   "value": 1
+                  }
+                 }
+                }
+               }
+              }
+             },
+             "runtimeConfiguration": {
+              "concurrency": {
+               "repetitions": 5
+              }
+             }
+            }
+           },
+           "runtimeConfiguration": {
+            "concurrency": {
+             "repetitions": 4
+            }
+           }
+          },
+          "Note_failed_Get_adsquad_d": {
+           "type": "AppendToStringVariable",
+           "runAfter": {
+            "Get_adsquad_d": [
+             "Failed",
+             "TimedOut"
+            ]
+           },
+           "inputs": {
+            "name": "Errors",
+            "value": "@{concat('adsquad_d ', outputs('Window_start_adsquad_d'), ': ', take(string(coalesce(body('Get_adsquad_d'), '')), 400), ' | ')}"
+           }
+          }
+         },
+         "runtimeConfiguration": {
+          "concurrency": {
+           "repetitions": 2
+          }
+         }
+        }
+       },
+       "runtimeConfiguration": {
+        "concurrency": {
+         "repetitions": 1
+        }
+       }
+      }
+     }
+    },
+    "Level_ad": {
+     "type": "Scope",
+     "runAfter": {
+      "Level_adsquad": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "actions": {
+      "List_items_ad_d": {
+       "runAfter": {},
+       "type": "OpenApiConnection",
+       "inputs": {
+        "parameters": {
+         "entityName": "sanidi_snapadvertisements",
+         "$select": "sanidi_snapadvertisementid,sanidi_adid,sanidi_adname,_transactioncurrencyid_value,createdon,sanidi_starttime,sanidi_createdat,sanidi_endtime",
+         "$filter": "sanidi_adid ne null"
+        },
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "operationId": "ListRecords",
+         "connectionName": "shared_commondataserviceforapps"
+        }
+       },
+       "runtimeConfiguration": {
+        "paginationPolicy": {
+         "minimumItemCount": 100000
+        }
+       }
+      },
+      "Select_items_ad_d": {
+       "type": "Select",
+       "runAfter": {
+        "List_items_ad_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@coalesce(outputs('List_items_ad_d')?['body/value'], json('[]'))",
+        "select": "@concat('\"', item()?['sanidi_adid'], '\":', string(item()))"
+       }
+      },
+      "Map_items_ad_d": {
+       "type": "Compose",
+       "runAfter": {
+        "Select_items_ad_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@json(concat('{', join(body('Select_items_ad_d'), ','), '}'))"
+      },
+      "Window_count_ad_d": {
+       "type": "Compose",
+       "runAfter": {
+        "Map_items_ad_d": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@add(div(div(sub(ticks(triggerBody()?['end_date']), ticks(triggerBody()?['start_date'])), 864000000000), 30), 1)"
+      },
+      "For_each_window_ad_d": {
+       "type": "Foreach",
+       "foreach": "@range(0, outputs('Window_count_ad_d'))",
+       "runAfter": {
+        "Window_count_ad_d": [
+         "Succeeded"
+        ]
+       },
+       "actions": {
+        "Window_start_ad_d": {
+         "type": "Compose",
+         "runAfter": {},
+         "inputs": "@formatDateTime(addDays(triggerBody()?['start_date'], mul(items('For_each_window_ad_d'), 30)), 'yyyy-MM-dd')"
+        },
+        "Window_end_ad_d": {
+         "type": "Compose",
+         "runAfter": {
+          "Window_start_ad_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(greater(ticks(addDays(outputs('Window_start_ad_d'), 29)), ticks(triggerBody()?['end_date'])), triggerBody()?['end_date'], formatDateTime(addDays(outputs('Window_start_ad_d'), 29), 'yyyy-MM-dd'))"
+        },
+        "List_existing_ad_d": {
+         "runAfter": {
+          "Window_end_ad_d": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_snapadvertisementdailyinsights",
+           "$select": "sanidi_snapadvertisementdailyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date ge @{outputs('Window_start_ad_d')} and sanidi_date le @{outputs('Window_end_ad_d')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_existing_ad_d": {
+         "type": "Select",
+         "runAfter": {
+          "List_existing_ad_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_existing_ad_d')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', concat('\"', item()?['sanidi_snapadvertisementdailyinsightid'], '\"'))"
+         }
+        },
+        "Map_existing_ad_d": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_existing_ad_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_existing_ad_d'), ','), '}'))"
+        },
+        "Reset_cursor_ad_d": {
+         "type": "SetVariable",
+         "runAfter": {
+          "Map_existing_ad_d": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "name": "SnapCursor",
+          "value": ""
+         }
+        },
+        "Pages_ad_d": {
+         "type": "Until",
+         "runAfter": {
+          "Reset_cursor_ad_d": [
+           "Succeeded"
+          ]
+         },
+         "expression": "@or(empty(variables('SnapCursor')), equals(actions('Get_ad_d')?['status'], 'Failed'))",
+         "limit": {
+          "count": 200,
+          "timeout": "PT6H"
+         },
+         "actions": {
+          "Get_ad_d": {
+           "runAfter": {},
+           "type": "OpenApiConnection",
+           "inputs": {
+            "parameters": {
+             "ad_account_id": "@outputs('Snap_account_id')",
+             "granularity": "DAY",
+             "breakdown": "ad",
+             "start_time": "@concat(outputs('Window_start_ad_d'), 'T00:00:00', outputs('Snap_offset'))",
+             "end_time": "@concat(formatDateTime(addDays(outputs('Window_end_ad_d'), 1), 'yyyy-MM-dd'), 'T00:00:00', outputs('Snap_offset'))",
+             "fields": "impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups",
+             "omit_empty": true,
+             "limit": 200,
+             "cursor": "@if(empty(variables('SnapCursor')), null, variables('SnapCursor'))"
+            },
+            "host": {
+             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fsnap-5f43b530b23a0dc933",
+             "operationId": "GetAdAccountStats",
+             "connectionName": "shared_sanidi-5fsnap-5f43b530b23a0dc933"
+            }
+           }
+          },
+          "For_each_entity_ad_d": {
+           "type": "Foreach",
+           "foreach": "@coalesce(outputs('Get_ad_d')?['body/timeseries_stats']?[0]?['timeseries_stat']?['breakdown_stats']?['ad'], json('[]'))",
+           "runAfter": {
+            "Get_ad_d": [
+             "Succeeded"
+            ]
+           },
+           "actions": {
+            "Active_days_ad_d": {
+             "type": "Query",
+             "runAfter": {},
+             "inputs": {
+              "from": "@coalesce(items('For_each_entity_ad_d')?['timeseries'], json('[]'))",
+              "where": "@or(greater(float(coalesce(item()?['stats']?['impressions'], 0)), 0), greater(float(coalesce(item()?['stats']?['spend'], 0)), 0))"
+             }
+            },
+            "For_each_day_ad_d": {
+             "type": "Foreach",
+             "foreach": "@body('Active_days_ad_d')",
+             "runAfter": {
+              "Active_days_ad_d": [
+               "Succeeded"
+              ]
+             },
+             "actions": {
+              "Parent_ad_d": {
+               "type": "Compose",
+               "runAfter": {},
+               "inputs": "@outputs('Map_items_ad_d')?[string(items('For_each_entity_ad_d')?['id'])]"
+              },
+              "If_synced_ad_d": {
+               "type": "If",
+               "runAfter": {
+                "Parent_ad_d": [
+                 "Succeeded"
+                ]
+               },
+               "expression": {
+                "and": [
+                 {
+                  "not": {
+                   "equals": [
+                    "@outputs('Parent_ad_d')",
+                    "@null"
+                   ]
+                  }
+                 }
+                ]
+               },
+               "actions": {
+                "Key_ad_d": {
+                 "type": "Compose",
+                 "runAfter": {},
+                 "inputs": "@concat(string(items('For_each_entity_ad_d')?['id']), '_', formatDateTime(substring(items('For_each_day_ad_d')?['start_time'], 0, 10), 'yyyyMMdd'))"
+                },
+                "If_exists_ad_d": {
+                 "type": "If",
+                 "runAfter": {
+                  "Key_ad_d": [
+                   "Succeeded"
+                  ]
+                 },
+                 "expression": {
+                  "and": [
+                   {
+                    "not": {
+                     "equals": [
+                      "@coalesce(outputs('Map_existing_ad_d')?[outputs('Key_ad_d')], '')",
+                      ""
+                     ]
+                    }
+                   }
+                  ]
+                 },
+                 "actions": {
+                  "Update_ad_d": {
+                   "runAfter": {},
+                   "type": "OpenApiConnection",
+                   "inputs": {
+                    "parameters": {
+                     "entityName": "sanidi_snapadvertisementdailyinsights",
+                     "recordId": "@outputs('Map_existing_ad_d')?[outputs('Key_ad_d')]",
+                     "item/sanidi_name": "@concat(coalesce(outputs('Parent_ad_d')?['sanidi_adname'], string(items('For_each_entity_ad_d')?['id'])), ' · ', substring(items('For_each_day_ad_d')?['start_time'], 0, 10))",
+                     "item/sanidi_platformid": "@string(items('For_each_entity_ad_d')?['id'])",
+                     "item/sanidi_insightkey": "@concat(string(items('For_each_entity_ad_d')?['id']), '_', formatDateTime(substring(items('For_each_day_ad_d')?['start_time'], 0, 10), 'yyyyMMdd'))",
+                     "item/sanidi_date": "@substring(items('For_each_day_ad_d')?['start_time'], 0, 10)",
+                     "item/sanidi_month": "@int(formatDateTime(substring(items('For_each_day_ad_d')?['start_time'], 0, 10), 'MM'))",
+                     "item/sanidi_year": "@int(formatDateTime(substring(items('For_each_day_ad_d')?['start_time'], 0, 10), 'yyyy'))",
+                     "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(substring(items('For_each_day_ad_d')?['start_time'], 0, 10)), ticks(triggerBody()?['closed_through'])))",
+                     "item/sanidi_nodata": false,
+                     "item/sanidi_lastsyncedon": "@utcNow()",
+                     "item/sanidi_snapadvertisement@odata.bind": "/sanidi_snapadvertisements(@{outputs('Parent_ad_d')?['sanidi_snapadvertisementid']})",
+                     "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_ad_d')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                     "item/sanidi_rawpayload": "@if(greater(length(string(addProperty(items('For_each_day_ad_d'), 'id', items('For_each_entity_ad_d')?['id']))), 100000), substring(string(addProperty(items('For_each_day_ad_d'), 'id', items('For_each_entity_ad_d')?['id'])), 0, 100000), string(addProperty(items('For_each_day_ad_d'), 'id', items('For_each_entity_ad_d')?['id'])))",
+                     "item/sanidi_day": "@int(formatDateTime(substring(items('For_each_day_ad_d')?['start_time'], 0, 10), 'dd'))",
+                     "item/sanidi_weekday": "@add(dayOfWeek(substring(items('For_each_day_ad_d')?['start_time'], 0, 10)), 1)",
+                     "item/sanidi_impressions": "@items('For_each_day_ad_d')?['stats']?['impressions']",
+                     "item/sanidi_reach": "@items('For_each_day_ad_d')?['stats']?['uniques']",
+                     "item/sanidi_frequency": "@if(not(equals(items('For_each_day_ad_d')?['stats']?['frequency'], null)), items('For_each_day_ad_d')?['stats']?['frequency'], if(greater(float(coalesce(items('For_each_day_ad_d')?['stats']?['uniques'], 0)), 0), div(float(coalesce(items('For_each_day_ad_d')?['stats']?['impressions'], 0)), float(coalesce(items('For_each_day_ad_d')?['stats']?['uniques'], 0))), null))",
+                     "item/sanidi_swipes": "@items('For_each_day_ad_d')?['stats']?['swipes']",
+                     "item/sanidi_spend": "@if(equals(items('For_each_day_ad_d')?['stats']?['spend'], null), null, div(float(items('For_each_day_ad_d')?['stats']?['spend']), 1000000))",
+                     "item/sanidi_videoviews": "@items('For_each_day_ad_d')?['stats']?['video_views']",
+                     "item/sanidi_engagedviews": "@items('For_each_day_ad_d')?['stats']?['engaged_views']",
+                     "item/sanidi_screentimeseconds": "@if(equals(items('For_each_day_ad_d')?['stats']?['screen_time_millis'], null), null, div(float(items('For_each_day_ad_d')?['stats']?['screen_time_millis']), 1000))",
+                     "item/sanidi_quartile1": "@items('For_each_day_ad_d')?['stats']?['quartile_1']",
+                     "item/sanidi_quartile2": "@items('For_each_day_ad_d')?['stats']?['quartile_2']",
+                     "item/sanidi_quartile3": "@items('For_each_day_ad_d')?['stats']?['quartile_3']",
+                     "item/sanidi_viewcompletion": "@items('For_each_day_ad_d')?['stats']?['view_completion']",
+                     "item/sanidi_landingpageviews": "@items('For_each_day_ad_d')?['stats']?['landing_page_views']",
+                     "item/sanidi_placeopens": "@items('For_each_day_ad_d')?['stats']?['place_opens']",
+                     "item/sanidi_placeactions": "@items('For_each_day_ad_d')?['stats']?['place_actions']",
+                     "item/sanidi_purchases": "@items('For_each_day_ad_d')?['stats']?['conversion_purchases']",
+                     "item/sanidi_purchasevalue": "@if(equals(items('For_each_day_ad_d')?['stats']?['conversion_purchases_value'], null), null, div(float(items('For_each_day_ad_d')?['stats']?['conversion_purchases_value']), 1000000))",
+                     "item/sanidi_addtocart": "@items('For_each_day_ad_d')?['stats']?['conversion_add_cart']",
+                     "item/sanidi_startcheckout": "@items('For_each_day_ad_d')?['stats']?['conversion_start_checkout']",
+                     "item/sanidi_viewcontent": "@items('For_each_day_ad_d')?['stats']?['conversion_view_content']",
+                     "item/sanidi_pixelpageviews": "@items('For_each_day_ad_d')?['stats']?['conversion_page_views']",
+                     "item/sanidi_signups": "@items('For_each_day_ad_d')?['stats']?['conversion_sign_ups']",
+                     "item/sanidi_swiperate": "@if(greater(float(coalesce(items('For_each_day_ad_d')?['stats']?['impressions'], 0)), 0), div(mul(float(coalesce(items('For_each_day_ad_d')?['stats']?['swipes'], 0)), 100), float(coalesce(items('For_each_day_ad_d')?['stats']?['impressions'], 0))), null)",
+                     "item/sanidi_cpm": "@if(greater(float(coalesce(items('For_each_day_ad_d')?['stats']?['impressions'], 0)), 0), div(mul(div(float(coalesce(items('For_each_day_ad_d')?['stats']?['spend'], 0)), 1000000), 1000), float(coalesce(items('For_each_day_ad_d')?['stats']?['impressions'], 0))), null)",
+                     "item/sanidi_costperswipe": "@if(greater(float(coalesce(items('For_each_day_ad_d')?['stats']?['swipes'], 0)), 0), div(div(float(coalesce(items('For_each_day_ad_d')?['stats']?['spend'], 0)), 1000000), float(coalesce(items('For_each_day_ad_d')?['stats']?['swipes'], 0))), null)",
+                     "item/sanidi_costperpurchase": "@if(greater(float(coalesce(items('For_each_day_ad_d')?['stats']?['conversion_purchases'], 0)), 0), div(div(float(coalesce(items('For_each_day_ad_d')?['stats']?['spend'], 0)), 1000000), float(coalesce(items('For_each_day_ad_d')?['stats']?['conversion_purchases'], 0))), null)",
+                     "item/sanidi_roas": "@if(greater(float(coalesce(items('For_each_day_ad_d')?['stats']?['spend'], 0)), 0), div(float(coalesce(items('For_each_day_ad_d')?['stats']?['conversion_purchases_value'], 0)), float(coalesce(items('For_each_day_ad_d')?['stats']?['spend'], 0))), null)",
+                     "item/sanidi_statsfinalizedthrough": "@outputs('Get_ad_d')?['body/timeseries_stats']?[0]?['timeseries_stat']?['finalized_data_end_time']"
+                    },
+                    "host": {
+                     "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                     "operationId": "UpdateOnlyRecord",
+                     "connectionName": "shared_commondataserviceforapps"
+                    }
+                   }
+                  }
+                 },
+                 "else": {
+                  "actions": {
+                   "Create_ad_d": {
+                    "runAfter": {},
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                     "parameters": {
+                      "entityName": "sanidi_snapadvertisementdailyinsights",
+                      "item/sanidi_name": "@concat(coalesce(outputs('Parent_ad_d')?['sanidi_adname'], string(items('For_each_entity_ad_d')?['id'])), ' · ', substring(items('For_each_day_ad_d')?['start_time'], 0, 10))",
+                      "item/sanidi_platformid": "@string(items('For_each_entity_ad_d')?['id'])",
+                      "item/sanidi_insightkey": "@concat(string(items('For_each_entity_ad_d')?['id']), '_', formatDateTime(substring(items('For_each_day_ad_d')?['start_time'], 0, 10), 'yyyyMMdd'))",
+                      "item/sanidi_date": "@substring(items('For_each_day_ad_d')?['start_time'], 0, 10)",
+                      "item/sanidi_month": "@int(formatDateTime(substring(items('For_each_day_ad_d')?['start_time'], 0, 10), 'MM'))",
+                      "item/sanidi_year": "@int(formatDateTime(substring(items('For_each_day_ad_d')?['start_time'], 0, 10), 'yyyy'))",
+                      "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(substring(items('For_each_day_ad_d')?['start_time'], 0, 10)), ticks(triggerBody()?['closed_through'])))",
+                      "item/sanidi_nodata": false,
+                      "item/sanidi_lastsyncedon": "@utcNow()",
+                      "item/sanidi_snapadvertisement@odata.bind": "/sanidi_snapadvertisements(@{outputs('Parent_ad_d')?['sanidi_snapadvertisementid']})",
+                      "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_ad_d')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                      "item/sanidi_rawpayload": "@if(greater(length(string(addProperty(items('For_each_day_ad_d'), 'id', items('For_each_entity_ad_d')?['id']))), 100000), substring(string(addProperty(items('For_each_day_ad_d'), 'id', items('For_each_entity_ad_d')?['id'])), 0, 100000), string(addProperty(items('For_each_day_ad_d'), 'id', items('For_each_entity_ad_d')?['id'])))",
+                      "item/sanidi_day": "@int(formatDateTime(substring(items('For_each_day_ad_d')?['start_time'], 0, 10), 'dd'))",
+                      "item/sanidi_weekday": "@add(dayOfWeek(substring(items('For_each_day_ad_d')?['start_time'], 0, 10)), 1)",
+                      "item/sanidi_impressions": "@items('For_each_day_ad_d')?['stats']?['impressions']",
+                      "item/sanidi_reach": "@items('For_each_day_ad_d')?['stats']?['uniques']",
+                      "item/sanidi_frequency": "@if(not(equals(items('For_each_day_ad_d')?['stats']?['frequency'], null)), items('For_each_day_ad_d')?['stats']?['frequency'], if(greater(float(coalesce(items('For_each_day_ad_d')?['stats']?['uniques'], 0)), 0), div(float(coalesce(items('For_each_day_ad_d')?['stats']?['impressions'], 0)), float(coalesce(items('For_each_day_ad_d')?['stats']?['uniques'], 0))), null))",
+                      "item/sanidi_swipes": "@items('For_each_day_ad_d')?['stats']?['swipes']",
+                      "item/sanidi_spend": "@if(equals(items('For_each_day_ad_d')?['stats']?['spend'], null), null, div(float(items('For_each_day_ad_d')?['stats']?['spend']), 1000000))",
+                      "item/sanidi_videoviews": "@items('For_each_day_ad_d')?['stats']?['video_views']",
+                      "item/sanidi_engagedviews": "@items('For_each_day_ad_d')?['stats']?['engaged_views']",
+                      "item/sanidi_screentimeseconds": "@if(equals(items('For_each_day_ad_d')?['stats']?['screen_time_millis'], null), null, div(float(items('For_each_day_ad_d')?['stats']?['screen_time_millis']), 1000))",
+                      "item/sanidi_quartile1": "@items('For_each_day_ad_d')?['stats']?['quartile_1']",
+                      "item/sanidi_quartile2": "@items('For_each_day_ad_d')?['stats']?['quartile_2']",
+                      "item/sanidi_quartile3": "@items('For_each_day_ad_d')?['stats']?['quartile_3']",
+                      "item/sanidi_viewcompletion": "@items('For_each_day_ad_d')?['stats']?['view_completion']",
+                      "item/sanidi_landingpageviews": "@items('For_each_day_ad_d')?['stats']?['landing_page_views']",
+                      "item/sanidi_placeopens": "@items('For_each_day_ad_d')?['stats']?['place_opens']",
+                      "item/sanidi_placeactions": "@items('For_each_day_ad_d')?['stats']?['place_actions']",
+                      "item/sanidi_purchases": "@items('For_each_day_ad_d')?['stats']?['conversion_purchases']",
+                      "item/sanidi_purchasevalue": "@if(equals(items('For_each_day_ad_d')?['stats']?['conversion_purchases_value'], null), null, div(float(items('For_each_day_ad_d')?['stats']?['conversion_purchases_value']), 1000000))",
+                      "item/sanidi_addtocart": "@items('For_each_day_ad_d')?['stats']?['conversion_add_cart']",
+                      "item/sanidi_startcheckout": "@items('For_each_day_ad_d')?['stats']?['conversion_start_checkout']",
+                      "item/sanidi_viewcontent": "@items('For_each_day_ad_d')?['stats']?['conversion_view_content']",
+                      "item/sanidi_pixelpageviews": "@items('For_each_day_ad_d')?['stats']?['conversion_page_views']",
+                      "item/sanidi_signups": "@items('For_each_day_ad_d')?['stats']?['conversion_sign_ups']",
+                      "item/sanidi_swiperate": "@if(greater(float(coalesce(items('For_each_day_ad_d')?['stats']?['impressions'], 0)), 0), div(mul(float(coalesce(items('For_each_day_ad_d')?['stats']?['swipes'], 0)), 100), float(coalesce(items('For_each_day_ad_d')?['stats']?['impressions'], 0))), null)",
+                      "item/sanidi_cpm": "@if(greater(float(coalesce(items('For_each_day_ad_d')?['stats']?['impressions'], 0)), 0), div(mul(div(float(coalesce(items('For_each_day_ad_d')?['stats']?['spend'], 0)), 1000000), 1000), float(coalesce(items('For_each_day_ad_d')?['stats']?['impressions'], 0))), null)",
+                      "item/sanidi_costperswipe": "@if(greater(float(coalesce(items('For_each_day_ad_d')?['stats']?['swipes'], 0)), 0), div(div(float(coalesce(items('For_each_day_ad_d')?['stats']?['spend'], 0)), 1000000), float(coalesce(items('For_each_day_ad_d')?['stats']?['swipes'], 0))), null)",
+                      "item/sanidi_costperpurchase": "@if(greater(float(coalesce(items('For_each_day_ad_d')?['stats']?['conversion_purchases'], 0)), 0), div(div(float(coalesce(items('For_each_day_ad_d')?['stats']?['spend'], 0)), 1000000), float(coalesce(items('For_each_day_ad_d')?['stats']?['conversion_purchases'], 0))), null)",
+                      "item/sanidi_roas": "@if(greater(float(coalesce(items('For_each_day_ad_d')?['stats']?['spend'], 0)), 0), div(float(coalesce(items('For_each_day_ad_d')?['stats']?['conversion_purchases_value'], 0)), float(coalesce(items('For_each_day_ad_d')?['stats']?['spend'], 0))), null)",
+                      "item/sanidi_statsfinalizedthrough": "@outputs('Get_ad_d')?['body/timeseries_stats']?[0]?['timeseries_stat']?['finalized_data_end_time']"
+                     },
+                     "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                      "operationId": "CreateRecord",
+                      "connectionName": "shared_commondataserviceforapps"
+                     }
+                    }
+                   }
+                  }
+                 }
+                },
+                "Count_written_ad_d": {
+                 "type": "IncrementVariable",
+                 "runAfter": {
+                  "If_exists_ad_d": [
+                   "Succeeded"
+                  ]
+                 },
+                 "inputs": {
+                  "name": "Written",
+                  "value": 1
+                 }
+                },
+                "Count_failed_ad_d": {
+                 "type": "IncrementVariable",
+                 "runAfter": {
+                  "If_exists_ad_d": [
+                   "Failed",
+                   "TimedOut"
+                  ]
+                 },
+                 "inputs": {
+                  "name": "Failed",
+                  "value": 1
+                 }
+                }
+               },
+               "else": {
+                "actions": {
+                 "Count_skipped_ad_d": {
+                  "type": "IncrementVariable",
+                  "runAfter": {},
+                  "inputs": {
+                   "name": "Skipped",
+                   "value": 1
+                  }
+                 }
+                }
+               }
+              }
+             },
+             "runtimeConfiguration": {
+              "concurrency": {
+               "repetitions": 5
+              }
+             }
+            }
+           },
+           "runtimeConfiguration": {
+            "concurrency": {
+             "repetitions": 4
+            }
+           }
+          },
+          "Note_failed_Get_ad_d": {
+           "type": "AppendToStringVariable",
+           "runAfter": {
+            "Get_ad_d": [
+             "Failed",
+             "TimedOut"
+            ]
+           },
+           "inputs": {
+            "name": "Errors",
+            "value": "@{concat('ad_d ', outputs('Window_start_ad_d'), ': ', take(string(coalesce(body('Get_ad_d'), '')), 400), ' | ')}"
+           }
+          },
+          "Next_ad_d": {
+           "type": "SetVariable",
+           "runAfter": {
+            "For_each_entity_ad_d": [
+             "Succeeded",
+             "Failed",
+             "TimedOut",
+             "Skipped"
+            ]
+           },
+           "inputs": {
+            "name": "SnapCursor",
+            "value": "@if(empty(outputs('Get_ad_d')?['body/paging']?['next_link']), '', decodeUriComponent(first(split(last(split(outputs('Get_ad_d')?['body/paging']?['next_link'], 'cursor=')), '&'))))"
+           }
+          }
+         }
+        }
+       },
+       "runtimeConfiguration": {
+        "concurrency": {
+         "repetitions": 1
+        }
+       }
+      }
+     }
+    },
+    "Respond_to_a_Power_App_or_flow": {
+     "type": "Response",
+     "kind": "PowerApp",
+     "runAfter": {
+      "Level_ad": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "inputs": {
+      "statusCode": 200,
+      "body": {
+       "written": "@variables('Written')",
+       "empty_months": "@variables('Empty')",
+       "skipped": "@variables('Skipped')",
+       "failed": "@variables('Failed')",
+       "errors": "@{take(variables('Errors'), 4000)}"
+      },
+      "schema": {
+       "type": "object",
+       "properties": {
+        "written": {
+         "title": "written",
+         "type": "integer"
+        },
+        "empty_months": {
+         "title": "empty_months",
+         "type": "integer"
+        },
+        "skipped": {
+         "title": "skipped",
+         "type": "integer"
+        },
+        "failed": {
+         "title": "failed",
+         "type": "integer"
+        },
+        "errors": {
+         "title": "errors",
+         "type": "string"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "templateName": ""
+ },
+ "schemaVersion": "1.0.0.0"
+}

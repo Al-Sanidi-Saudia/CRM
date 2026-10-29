@@ -116,6 +116,9 @@ def _global_exists(dv, name):
         raise
 
 
+GLOBAL_IDS = {}  # global choice name -> MetadataId (the bind needs the ID), filled by main()
+
+
 def common_metadata(t, col):
     name, display, kind, description = col
     period = t["period"]
@@ -139,7 +142,7 @@ def common_metadata(t, col):
                 "Format": "None", "MinValue": 2000, "MaxValue": 2100}
     if kind in ("month", "weekday"):
         return {"@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata", **base,
-                "GlobalOptionSet@odata.bind": f"/GlobalOptionSetDefinitions(Name='sanidi_{kind}')"}
+                "GlobalOptionSet@odata.bind": f"/GlobalOptionSetDefinitions({GLOBAL_IDS['sanidi_' + kind]})"}
     if kind == "bool":
         return {"@odata.type": "Microsoft.Dynamics.CRM.BooleanAttributeMetadata", **base, "DefaultValue": False,
                 "OptionSet": {"@odata.type": "Microsoft.Dynamics.CRM.BooleanOptionSetMetadata",
@@ -232,17 +235,19 @@ def entity_metadata(t, parent_ar):
 def add_attribute(dv, logical, metadata, solution):
     """Metadata writes run one at a time per environment; retry transient failures after checking."""
     path = f"EntityDefinitions(LogicalName='{logical}')/Attributes"
-    for attempt in range(5):
+    for attempt in range(10):
         try:
             dv.request("POST", path, metadata, solution=solution)
             return
         except (RuntimeError, urllib.error.URLError, ConnectionError, TimeoutError) as e:
             text = str(e).lower()
+            # Metadata changes run one at a time per environment ("Cannot start another [EntityCustomization]",
+            # "Cannot start the requested operation ... another [Import] running"): wait and retry.
             transient = (not isinstance(e, RuntimeError) or "unexpected error" in text
-                         or "cannot start another" in text or "timeout" in text)
-            if attempt == 4 or not transient:
+                         or "cannot start" in text or "timeout" in text)
+            if attempt == 9 or not transient:
                 raise
-            time.sleep(10 * (attempt + 1))
+            time.sleep(30 * (attempt + 1))
             if dv.first(f"{path}?$select=LogicalName&$filter=LogicalName eq '{metadata['SchemaName'].lower()}'"):
                 return
 
@@ -268,7 +273,7 @@ def ensure_lookup(dv, t, solution, apply, existing):
             dv.request("POST", "RelationshipDefinitions", body, solution=solution)
             return
         except RuntimeError as e:
-            if attempt == 4 or "cannot start another" not in str(e).lower():
+            if attempt == 4 or "cannot start" not in str(e).lower():
                 raise
             time.sleep(15 * (attempt + 1))
 
@@ -289,6 +294,9 @@ def main(apply, only=None):
     dv = Dataverse()
     solution = ensure_patch(dv, apply) or spec.SOLUTION
     ensure_global_choices(dv, solution, apply)
+    for name in spec.GLOBAL_CHOICES:
+        if _global_exists(dv, name):
+            GLOBAL_IDS[name] = dv.get(f"GlobalOptionSetDefinitions(Name='{name}')?$select=MetadataId")["MetadataId"]
     tables = spec.check()
     done = []
     for logical, t in tables.items():

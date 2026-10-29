@@ -1,0 +1,828 @@
+{
+ "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+ "contentVersion": "1.0.0.0",
+ "parameters": {
+  "$authentication": {
+   "defaultValue": {},
+   "type": "SecureObject"
+  },
+  "$connections": {
+   "defaultValue": {},
+   "type": "Object"
+  }
+ },
+ "triggers": {
+  "When_a_sync_request_is_added": {
+   "type": "OpenApiConnectionWebhook",
+   "inputs": {
+    "host": {
+     "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+     "connectionName": "shared_commondataserviceforapps",
+     "operationId": "SubscribeWebhookTrigger"
+    },
+    "parameters": {
+     "subscriptionRequest/message": 1,
+     "subscriptionRequest/entityname": "sanidi_integrationsyncrequest",
+     "subscriptionRequest/scope": 4
+    },
+    "authentication": "@parameters('$authentication')"
+   }
+  }
+ },
+ "actions": {
+  "Get_platform": {
+   "type": "OpenApiConnection",
+   "runAfter": {},
+   "inputs": {
+    "host": {
+     "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+     "connectionName": "shared_commondataserviceforapps",
+     "operationId": "GetItem"
+    },
+    "parameters": {
+     "entityName": "sanidi_integrationplatforms",
+     "recordId": "@triggerOutputs()?['body/_sanidi_platform_value']",
+     "$select": "sanidi_name,sanidi_platformkey,sanidi_dataflows,sanidi_insightsflowname,sanidi_fullloadfrom"
+    },
+    "authentication": "@parameters('$authentication')"
+   }
+  },
+  "Sync_type_labels": {
+   "type": "Compose",
+   "runAfter": {
+    "Get_platform": [
+     "Succeeded"
+    ]
+   },
+   "inputs": {
+    "100000000": "data",
+    "100000001": "insights",
+    "100000002": "day & month to date",
+    "100000003": "all time",
+    "100000004": "scheduled daily",
+    "100000005": "scheduled intraday"
+   }
+  },
+  "Run_types": {
+   "type": "Compose",
+   "runAfter": {
+    "Sync_type_labels": [
+     "Succeeded"
+    ]
+   },
+   "inputs": {
+    "100000002": "daymonth",
+    "100000003": "alltime",
+    "100000004": "daily",
+    "100000005": "intraday"
+   }
+  },
+  "Flow_name": {
+   "type": "InitializeVariable",
+   "runAfter": {
+    "Run_types": [
+     "Succeeded"
+    ]
+   },
+   "inputs": {
+    "variables": [
+     {
+      "name": "FlowName",
+      "type": "string",
+      "value": "@{if(greaterOrEquals(triggerOutputs()?['body/sanidi_synctype'], 100000002), concat(outputs('Get_platform')?['body/sanidi_name'], ' - Run Sync'), if(equals(triggerOutputs()?['body/sanidi_synctype'], 100000000), coalesce(first(json(coalesce(outputs('Get_platform')?['body/sanidi_dataflows'], '[]')))?['name'], 'The data flow'), coalesce(outputs('Get_platform')?['body/sanidi_insightsflowname'], 'The insights flow')))}"
+     }
+    ]
+   }
+  },
+  "No_flow_message": {
+   "type": "InitializeVariable",
+   "runAfter": {
+    "Flow_name": [
+     "Succeeded"
+    ]
+   },
+   "inputs": {
+    "variables": [
+     {
+      "name": "NoFlowMessage",
+      "type": "string",
+      "value": ""
+     }
+    ]
+   }
+  },
+  "Run_log": {
+   "type": "InitializeVariable",
+   "runAfter": {
+    "No_flow_message": [
+     "Succeeded"
+    ]
+   },
+   "inputs": {
+    "variables": [
+     {
+      "name": "RunLog",
+      "type": "string",
+      "value": ""
+     }
+    ]
+   }
+  },
+  "Busy_checks": {
+   "type": "InitializeVariable",
+   "runAfter": {
+    "Run_log": [
+     "Succeeded"
+    ]
+   },
+   "inputs": {
+    "variables": [
+     {
+      "name": "OthersRunning",
+      "type": "integer",
+      "value": 0
+     }
+    ]
+   }
+  },
+  "If_scheduled": {
+   "type": "If",
+   "runAfter": {
+    "Busy_checks": [
+     "Succeeded"
+    ]
+   },
+   "expression": {
+    "and": [
+     {
+      "equals": [
+       "@equals(triggerOutputs()?['body/sanidi_triggeredby'], 100000001)",
+       true
+      ]
+     }
+    ]
+   },
+   "actions": {
+    "Wait_for_other_syncs": {
+     "type": "Until",
+     "runAfter": {},
+     "expression": "@equals(variables('OthersRunning'), 0)",
+     "limit": {
+      "count": 31,
+      "timeout": "PT70M"
+     },
+     "actions": {
+      "Other_running_requests": {
+       "type": "OpenApiConnection",
+       "runAfter": {},
+       "inputs": {
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "connectionName": "shared_commondataserviceforapps",
+         "operationId": "ListRecords"
+        },
+        "parameters": {
+         "entityName": "sanidi_integrationsyncrequests",
+         "$select": "sanidi_integrationsyncrequestid",
+         "$filter": "_sanidi_platform_value eq @{triggerOutputs()?['body/_sanidi_platform_value']} and sanidi_status eq 100000001 and sanidi_integrationsyncrequestid ne @{triggerOutputs()?['body/sanidi_integrationsyncrequestid']}",
+         "$top": 1
+        },
+        "authentication": "@parameters('$authentication')"
+       }
+      },
+      "Count_running": {
+       "type": "SetVariable",
+       "runAfter": {
+        "Other_running_requests": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "name": "OthersRunning",
+        "value": "@length(outputs('Other_running_requests')?['body/value'])"
+       }
+      },
+      "If_busy": {
+       "type": "If",
+       "runAfter": {
+        "Count_running": [
+         "Succeeded"
+        ]
+       },
+       "expression": {
+        "and": [
+         {
+          "greater": [
+           "@variables('OthersRunning')",
+           0
+          ]
+         }
+        ]
+       },
+       "actions": {
+        "Wait_2_minutes": {
+         "type": "Wait",
+         "runAfter": {},
+         "inputs": {
+          "interval": {
+           "count": 2,
+           "unit": "Minute"
+          }
+         }
+        }
+       },
+       "else": {
+        "actions": {}
+       }
+      }
+     }
+    },
+    "If_still_busy": {
+     "type": "If",
+     "runAfter": {
+      "Wait_for_other_syncs": [
+       "Succeeded",
+       "Failed",
+       "TimedOut"
+      ]
+     },
+     "expression": {
+      "and": [
+       {
+        "greater": [
+         "@variables('OthersRunning')",
+         0
+        ]
+       }
+      ]
+     },
+     "actions": {
+      "Mark_skipped": {
+       "type": "OpenApiConnection",
+       "runAfter": {},
+       "inputs": {
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "connectionName": "shared_commondataserviceforapps",
+         "operationId": "UpdateOnlyRecord"
+        },
+        "parameters": {
+         "entityName": "sanidi_integrationsyncrequests",
+         "recordId": "@triggerOutputs()?['body/sanidi_integrationsyncrequestid']",
+         "item/sanidi_status": 100000004,
+         "item/sanidi_completedon": "@utcNow()",
+         "item/sanidi_errormessage": "Skipped: another sync of this platform was still running after an hour. The next scheduled run covers the same periods."
+        },
+        "authentication": "@parameters('$authentication')"
+       }
+      },
+      "Stop_skipped": {
+       "type": "Terminate",
+       "runAfter": {
+        "Mark_skipped": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "runStatus": "Succeeded"
+       }
+      }
+     },
+     "else": {
+      "actions": {}
+     }
+    }
+   },
+   "else": {
+    "actions": {}
+   }
+  },
+  "Mark_running": {
+   "type": "OpenApiConnection",
+   "runAfter": {
+    "If_scheduled": [
+     "Succeeded"
+    ]
+   },
+   "inputs": {
+    "host": {
+     "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+     "connectionName": "shared_commondataserviceforapps",
+     "operationId": "UpdateOnlyRecord"
+    },
+    "parameters": {
+     "entityName": "sanidi_integrationsyncrequests",
+     "recordId": "@triggerOutputs()?['body/sanidi_integrationsyncrequestid']",
+     "item/sanidi_status": 100000001,
+     "item/sanidi_startedon": "@utcNow()"
+    },
+    "authentication": "@parameters('$authentication')"
+   }
+  },
+  "Try": {
+   "type": "Scope",
+   "runAfter": {
+    "Mark_running": [
+     "Succeeded"
+    ]
+   },
+   "actions": {
+    "Run_the_matching_flow": {
+     "type": "Switch",
+     "runAfter": {},
+     "expression": "@concat(outputs('Get_platform')?['body/sanidi_platformkey'], '-', if(greaterOrEquals(triggerOutputs()?['body/sanidi_synctype'], 100000002), 'new', string(triggerOutputs()?['body/sanidi_synctype'])))",
+     "cases": {
+      "Case_meta_100000000": {
+       "case": "meta-100000000",
+       "actions": {
+        "Run_Get_Meta_Campaigns": {
+         "type": "Workflow",
+         "runAfter": {},
+         "inputs": {
+          "host": {
+           "workflowReferenceName": "8b6d991c-d3c0-f111-aaaf-70a8a581e673"
+          },
+          "retryPolicy": {
+           "type": "none"
+          }
+         }
+        }
+       }
+      },
+      "Case_meta_100000001": {
+       "case": "meta-100000001",
+       "actions": {
+        "Run_Get_Meta_Insights": {
+         "type": "Workflow",
+         "runAfter": {},
+         "inputs": {
+          "host": {
+           "workflowReferenceName": "e30b9610-07c5-f111-aaaf-70a8a581e5c5"
+          },
+          "retryPolicy": {
+           "type": "none"
+          }
+         }
+        }
+       }
+      },
+      "Case_snap_100000000": {
+       "case": "snap-100000000",
+       "actions": {
+        "Run_Get_Snap_Campaigns": {
+         "type": "Workflow",
+         "runAfter": {},
+         "inputs": {
+          "host": {
+           "workflowReferenceName": "f0adc814-8c13-5fe3-8ba7-9ad697ea4ea2"
+          },
+          "retryPolicy": {
+           "type": "none"
+          }
+         }
+        }
+       }
+      },
+      "Case_snap_100000001": {
+       "case": "snap-100000001",
+       "actions": {
+        "Run_Get_Snap_Insights": {
+         "type": "Workflow",
+         "runAfter": {},
+         "inputs": {
+          "host": {
+           "workflowReferenceName": "028e8be8-505f-5f70-acc7-85653b1f859f"
+          },
+          "retryPolicy": {
+           "type": "none"
+          }
+         }
+        }
+       }
+      },
+      "Case_google_100000000": {
+       "case": "google-100000000",
+       "actions": {
+        "Run_Get_Google_Ads_Campaigns": {
+         "type": "Workflow",
+         "runAfter": {},
+         "inputs": {
+          "host": {
+           "workflowReferenceName": "b10505e5-822c-5641-8499-e8324198b469"
+          },
+          "retryPolicy": {
+           "type": "none"
+          }
+         }
+        }
+       }
+      },
+      "Case_google_100000001": {
+       "case": "google-100000001",
+       "actions": {
+        "Run_Get_Google_Ads_Insights": {
+         "type": "Workflow",
+         "runAfter": {},
+         "inputs": {
+          "host": {
+           "workflowReferenceName": "59399b2c-080a-50b0-afcf-b803145237cf"
+          },
+          "retryPolicy": {
+           "type": "none"
+          }
+         }
+        }
+       }
+      },
+      "Case_tiktok_100000000": {
+       "case": "tiktok-100000000",
+       "actions": {
+        "Run_Get_TikTok_Campaigns": {
+         "type": "Workflow",
+         "runAfter": {},
+         "inputs": {
+          "host": {
+           "workflowReferenceName": "de45712c-6cd1-59ff-8546-26bb91f692f4"
+          },
+          "retryPolicy": {
+           "type": "none"
+          }
+         }
+        }
+       }
+      },
+      "Case_tiktok_100000001": {
+       "case": "tiktok-100000001",
+       "actions": {
+        "Run_Get_TikTok_Insights": {
+         "type": "Workflow",
+         "runAfter": {},
+         "inputs": {
+          "host": {
+           "workflowReferenceName": "4bcc7027-25a2-51c9-adc4-9c4b5c5ca128"
+          },
+          "retryPolicy": {
+           "type": "none"
+          }
+         }
+        }
+       }
+      },
+      "Case_meta_new": {
+       "case": "meta-new",
+       "actions": {
+        "Run_meta_sync": {
+         "type": "Workflow",
+         "runAfter": {},
+         "inputs": {
+          "host": {
+           "workflowReferenceName": "cc484c95-cdce-5f1b-a8f8-7f5350e1ddf3"
+          },
+          "retryPolicy": {
+           "type": "none"
+          },
+          "body": {
+           "run_type": "@outputs('Run_types')?[string(triggerOutputs()?['body/sanidi_synctype'])]",
+           "include_data": "@equals(triggerOutputs()?['body/sanidi_includedata'], true)",
+           "weekly": "@equals(triggerOutputs()?['body/sanidi_weeklyrun'], true)",
+           "full_load_from": "@{coalesce(outputs('Get_platform')?['body/sanidi_fullloadfrom'], '')}"
+          }
+         }
+        },
+        "Keep_log_meta": {
+         "type": "SetVariable",
+         "runAfter": {
+          "Run_meta_sync": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "name": "RunLog",
+          "value": "@{body('Run_meta_sync')?['log']}"
+         }
+        },
+        "Check_meta": {
+         "type": "Compose",
+         "runAfter": {
+          "Keep_log_meta": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(equals(body('Run_meta_sync')?['status'], 'Failed'), int('A step failed'), 'ok')"
+        }
+       }
+      },
+      "Case_snap_new": {
+       "case": "snap-new",
+       "actions": {
+        "Run_snap_sync": {
+         "type": "Workflow",
+         "runAfter": {},
+         "inputs": {
+          "host": {
+           "workflowReferenceName": "bd6bbf85-bf91-52ac-85f0-520199039850"
+          },
+          "retryPolicy": {
+           "type": "none"
+          },
+          "body": {
+           "run_type": "@outputs('Run_types')?[string(triggerOutputs()?['body/sanidi_synctype'])]",
+           "include_data": "@equals(triggerOutputs()?['body/sanidi_includedata'], true)",
+           "weekly": "@equals(triggerOutputs()?['body/sanidi_weeklyrun'], true)",
+           "full_load_from": "@{coalesce(outputs('Get_platform')?['body/sanidi_fullloadfrom'], '')}"
+          }
+         }
+        },
+        "Keep_log_snap": {
+         "type": "SetVariable",
+         "runAfter": {
+          "Run_snap_sync": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "name": "RunLog",
+          "value": "@{body('Run_snap_sync')?['log']}"
+         }
+        },
+        "Check_snap": {
+         "type": "Compose",
+         "runAfter": {
+          "Keep_log_snap": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(equals(body('Run_snap_sync')?['status'], 'Failed'), int('A step failed'), 'ok')"
+        }
+       }
+      },
+      "Case_google_new": {
+       "case": "google-new",
+       "actions": {
+        "Run_google_sync": {
+         "type": "Workflow",
+         "runAfter": {},
+         "inputs": {
+          "host": {
+           "workflowReferenceName": "d9cae379-1599-5ab5-b130-41023c9182ec"
+          },
+          "retryPolicy": {
+           "type": "none"
+          },
+          "body": {
+           "run_type": "@outputs('Run_types')?[string(triggerOutputs()?['body/sanidi_synctype'])]",
+           "include_data": "@equals(triggerOutputs()?['body/sanidi_includedata'], true)",
+           "weekly": "@equals(triggerOutputs()?['body/sanidi_weeklyrun'], true)",
+           "full_load_from": "@{coalesce(outputs('Get_platform')?['body/sanidi_fullloadfrom'], '')}"
+          }
+         }
+        },
+        "Keep_log_google": {
+         "type": "SetVariable",
+         "runAfter": {
+          "Run_google_sync": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "name": "RunLog",
+          "value": "@{body('Run_google_sync')?['log']}"
+         }
+        },
+        "Check_google": {
+         "type": "Compose",
+         "runAfter": {
+          "Keep_log_google": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(equals(body('Run_google_sync')?['status'], 'Failed'), int('A step failed'), 'ok')"
+        }
+       }
+      },
+      "Case_tiktok_new": {
+       "case": "tiktok-new",
+       "actions": {
+        "Run_tiktok_sync": {
+         "type": "Workflow",
+         "runAfter": {},
+         "inputs": {
+          "host": {
+           "workflowReferenceName": "19b96a2c-b07e-5ce0-9603-7de370f62572"
+          },
+          "retryPolicy": {
+           "type": "none"
+          },
+          "body": {
+           "run_type": "@outputs('Run_types')?[string(triggerOutputs()?['body/sanidi_synctype'])]",
+           "include_data": "@equals(triggerOutputs()?['body/sanidi_includedata'], true)",
+           "weekly": "@equals(triggerOutputs()?['body/sanidi_weeklyrun'], true)",
+           "full_load_from": "@{coalesce(outputs('Get_platform')?['body/sanidi_fullloadfrom'], '')}"
+          }
+         }
+        },
+        "Keep_log_tiktok": {
+         "type": "SetVariable",
+         "runAfter": {
+          "Run_tiktok_sync": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "name": "RunLog",
+          "value": "@{body('Run_tiktok_sync')?['log']}"
+         }
+        },
+        "Check_tiktok": {
+         "type": "Compose",
+         "runAfter": {
+          "Keep_log_tiktok": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(equals(body('Run_tiktok_sync')?['status'], 'Failed'), int('A step failed'), 'ok')"
+        }
+       }
+      }
+     },
+     "default": {
+      "actions": {
+       "Set_no_flow_message": {
+        "type": "SetVariable",
+        "runAfter": {},
+        "inputs": {
+         "name": "NoFlowMessage",
+         "value": "No flow is set up for this platform and sync type."
+        }
+       },
+       "No_flow_set_up": {
+        "type": "Compose",
+        "runAfter": {
+         "Set_no_flow_message": [
+          "Succeeded"
+         ]
+        },
+        "inputs": "@int('no-flow-set-up')"
+       }
+      }
+     }
+    }
+   }
+  },
+  "Mark_succeeded": {
+   "type": "OpenApiConnection",
+   "runAfter": {
+    "Try": [
+     "Succeeded"
+    ]
+   },
+   "inputs": {
+    "host": {
+     "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+     "connectionName": "shared_commondataserviceforapps",
+     "operationId": "UpdateOnlyRecord"
+    },
+    "parameters": {
+     "entityName": "sanidi_integrationsyncrequests",
+     "recordId": "@triggerOutputs()?['body/sanidi_integrationsyncrequestid']",
+     "item/sanidi_status": 100000002,
+     "item/sanidi_completedon": "@utcNow()",
+     "item/sanidi_stepslog": "@{variables('RunLog')}"
+    },
+    "authentication": "@parameters('$authentication')"
+   }
+  },
+  "Notify_succeeded": {
+   "type": "If",
+   "runAfter": {
+    "Mark_succeeded": [
+     "Succeeded"
+    ]
+   },
+   "expression": {
+    "and": [
+     {
+      "not": {
+       "equals": [
+        "@equals(triggerOutputs()?['body/sanidi_triggeredby'], 100000001)",
+        true
+       ]
+      }
+     }
+    ]
+   },
+   "actions": {
+    "Send_notification": {
+     "type": "OpenApiConnection",
+     "runAfter": {},
+     "inputs": {
+      "host": {
+       "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+       "connectionName": "shared_commondataserviceforapps",
+       "operationId": "CreateRecord"
+      },
+      "parameters": {
+       "entityName": "appnotifications",
+       "item/title": "@{outputs('Get_platform')?['body/sanidi_name']} @{outputs('Sync_type_labels')?[string(triggerOutputs()?['body/sanidi_synctype'])]} sync succeeded",
+       "item/body": "@{variables('FlowName')} finished at @{convertTimeZone(utcNow(), 'UTC', 'Arab Standard Time', 'dd MMM yyyy, HH:mm')}.",
+       "item/icontype": 100000001,
+       "item/toasttype": 200000000,
+       "item/ttlinseconds": 1209600,
+       "item/ownerid@odata.bind": "/systemusers(@{triggerOutputs()?['body/_createdby_value']})"
+      },
+      "authentication": "@parameters('$authentication')"
+     }
+    }
+   },
+   "else": {
+    "actions": {}
+   }
+  },
+  "Failed_steps": {
+   "type": "Query",
+   "runAfter": {
+    "Try": [
+     "Failed",
+     "TimedOut",
+     "Skipped"
+    ]
+   },
+   "inputs": {
+    "from": "@result('Run_the_matching_flow')",
+    "where": "@equals(item()?['status'], 'Failed')"
+   }
+  },
+  "Mark_failed": {
+   "type": "OpenApiConnection",
+   "runAfter": {
+    "Failed_steps": [
+     "Succeeded",
+     "Failed"
+    ]
+   },
+   "inputs": {
+    "host": {
+     "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+     "connectionName": "shared_commondataserviceforapps",
+     "operationId": "UpdateOnlyRecord"
+    },
+    "parameters": {
+     "entityName": "sanidi_integrationsyncrequests",
+     "recordId": "@triggerOutputs()?['body/sanidi_integrationsyncrequestid']",
+     "item/sanidi_status": 100000003,
+     "item/sanidi_completedon": "@utcNow()",
+     "item/sanidi_errormessage": "@{if(not(empty(variables('RunLog'))), concat(variables('FlowName'), ' finished with failed steps:', decodeUriComponent('%0A'), take(variables('RunLog'), 3000)), if(empty(variables('NoFlowMessage')), concat(variables('FlowName'), ' failed: ', coalesce(first(body('Failed_steps'))?['error']?['message'], 'see the flow run history in Power Automate for details.')), variables('NoFlowMessage')))}",
+     "item/sanidi_stepslog": "@{variables('RunLog')}"
+    },
+    "authentication": "@parameters('$authentication')"
+   }
+  },
+  "Notify_failed": {
+   "type": "If",
+   "runAfter": {
+    "Mark_failed": [
+     "Succeeded"
+    ]
+   },
+   "expression": {
+    "and": [
+     {
+      "not": {
+       "equals": [
+        "@equals(triggerOutputs()?['body/sanidi_triggeredby'], 100000001)",
+        true
+       ]
+      }
+     }
+    ]
+   },
+   "actions": {
+    "Send_notification": {
+     "type": "OpenApiConnection",
+     "runAfter": {},
+     "inputs": {
+      "host": {
+       "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+       "connectionName": "shared_commondataserviceforapps",
+       "operationId": "CreateRecord"
+      },
+      "parameters": {
+       "entityName": "appnotifications",
+       "item/title": "@{outputs('Get_platform')?['body/sanidi_name']} @{outputs('Sync_type_labels')?[string(triggerOutputs()?['body/sanidi_synctype'])]} sync failed",
+       "item/body": "@{if(not(empty(variables('RunLog'))), concat(variables('FlowName'), ' finished with failed steps:', decodeUriComponent('%0A'), take(variables('RunLog'), 3000)), if(empty(variables('NoFlowMessage')), concat(variables('FlowName'), ' failed: ', coalesce(first(body('Failed_steps'))?['error']?['message'], 'see the flow run history in Power Automate for details.')), variables('NoFlowMessage')))}",
+       "item/icontype": 100000002,
+       "item/toasttype": 200000000,
+       "item/ttlinseconds": 1209600,
+       "item/ownerid@odata.bind": "/systemusers(@{triggerOutputs()?['body/_createdby_value']})"
+      },
+      "authentication": "@parameters('$authentication')"
+     }
+    }
+   },
+   "else": {
+    "actions": {}
+   }
+  }
+ },
+ "outputs": {}
+}

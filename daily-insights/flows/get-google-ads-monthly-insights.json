@@ -1,0 +1,2655 @@
+{
+ "properties": {
+  "connectionReferences": {
+   "shared_commondataserviceforapps": {
+    "api": {
+     "name": "shared_commondataserviceforapps"
+    },
+    "connection": {
+     "connectionReferenceLogicalName": "sanidi_sharedcommondataserviceforapps_79822"
+    },
+    "runtimeSource": "embedded"
+   },
+   "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933": {
+    "api": {
+     "name": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+     "logicalName": "sanidi_googleads"
+    },
+    "connection": {
+     "connectionReferenceLogicalName": "sanidi_sharedsanidi5fgoogle20ads5f43b530b23a0dc933_ba16b"
+    },
+    "runtimeSource": "embedded"
+   }
+  },
+  "definition": {
+   "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+   "contentVersion": "1.0.0.0",
+   "parameters": {
+    "$authentication": {
+     "defaultValue": {},
+     "type": "SecureObject"
+    },
+    "$connections": {
+     "defaultValue": {},
+     "type": "Object"
+    },
+    "Google Ads Client ID (sanidi_GoogleAdsClientId)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_GoogleAdsClientId"
+     }
+    },
+    "Google Ads Client Secret (sanidi_GoogleAdsClientSecret)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_GoogleAdsClientSecret"
+     }
+    },
+    "Google Ads Refresh Token (sanidi_GoogleAdsRefreshToken)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_GoogleAdsRefreshToken"
+     }
+    },
+    "Google Ads Developer Token (sanidi_GoogleAdsDeveloperToken)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_GoogleAdsDeveloperToken"
+     }
+    },
+    "Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_GoogleAdsLoginCustomerId"
+     }
+    },
+    "Google Ads Customer ID (sanidi_GoogleAdsCustomerId)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_GoogleAdsCustomerId"
+     }
+    }
+   },
+   "triggers": {
+    "manual": {
+     "type": "Request",
+     "kind": "Button",
+     "inputs": {
+      "schema": {
+       "type": "object",
+       "properties": {
+        "start_date": {
+         "title": "Start date",
+         "type": "string",
+         "description": "First day (YYYY-MM-DD); for monthly, any day of the first month.",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "TEXT"
+        },
+        "end_date": {
+         "title": "End date",
+         "type": "string",
+         "description": "Last day (YYYY-MM-DD), inclusive; usually today.",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "TEXT"
+        },
+        "closed_through": {
+         "title": "Closed through",
+         "type": "string",
+         "description": "Rows dated on or before this date get Period Closed = Yes (YYYY-MM-DD, may be empty).",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "TEXT"
+        }
+       },
+       "required": [
+        "start_date",
+        "end_date"
+       ]
+      }
+     }
+    }
+   },
+   "actions": {
+    "Init_written": {
+     "type": "InitializeVariable",
+     "runAfter": {},
+     "inputs": {
+      "variables": [
+       {
+        "name": "Written",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Init_skipped": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_written": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "Skipped",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Init_failed": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_skipped": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "Failed",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Init_empty": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_failed": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "Empty",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Init_errors": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_empty": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "Errors",
+        "type": "string",
+        "value": ""
+       }
+      ]
+     }
+    },
+    "Init_snap_cursor": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_errors": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "SnapCursor",
+        "type": "string",
+        "value": ""
+       }
+      ]
+     }
+    },
+    "Organization": {
+     "runAfter": {
+      "Init_snap_cursor": [
+       "Succeeded"
+      ]
+     },
+     "type": "OpenApiConnection",
+     "inputs": {
+      "parameters": {
+       "entityName": "organizations",
+       "$select": "_basecurrencyid_value",
+       "$top": 1
+      },
+      "host": {
+       "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+       "operationId": "ListRecords",
+       "connectionName": "shared_commondataserviceforapps"
+      }
+     }
+    },
+    "Base_currency": {
+     "type": "Compose",
+     "runAfter": {
+      "Organization": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@first(outputs('Organization')?['body/value'])?['_basecurrencyid_value']"
+    },
+    "Google_token": {
+     "runAfter": {
+      "Base_currency": [
+       "Succeeded"
+      ]
+     },
+     "type": "OpenApiConnection",
+     "inputs": {
+      "parameters": {
+       "body/client_id": "@parameters('Google Ads Client ID (sanidi_GoogleAdsClientId)')",
+       "body/client_secret": "@parameters('Google Ads Client Secret (sanidi_GoogleAdsClientSecret)')",
+       "body/refresh_token": "@parameters('Google Ads Refresh Token (sanidi_GoogleAdsRefreshToken)')"
+      },
+      "host": {
+       "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+       "operationId": "GetAccessToken",
+       "connectionName": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933"
+      }
+     }
+    },
+    "List_client_accounts": {
+     "runAfter": {
+      "Google_token": [
+       "Succeeded"
+      ]
+     },
+     "type": "OpenApiConnection",
+     "inputs": {
+      "parameters": {
+       "customer_id": "@replace(parameters('Google Ads Customer ID (sanidi_GoogleAdsCustomerId)'), '-', '')",
+       "access-token": "@outputs('Google_token')?['body/access_token']",
+       "developer-token": "@parameters('Google Ads Developer Token (sanidi_GoogleAdsDeveloperToken)')",
+       "login-customer-id": "@if(empty(trim(coalesce(parameters('Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)'), ''))), replace(parameters('Google Ads Customer ID (sanidi_GoogleAdsCustomerId)'), '-', ''), replace(parameters('Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)'), '-', ''))"
+      },
+      "host": {
+       "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+       "operationId": "ListClientAccounts",
+       "connectionName": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933"
+      }
+     }
+    },
+    "List_campaign_dates": {
+     "runAfter": {
+      "List_client_accounts": [
+       "Succeeded"
+      ]
+     },
+     "type": "OpenApiConnection",
+     "inputs": {
+      "parameters": {
+       "entityName": "sanidi_googleadscampaigns",
+       "$select": "sanidi_googleadscampaignid,sanidi_startdatetime,sanidi_enddatetime"
+      },
+      "host": {
+       "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+       "operationId": "ListRecords",
+       "connectionName": "shared_commondataserviceforapps"
+      }
+     },
+     "runtimeConfiguration": {
+      "paginationPolicy": {
+       "minimumItemCount": 100000
+      }
+     }
+    },
+    "Select_campaign_dates": {
+     "type": "Select",
+     "runAfter": {
+      "List_campaign_dates": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "from": "@coalesce(outputs('List_campaign_dates')?['body/value'], json('[]'))",
+      "select": "@concat('\"', item()?['sanidi_googleadscampaignid'], '\":', string(item()))"
+     }
+    },
+    "Campaign_dates": {
+     "type": "Compose",
+     "runAfter": {
+      "Select_campaign_dates": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@json(concat('{', join(body('Select_campaign_dates'), ','), '}'))"
+    },
+    "Level_campaign": {
+     "type": "Scope",
+     "runAfter": {
+      "Campaign_dates": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "actions": {
+      "List_items_campaign_m": {
+       "runAfter": {},
+       "type": "OpenApiConnection",
+       "inputs": {
+        "parameters": {
+         "entityName": "sanidi_googleadscampaigns",
+         "$select": "sanidi_googleadscampaignid,sanidi_campaignid,sanidi_campaignname,_transactioncurrencyid_value,createdon,sanidi_startdatetime,sanidi_enddatetime",
+         "$filter": "sanidi_campaignid ne null"
+        },
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "operationId": "ListRecords",
+         "connectionName": "shared_commondataserviceforapps"
+        }
+       },
+       "runtimeConfiguration": {
+        "paginationPolicy": {
+         "minimumItemCount": 100000
+        }
+       }
+      },
+      "Select_items_campaign_m": {
+       "type": "Select",
+       "runAfter": {
+        "List_items_campaign_m": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@coalesce(outputs('List_items_campaign_m')?['body/value'], json('[]'))",
+        "select": "@concat('\"', item()?['sanidi_campaignid'], '\":', string(item()))"
+       }
+      },
+      "Map_items_campaign_m": {
+       "type": "Compose",
+       "runAfter": {
+        "Select_items_campaign_m": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@json(concat('{', join(body('Select_items_campaign_m'), ','), '}'))"
+      },
+      "Window_count_campaign_m": {
+       "type": "Compose",
+       "runAfter": {
+        "Map_items_campaign_m": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@add(mul(sub(int(formatDateTime(triggerBody()?['end_date'], 'yyyy')), int(formatDateTime(triggerBody()?['start_date'], 'yyyy'))), 12), sub(int(formatDateTime(triggerBody()?['end_date'], 'MM')), int(formatDateTime(triggerBody()?['start_date'], 'MM'))), 1)"
+      },
+      "For_each_window_campaign_m": {
+       "type": "Foreach",
+       "foreach": "@range(0, outputs('Window_count_campaign_m'))",
+       "runAfter": {
+        "Window_count_campaign_m": [
+         "Succeeded"
+        ]
+       },
+       "actions": {
+        "Window_start_campaign_m": {
+         "type": "Compose",
+         "runAfter": {},
+         "inputs": "@formatDateTime(addToTime(formatDateTime(triggerBody()?['start_date'], 'yyyy-MM-01'), items('For_each_window_campaign_m'), 'Month'), 'yyyy-MM-dd')"
+        },
+        "Window_end_campaign_m": {
+         "type": "Compose",
+         "runAfter": {
+          "Window_start_campaign_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(greater(ticks(addDays(addToTime(outputs('Window_start_campaign_m'), 1, 'Month'), -1)), ticks(triggerBody()?['end_date'])), triggerBody()?['end_date'], formatDateTime(addDays(addToTime(outputs('Window_start_campaign_m'), 1, 'Month'), -1), 'yyyy-MM-dd'))"
+        },
+        "List_existing_campaign_m": {
+         "runAfter": {
+          "Window_end_campaign_m": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_googleadscampaignmonthlyinsights",
+           "$select": "sanidi_googleadscampaignmonthlyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date ge @{outputs('Window_start_campaign_m')} and sanidi_date le @{outputs('Window_end_campaign_m')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_existing_campaign_m": {
+         "type": "Select",
+         "runAfter": {
+          "List_existing_campaign_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_existing_campaign_m')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', concat('\"', item()?['sanidi_googleadscampaignmonthlyinsightid'], '\"'))"
+         }
+        },
+        "Map_existing_campaign_m": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_existing_campaign_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_existing_campaign_m'), ','), '}'))"
+        },
+        "Google_token_campaign_m": {
+         "runAfter": {
+          "Map_existing_campaign_m": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "body/client_id": "@parameters('Google Ads Client ID (sanidi_GoogleAdsClientId)')",
+           "body/client_secret": "@parameters('Google Ads Client Secret (sanidi_GoogleAdsClientSecret)')",
+           "body/refresh_token": "@parameters('Google Ads Refresh Token (sanidi_GoogleAdsRefreshToken)')"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+           "operationId": "GetAccessToken",
+           "connectionName": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933"
+          }
+         }
+        },
+        "For_each_account_campaign_m": {
+         "type": "Foreach",
+         "foreach": "@outputs('List_client_accounts')?['body/rows']",
+         "runAfter": {
+          "Google_token_campaign_m": [
+           "Succeeded"
+          ]
+         },
+         "actions": {
+          "Get_campaign_m": {
+           "runAfter": {},
+           "type": "OpenApiConnection",
+           "inputs": {
+            "parameters": {
+             "customer_id": "@items('For_each_account_campaign_m')?['customer_id']",
+             "access-token": "@outputs('Google_token_campaign_m')?['body/access_token']",
+             "developer-token": "@parameters('Google Ads Developer Token (sanidi_GoogleAdsDeveloperToken)')",
+             "login-customer-id": "@if(empty(trim(coalesce(parameters('Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)'), ''))), replace(parameters('Google Ads Customer ID (sanidi_GoogleAdsCustomerId)'), '-', ''), replace(parameters('Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)'), '-', ''))",
+             "level": "campaign",
+             "granularity": "MONTHLY",
+             "start_date": "@outputs('Window_start_campaign_m')",
+             "end_date": "@outputs('Window_end_campaign_m')",
+             "breakdown": "NONE"
+            },
+            "host": {
+             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+             "operationId": "GetPerformance",
+             "connectionName": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933"
+            }
+           }
+          },
+          "For_each_row_campaign_m": {
+           "type": "Foreach",
+           "foreach": "@coalesce(outputs('Get_campaign_m')?['body/rows'], json('[]'))",
+           "runAfter": {
+            "Get_campaign_m": [
+             "Succeeded"
+            ]
+           },
+           "actions": {
+            "Parent_campaign_m": {
+             "type": "Compose",
+             "runAfter": {},
+             "inputs": "@outputs('Map_items_campaign_m')?[string(items('For_each_row_campaign_m')?['campaignid'])]"
+            },
+            "If_synced_campaign_m": {
+             "type": "If",
+             "runAfter": {
+              "Parent_campaign_m": [
+               "Succeeded"
+              ]
+             },
+             "expression": {
+              "and": [
+               {
+                "not": {
+                 "equals": [
+                  "@outputs('Parent_campaign_m')",
+                  "@null"
+                 ]
+                }
+               }
+              ]
+             },
+             "actions": {
+              "Key_campaign_m": {
+               "type": "Compose",
+               "runAfter": {},
+               "inputs": "@concat(string(items('For_each_row_campaign_m')?['campaignid']), '_', formatDateTime(items('For_each_row_campaign_m')?['month'], 'yyyyMM'))"
+              },
+              "If_exists_campaign_m": {
+               "type": "If",
+               "runAfter": {
+                "Key_campaign_m": [
+                 "Succeeded"
+                ]
+               },
+               "expression": {
+                "and": [
+                 {
+                  "not": {
+                   "equals": [
+                    "@coalesce(outputs('Map_existing_campaign_m')?[outputs('Key_campaign_m')], '')",
+                    ""
+                   ]
+                  }
+                 }
+                ]
+               },
+               "actions": {
+                "Update_campaign_m": {
+                 "runAfter": {},
+                 "type": "OpenApiConnection",
+                 "inputs": {
+                  "parameters": {
+                   "entityName": "sanidi_googleadscampaignmonthlyinsights",
+                   "recordId": "@outputs('Map_existing_campaign_m')?[outputs('Key_campaign_m')]",
+                   "item/sanidi_name": "@concat(coalesce(outputs('Parent_campaign_m')?['sanidi_campaignname'], string(items('For_each_row_campaign_m')?['campaignid'])), ' · ', substring(items('For_each_row_campaign_m')?['month'], 0, 7))",
+                   "item/sanidi_platformid": "@string(items('For_each_row_campaign_m')?['campaignid'])",
+                   "item/sanidi_insightkey": "@concat(string(items('For_each_row_campaign_m')?['campaignid']), '_', formatDateTime(items('For_each_row_campaign_m')?['month'], 'yyyyMM'))",
+                   "item/sanidi_date": "@items('For_each_row_campaign_m')?['month']",
+                   "item/sanidi_month": "@int(formatDateTime(items('For_each_row_campaign_m')?['month'], 'MM'))",
+                   "item/sanidi_year": "@int(formatDateTime(items('For_each_row_campaign_m')?['month'], 'yyyy'))",
+                   "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_campaign_m')?['month']), ticks(triggerBody()?['closed_through'])))",
+                   "item/sanidi_nodata": false,
+                   "item/sanidi_lastsyncedon": "@utcNow()",
+                   "item/sanidi_googleadscampaign@odata.bind": "/sanidi_googleadscampaigns(@{outputs('Parent_campaign_m')?['sanidi_googleadscampaignid']})",
+                   "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_campaign_m')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                   "item/sanidi_rawpayload": "@if(greater(length(string(items('For_each_row_campaign_m'))), 100000), substring(string(items('For_each_row_campaign_m')), 0, 100000), string(items('For_each_row_campaign_m')))",
+                   "item/sanidi_impressions": "@items('For_each_row_campaign_m')?['impressions']",
+                   "item/sanidi_clicks": "@items('For_each_row_campaign_m')?['clicks']",
+                   "item/sanidi_ctr": "@items('For_each_row_campaign_m')?['ctr']",
+                   "item/sanidi_averagecpc": "@items('For_each_row_campaign_m')?['averagecpc']",
+                   "item/sanidi_averagecpm": "@items('For_each_row_campaign_m')?['averagecpm']",
+                   "item/sanidi_averagecost": "@items('For_each_row_campaign_m')?['averagecost']",
+                   "item/sanidi_cost": "@items('For_each_row_campaign_m')?['cost']",
+                   "item/sanidi_interactions": "@items('For_each_row_campaign_m')?['interactions']",
+                   "item/sanidi_interactionrate": "@items('For_each_row_campaign_m')?['interactionrate']",
+                   "item/sanidi_engagements": "@items('For_each_row_campaign_m')?['engagements']",
+                   "item/sanidi_engagementrate": "@items('For_each_row_campaign_m')?['engagementrate']",
+                   "item/sanidi_conversions": "@items('For_each_row_campaign_m')?['conversions']",
+                   "item/sanidi_conversionsvalue": "@items('For_each_row_campaign_m')?['conversionsvalue']",
+                   "item/sanidi_costperconversion": "@items('For_each_row_campaign_m')?['costperconversion']",
+                   "item/sanidi_valueperconversion": "@items('For_each_row_campaign_m')?['valueperconversion']",
+                   "item/sanidi_conversionrate": "@items('For_each_row_campaign_m')?['conversionrate']",
+                   "item/sanidi_allconversions": "@items('For_each_row_campaign_m')?['allconversions']",
+                   "item/sanidi_allconversionsvalue": "@items('For_each_row_campaign_m')?['allconversionsvalue']",
+                   "item/sanidi_viewthroughconversions": "@items('For_each_row_campaign_m')?['viewthroughconversions']",
+                   "item/sanidi_phonecalls": "@items('For_each_row_campaign_m')?['phonecalls']",
+                   "item/sanidi_videoviews": "@items('For_each_row_campaign_m')?['videoviews']",
+                   "item/sanidi_videoviewrate": "@items('For_each_row_campaign_m')?['videoviewrate']",
+                   "item/sanidi_topimpressionpct": "@items('For_each_row_campaign_m')?['topimpressionpct']",
+                   "item/sanidi_absolutetopimpressionpct": "@items('For_each_row_campaign_m')?['absolutetopimpressionpct']",
+                   "item/sanidi_searchimpressionshare": "@items('For_each_row_campaign_m')?['searchimpressionshare']",
+                   "item/sanidi_searchtopimpressionshare": "@items('For_each_row_campaign_m')?['searchtopimpressionshare']",
+                   "item/sanidi_searchabsolutetopimpressionshare": "@items('For_each_row_campaign_m')?['searchabsolutetopimpressionshare']",
+                   "item/sanidi_invalidclicks": "@items('For_each_row_campaign_m')?['invalidclicks']"
+                  },
+                  "host": {
+                   "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                   "operationId": "UpdateOnlyRecord",
+                   "connectionName": "shared_commondataserviceforapps"
+                  }
+                 }
+                }
+               },
+               "else": {
+                "actions": {
+                 "Create_campaign_m": {
+                  "runAfter": {},
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                   "parameters": {
+                    "entityName": "sanidi_googleadscampaignmonthlyinsights",
+                    "item/sanidi_name": "@concat(coalesce(outputs('Parent_campaign_m')?['sanidi_campaignname'], string(items('For_each_row_campaign_m')?['campaignid'])), ' · ', substring(items('For_each_row_campaign_m')?['month'], 0, 7))",
+                    "item/sanidi_platformid": "@string(items('For_each_row_campaign_m')?['campaignid'])",
+                    "item/sanidi_insightkey": "@concat(string(items('For_each_row_campaign_m')?['campaignid']), '_', formatDateTime(items('For_each_row_campaign_m')?['month'], 'yyyyMM'))",
+                    "item/sanidi_date": "@items('For_each_row_campaign_m')?['month']",
+                    "item/sanidi_month": "@int(formatDateTime(items('For_each_row_campaign_m')?['month'], 'MM'))",
+                    "item/sanidi_year": "@int(formatDateTime(items('For_each_row_campaign_m')?['month'], 'yyyy'))",
+                    "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_campaign_m')?['month']), ticks(triggerBody()?['closed_through'])))",
+                    "item/sanidi_nodata": false,
+                    "item/sanidi_lastsyncedon": "@utcNow()",
+                    "item/sanidi_googleadscampaign@odata.bind": "/sanidi_googleadscampaigns(@{outputs('Parent_campaign_m')?['sanidi_googleadscampaignid']})",
+                    "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_campaign_m')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                    "item/sanidi_rawpayload": "@if(greater(length(string(items('For_each_row_campaign_m'))), 100000), substring(string(items('For_each_row_campaign_m')), 0, 100000), string(items('For_each_row_campaign_m')))",
+                    "item/sanidi_impressions": "@items('For_each_row_campaign_m')?['impressions']",
+                    "item/sanidi_clicks": "@items('For_each_row_campaign_m')?['clicks']",
+                    "item/sanidi_ctr": "@items('For_each_row_campaign_m')?['ctr']",
+                    "item/sanidi_averagecpc": "@items('For_each_row_campaign_m')?['averagecpc']",
+                    "item/sanidi_averagecpm": "@items('For_each_row_campaign_m')?['averagecpm']",
+                    "item/sanidi_averagecost": "@items('For_each_row_campaign_m')?['averagecost']",
+                    "item/sanidi_cost": "@items('For_each_row_campaign_m')?['cost']",
+                    "item/sanidi_interactions": "@items('For_each_row_campaign_m')?['interactions']",
+                    "item/sanidi_interactionrate": "@items('For_each_row_campaign_m')?['interactionrate']",
+                    "item/sanidi_engagements": "@items('For_each_row_campaign_m')?['engagements']",
+                    "item/sanidi_engagementrate": "@items('For_each_row_campaign_m')?['engagementrate']",
+                    "item/sanidi_conversions": "@items('For_each_row_campaign_m')?['conversions']",
+                    "item/sanidi_conversionsvalue": "@items('For_each_row_campaign_m')?['conversionsvalue']",
+                    "item/sanidi_costperconversion": "@items('For_each_row_campaign_m')?['costperconversion']",
+                    "item/sanidi_valueperconversion": "@items('For_each_row_campaign_m')?['valueperconversion']",
+                    "item/sanidi_conversionrate": "@items('For_each_row_campaign_m')?['conversionrate']",
+                    "item/sanidi_allconversions": "@items('For_each_row_campaign_m')?['allconversions']",
+                    "item/sanidi_allconversionsvalue": "@items('For_each_row_campaign_m')?['allconversionsvalue']",
+                    "item/sanidi_viewthroughconversions": "@items('For_each_row_campaign_m')?['viewthroughconversions']",
+                    "item/sanidi_phonecalls": "@items('For_each_row_campaign_m')?['phonecalls']",
+                    "item/sanidi_videoviews": "@items('For_each_row_campaign_m')?['videoviews']",
+                    "item/sanidi_videoviewrate": "@items('For_each_row_campaign_m')?['videoviewrate']",
+                    "item/sanidi_topimpressionpct": "@items('For_each_row_campaign_m')?['topimpressionpct']",
+                    "item/sanidi_absolutetopimpressionpct": "@items('For_each_row_campaign_m')?['absolutetopimpressionpct']",
+                    "item/sanidi_searchimpressionshare": "@items('For_each_row_campaign_m')?['searchimpressionshare']",
+                    "item/sanidi_searchtopimpressionshare": "@items('For_each_row_campaign_m')?['searchtopimpressionshare']",
+                    "item/sanidi_searchabsolutetopimpressionshare": "@items('For_each_row_campaign_m')?['searchabsolutetopimpressionshare']",
+                    "item/sanidi_invalidclicks": "@items('For_each_row_campaign_m')?['invalidclicks']"
+                   },
+                   "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                    "operationId": "CreateRecord",
+                    "connectionName": "shared_commondataserviceforapps"
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              "Count_written_campaign_m": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_campaign_m": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Written",
+                "value": 1
+               }
+              },
+              "Count_failed_campaign_m": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_campaign_m": [
+                 "Failed",
+                 "TimedOut"
+                ]
+               },
+               "inputs": {
+                "name": "Failed",
+                "value": 1
+               }
+              }
+             },
+             "else": {
+              "actions": {
+               "Count_skipped_campaign_m": {
+                "type": "IncrementVariable",
+                "runAfter": {},
+                "inputs": {
+                 "name": "Skipped",
+                 "value": 1
+                }
+               }
+              }
+             }
+            }
+           },
+           "runtimeConfiguration": {
+            "concurrency": {
+             "repetitions": 20
+            }
+           }
+          },
+          "Note_failed_Get_campaign_m": {
+           "type": "AppendToStringVariable",
+           "runAfter": {
+            "Get_campaign_m": [
+             "Failed",
+             "TimedOut"
+            ]
+           },
+           "inputs": {
+            "name": "Errors",
+            "value": "@{concat('campaign_m ', outputs('Window_start_campaign_m'), ': ', take(string(coalesce(body('Get_campaign_m'), '')), 400), ' | ')}"
+           }
+          }
+         },
+         "runtimeConfiguration": {
+          "concurrency": {
+           "repetitions": 1
+          }
+         }
+        },
+        "List_after_campaign_m": {
+         "runAfter": {
+          "For_each_account_campaign_m": [
+           "Succeeded",
+           "Failed",
+           "TimedOut",
+           "Skipped"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_googleadscampaignmonthlyinsights",
+           "$select": "sanidi_googleadscampaignmonthlyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date eq @{outputs('Window_start_campaign_m')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_after_campaign_m": {
+         "type": "Select",
+         "runAfter": {
+          "List_after_campaign_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_after_campaign_m')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', 'true')"
+         }
+        },
+        "Map_after_campaign_m": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_after_campaign_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_after_campaign_m'), ','), '}'))"
+        },
+        "Missing_items_campaign_m": {
+         "type": "Query",
+         "runAfter": {
+          "Map_after_campaign_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@outputs('List_items_campaign_m')?['body/value']",
+          "where": "@and(lessOrEquals(ticks(formatDateTime(convertFromUtc(coalesce(item()?['sanidi_startdatetime'], item()?['createdon']), 'Arab Standard Time'), 'yyyy-MM-01')), ticks(outputs('Window_start_campaign_m'))), or(empty(coalesce(item()?['sanidi_enddatetime'], '')), greaterOrEquals(ticks(formatDateTime(convertFromUtc(coalesce(item()?['sanidi_enddatetime'], ''), 'Arab Standard Time'), 'yyyy-MM-01')), ticks(outputs('Window_start_campaign_m')))))"
+         }
+        },
+        "For_each_item_campaign_m": {
+         "type": "Foreach",
+         "foreach": "@body('Missing_items_campaign_m')",
+         "runAfter": {
+          "Missing_items_campaign_m": [
+           "Succeeded"
+          ]
+         },
+         "actions": {
+          "If_missing_campaign_m": {
+           "type": "If",
+           "runAfter": {},
+           "expression": {
+            "and": [
+             {
+              "equals": [
+               "@coalesce(outputs('Map_after_campaign_m')?[concat(items('For_each_item_campaign_m')?['sanidi_campaignid'], '_', formatDateTime(outputs('Window_start_campaign_m'), 'yyyyMM'))], false)",
+               false
+              ]
+             }
+            ]
+           },
+           "actions": {
+            "Create_empty_campaign_m": {
+             "runAfter": {},
+             "type": "OpenApiConnection",
+             "inputs": {
+              "parameters": {
+               "entityName": "sanidi_googleadscampaignmonthlyinsights",
+               "item/sanidi_name": "@concat(coalesce(items('For_each_item_campaign_m')?['sanidi_campaignname'], items('For_each_item_campaign_m')?['sanidi_campaignid']), ' · ', substring(outputs('Window_start_campaign_m'), 0, 7))",
+               "item/sanidi_platformid": "@items('For_each_item_campaign_m')?['sanidi_campaignid']",
+               "item/sanidi_insightkey": "@concat(items('For_each_item_campaign_m')?['sanidi_campaignid'], '_', formatDateTime(outputs('Window_start_campaign_m'), 'yyyyMM'))",
+               "item/sanidi_date": "@outputs('Window_start_campaign_m')",
+               "item/sanidi_month": "@int(formatDateTime(outputs('Window_start_campaign_m'), 'MM'))",
+               "item/sanidi_year": "@int(formatDateTime(outputs('Window_start_campaign_m'), 'yyyy'))",
+               "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(outputs('Window_start_campaign_m')), ticks(triggerBody()?['closed_through'])))",
+               "item/sanidi_nodata": true,
+               "item/sanidi_lastsyncedon": "@utcNow()",
+               "item/sanidi_googleadscampaign@odata.bind": "/sanidi_googleadscampaigns(@{items('For_each_item_campaign_m')?['sanidi_googleadscampaignid']})",
+               "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(items('For_each_item_campaign_m')?['_transactioncurrencyid_value'], outputs('Base_currency'))})"
+              },
+              "host": {
+               "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+               "operationId": "CreateRecord",
+               "connectionName": "shared_commondataserviceforapps"
+              }
+             }
+            },
+            "Count_empty_campaign_m": {
+             "type": "IncrementVariable",
+             "runAfter": {
+              "Create_empty_campaign_m": [
+               "Succeeded"
+              ]
+             },
+             "inputs": {
+              "name": "Empty",
+              "value": 1
+             }
+            },
+            "Count_empty_failed_campaign_m": {
+             "type": "IncrementVariable",
+             "runAfter": {
+              "Create_empty_campaign_m": [
+               "Failed"
+              ]
+             },
+             "inputs": {
+              "name": "Failed",
+              "value": 1
+             }
+            }
+           },
+           "else": {
+            "actions": {}
+           }
+          }
+         },
+         "runtimeConfiguration": {
+          "concurrency": {
+           "repetitions": 20
+          }
+         }
+        }
+       },
+       "runtimeConfiguration": {
+        "concurrency": {
+         "repetitions": 1
+        }
+       }
+      }
+     }
+    },
+    "Level_ad_group": {
+     "type": "Scope",
+     "runAfter": {
+      "Level_campaign": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "actions": {
+      "List_items_ad_group_m": {
+       "runAfter": {},
+       "type": "OpenApiConnection",
+       "inputs": {
+        "parameters": {
+         "entityName": "sanidi_googleadsadgroups",
+         "$select": "sanidi_googleadsadgroupid,sanidi_adgroupid,sanidi_adgroupname,_transactioncurrencyid_value,createdon,_sanidi_googleadscampaign_value",
+         "$filter": "sanidi_adgroupid ne null"
+        },
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "operationId": "ListRecords",
+         "connectionName": "shared_commondataserviceforapps"
+        }
+       },
+       "runtimeConfiguration": {
+        "paginationPolicy": {
+         "minimumItemCount": 100000
+        }
+       }
+      },
+      "Select_items_ad_group_m": {
+       "type": "Select",
+       "runAfter": {
+        "List_items_ad_group_m": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@coalesce(outputs('List_items_ad_group_m')?['body/value'], json('[]'))",
+        "select": "@concat('\"', item()?['sanidi_adgroupid'], '\":', string(item()))"
+       }
+      },
+      "Map_items_ad_group_m": {
+       "type": "Compose",
+       "runAfter": {
+        "Select_items_ad_group_m": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@json(concat('{', join(body('Select_items_ad_group_m'), ','), '}'))"
+      },
+      "Window_count_ad_group_m": {
+       "type": "Compose",
+       "runAfter": {
+        "Map_items_ad_group_m": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@add(mul(sub(int(formatDateTime(triggerBody()?['end_date'], 'yyyy')), int(formatDateTime(triggerBody()?['start_date'], 'yyyy'))), 12), sub(int(formatDateTime(triggerBody()?['end_date'], 'MM')), int(formatDateTime(triggerBody()?['start_date'], 'MM'))), 1)"
+      },
+      "For_each_window_ad_group_m": {
+       "type": "Foreach",
+       "foreach": "@range(0, outputs('Window_count_ad_group_m'))",
+       "runAfter": {
+        "Window_count_ad_group_m": [
+         "Succeeded"
+        ]
+       },
+       "actions": {
+        "Window_start_ad_group_m": {
+         "type": "Compose",
+         "runAfter": {},
+         "inputs": "@formatDateTime(addToTime(formatDateTime(triggerBody()?['start_date'], 'yyyy-MM-01'), items('For_each_window_ad_group_m'), 'Month'), 'yyyy-MM-dd')"
+        },
+        "Window_end_ad_group_m": {
+         "type": "Compose",
+         "runAfter": {
+          "Window_start_ad_group_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(greater(ticks(addDays(addToTime(outputs('Window_start_ad_group_m'), 1, 'Month'), -1)), ticks(triggerBody()?['end_date'])), triggerBody()?['end_date'], formatDateTime(addDays(addToTime(outputs('Window_start_ad_group_m'), 1, 'Month'), -1), 'yyyy-MM-dd'))"
+        },
+        "List_existing_ad_group_m": {
+         "runAfter": {
+          "Window_end_ad_group_m": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_googleadsadgroupmonthlyinsights",
+           "$select": "sanidi_googleadsadgroupmonthlyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date ge @{outputs('Window_start_ad_group_m')} and sanidi_date le @{outputs('Window_end_ad_group_m')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_existing_ad_group_m": {
+         "type": "Select",
+         "runAfter": {
+          "List_existing_ad_group_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_existing_ad_group_m')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', concat('\"', item()?['sanidi_googleadsadgroupmonthlyinsightid'], '\"'))"
+         }
+        },
+        "Map_existing_ad_group_m": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_existing_ad_group_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_existing_ad_group_m'), ','), '}'))"
+        },
+        "Google_token_ad_group_m": {
+         "runAfter": {
+          "Map_existing_ad_group_m": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "body/client_id": "@parameters('Google Ads Client ID (sanidi_GoogleAdsClientId)')",
+           "body/client_secret": "@parameters('Google Ads Client Secret (sanidi_GoogleAdsClientSecret)')",
+           "body/refresh_token": "@parameters('Google Ads Refresh Token (sanidi_GoogleAdsRefreshToken)')"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+           "operationId": "GetAccessToken",
+           "connectionName": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933"
+          }
+         }
+        },
+        "For_each_account_ad_group_m": {
+         "type": "Foreach",
+         "foreach": "@outputs('List_client_accounts')?['body/rows']",
+         "runAfter": {
+          "Google_token_ad_group_m": [
+           "Succeeded"
+          ]
+         },
+         "actions": {
+          "Get_ad_group_m": {
+           "runAfter": {},
+           "type": "OpenApiConnection",
+           "inputs": {
+            "parameters": {
+             "customer_id": "@items('For_each_account_ad_group_m')?['customer_id']",
+             "access-token": "@outputs('Google_token_ad_group_m')?['body/access_token']",
+             "developer-token": "@parameters('Google Ads Developer Token (sanidi_GoogleAdsDeveloperToken)')",
+             "login-customer-id": "@if(empty(trim(coalesce(parameters('Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)'), ''))), replace(parameters('Google Ads Customer ID (sanidi_GoogleAdsCustomerId)'), '-', ''), replace(parameters('Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)'), '-', ''))",
+             "level": "ad_group",
+             "granularity": "MONTHLY",
+             "start_date": "@outputs('Window_start_ad_group_m')",
+             "end_date": "@outputs('Window_end_ad_group_m')",
+             "breakdown": "NONE"
+            },
+            "host": {
+             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+             "operationId": "GetPerformance",
+             "connectionName": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933"
+            }
+           }
+          },
+          "For_each_row_ad_group_m": {
+           "type": "Foreach",
+           "foreach": "@coalesce(outputs('Get_ad_group_m')?['body/rows'], json('[]'))",
+           "runAfter": {
+            "Get_ad_group_m": [
+             "Succeeded"
+            ]
+           },
+           "actions": {
+            "Parent_ad_group_m": {
+             "type": "Compose",
+             "runAfter": {},
+             "inputs": "@outputs('Map_items_ad_group_m')?[string(items('For_each_row_ad_group_m')?['adgroupid'])]"
+            },
+            "If_synced_ad_group_m": {
+             "type": "If",
+             "runAfter": {
+              "Parent_ad_group_m": [
+               "Succeeded"
+              ]
+             },
+             "expression": {
+              "and": [
+               {
+                "not": {
+                 "equals": [
+                  "@outputs('Parent_ad_group_m')",
+                  "@null"
+                 ]
+                }
+               }
+              ]
+             },
+             "actions": {
+              "Key_ad_group_m": {
+               "type": "Compose",
+               "runAfter": {},
+               "inputs": "@concat(string(items('For_each_row_ad_group_m')?['adgroupid']), '_', formatDateTime(items('For_each_row_ad_group_m')?['month'], 'yyyyMM'))"
+              },
+              "If_exists_ad_group_m": {
+               "type": "If",
+               "runAfter": {
+                "Key_ad_group_m": [
+                 "Succeeded"
+                ]
+               },
+               "expression": {
+                "and": [
+                 {
+                  "not": {
+                   "equals": [
+                    "@coalesce(outputs('Map_existing_ad_group_m')?[outputs('Key_ad_group_m')], '')",
+                    ""
+                   ]
+                  }
+                 }
+                ]
+               },
+               "actions": {
+                "Update_ad_group_m": {
+                 "runAfter": {},
+                 "type": "OpenApiConnection",
+                 "inputs": {
+                  "parameters": {
+                   "entityName": "sanidi_googleadsadgroupmonthlyinsights",
+                   "recordId": "@outputs('Map_existing_ad_group_m')?[outputs('Key_ad_group_m')]",
+                   "item/sanidi_name": "@concat(coalesce(outputs('Parent_ad_group_m')?['sanidi_adgroupname'], string(items('For_each_row_ad_group_m')?['adgroupid'])), ' · ', substring(items('For_each_row_ad_group_m')?['month'], 0, 7))",
+                   "item/sanidi_platformid": "@string(items('For_each_row_ad_group_m')?['adgroupid'])",
+                   "item/sanidi_insightkey": "@concat(string(items('For_each_row_ad_group_m')?['adgroupid']), '_', formatDateTime(items('For_each_row_ad_group_m')?['month'], 'yyyyMM'))",
+                   "item/sanidi_date": "@items('For_each_row_ad_group_m')?['month']",
+                   "item/sanidi_month": "@int(formatDateTime(items('For_each_row_ad_group_m')?['month'], 'MM'))",
+                   "item/sanidi_year": "@int(formatDateTime(items('For_each_row_ad_group_m')?['month'], 'yyyy'))",
+                   "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_ad_group_m')?['month']), ticks(triggerBody()?['closed_through'])))",
+                   "item/sanidi_nodata": false,
+                   "item/sanidi_lastsyncedon": "@utcNow()",
+                   "item/sanidi_googleadsadgroup@odata.bind": "/sanidi_googleadsadgroups(@{outputs('Parent_ad_group_m')?['sanidi_googleadsadgroupid']})",
+                   "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_ad_group_m')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                   "item/sanidi_rawpayload": "@if(greater(length(string(items('For_each_row_ad_group_m'))), 100000), substring(string(items('For_each_row_ad_group_m')), 0, 100000), string(items('For_each_row_ad_group_m')))",
+                   "item/sanidi_impressions": "@items('For_each_row_ad_group_m')?['impressions']",
+                   "item/sanidi_clicks": "@items('For_each_row_ad_group_m')?['clicks']",
+                   "item/sanidi_ctr": "@items('For_each_row_ad_group_m')?['ctr']",
+                   "item/sanidi_averagecpc": "@items('For_each_row_ad_group_m')?['averagecpc']",
+                   "item/sanidi_averagecpm": "@items('For_each_row_ad_group_m')?['averagecpm']",
+                   "item/sanidi_averagecost": "@items('For_each_row_ad_group_m')?['averagecost']",
+                   "item/sanidi_cost": "@items('For_each_row_ad_group_m')?['cost']",
+                   "item/sanidi_interactions": "@items('For_each_row_ad_group_m')?['interactions']",
+                   "item/sanidi_interactionrate": "@items('For_each_row_ad_group_m')?['interactionrate']",
+                   "item/sanidi_engagements": "@items('For_each_row_ad_group_m')?['engagements']",
+                   "item/sanidi_engagementrate": "@items('For_each_row_ad_group_m')?['engagementrate']",
+                   "item/sanidi_conversions": "@items('For_each_row_ad_group_m')?['conversions']",
+                   "item/sanidi_conversionsvalue": "@items('For_each_row_ad_group_m')?['conversionsvalue']",
+                   "item/sanidi_costperconversion": "@items('For_each_row_ad_group_m')?['costperconversion']",
+                   "item/sanidi_valueperconversion": "@items('For_each_row_ad_group_m')?['valueperconversion']",
+                   "item/sanidi_conversionrate": "@items('For_each_row_ad_group_m')?['conversionrate']",
+                   "item/sanidi_allconversions": "@items('For_each_row_ad_group_m')?['allconversions']",
+                   "item/sanidi_allconversionsvalue": "@items('For_each_row_ad_group_m')?['allconversionsvalue']",
+                   "item/sanidi_viewthroughconversions": "@items('For_each_row_ad_group_m')?['viewthroughconversions']",
+                   "item/sanidi_phonecalls": "@items('For_each_row_ad_group_m')?['phonecalls']",
+                   "item/sanidi_videoviews": "@items('For_each_row_ad_group_m')?['videoviews']",
+                   "item/sanidi_videoviewrate": "@items('For_each_row_ad_group_m')?['videoviewrate']",
+                   "item/sanidi_topimpressionpct": "@items('For_each_row_ad_group_m')?['topimpressionpct']",
+                   "item/sanidi_absolutetopimpressionpct": "@items('For_each_row_ad_group_m')?['absolutetopimpressionpct']",
+                   "item/sanidi_searchimpressionshare": "@items('For_each_row_ad_group_m')?['searchimpressionshare']",
+                   "item/sanidi_searchtopimpressionshare": "@items('For_each_row_ad_group_m')?['searchtopimpressionshare']",
+                   "item/sanidi_searchabsolutetopimpressionshare": "@items('For_each_row_ad_group_m')?['searchabsolutetopimpressionshare']"
+                  },
+                  "host": {
+                   "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                   "operationId": "UpdateOnlyRecord",
+                   "connectionName": "shared_commondataserviceforapps"
+                  }
+                 }
+                }
+               },
+               "else": {
+                "actions": {
+                 "Create_ad_group_m": {
+                  "runAfter": {},
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                   "parameters": {
+                    "entityName": "sanidi_googleadsadgroupmonthlyinsights",
+                    "item/sanidi_name": "@concat(coalesce(outputs('Parent_ad_group_m')?['sanidi_adgroupname'], string(items('For_each_row_ad_group_m')?['adgroupid'])), ' · ', substring(items('For_each_row_ad_group_m')?['month'], 0, 7))",
+                    "item/sanidi_platformid": "@string(items('For_each_row_ad_group_m')?['adgroupid'])",
+                    "item/sanidi_insightkey": "@concat(string(items('For_each_row_ad_group_m')?['adgroupid']), '_', formatDateTime(items('For_each_row_ad_group_m')?['month'], 'yyyyMM'))",
+                    "item/sanidi_date": "@items('For_each_row_ad_group_m')?['month']",
+                    "item/sanidi_month": "@int(formatDateTime(items('For_each_row_ad_group_m')?['month'], 'MM'))",
+                    "item/sanidi_year": "@int(formatDateTime(items('For_each_row_ad_group_m')?['month'], 'yyyy'))",
+                    "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_ad_group_m')?['month']), ticks(triggerBody()?['closed_through'])))",
+                    "item/sanidi_nodata": false,
+                    "item/sanidi_lastsyncedon": "@utcNow()",
+                    "item/sanidi_googleadsadgroup@odata.bind": "/sanidi_googleadsadgroups(@{outputs('Parent_ad_group_m')?['sanidi_googleadsadgroupid']})",
+                    "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_ad_group_m')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                    "item/sanidi_rawpayload": "@if(greater(length(string(items('For_each_row_ad_group_m'))), 100000), substring(string(items('For_each_row_ad_group_m')), 0, 100000), string(items('For_each_row_ad_group_m')))",
+                    "item/sanidi_impressions": "@items('For_each_row_ad_group_m')?['impressions']",
+                    "item/sanidi_clicks": "@items('For_each_row_ad_group_m')?['clicks']",
+                    "item/sanidi_ctr": "@items('For_each_row_ad_group_m')?['ctr']",
+                    "item/sanidi_averagecpc": "@items('For_each_row_ad_group_m')?['averagecpc']",
+                    "item/sanidi_averagecpm": "@items('For_each_row_ad_group_m')?['averagecpm']",
+                    "item/sanidi_averagecost": "@items('For_each_row_ad_group_m')?['averagecost']",
+                    "item/sanidi_cost": "@items('For_each_row_ad_group_m')?['cost']",
+                    "item/sanidi_interactions": "@items('For_each_row_ad_group_m')?['interactions']",
+                    "item/sanidi_interactionrate": "@items('For_each_row_ad_group_m')?['interactionrate']",
+                    "item/sanidi_engagements": "@items('For_each_row_ad_group_m')?['engagements']",
+                    "item/sanidi_engagementrate": "@items('For_each_row_ad_group_m')?['engagementrate']",
+                    "item/sanidi_conversions": "@items('For_each_row_ad_group_m')?['conversions']",
+                    "item/sanidi_conversionsvalue": "@items('For_each_row_ad_group_m')?['conversionsvalue']",
+                    "item/sanidi_costperconversion": "@items('For_each_row_ad_group_m')?['costperconversion']",
+                    "item/sanidi_valueperconversion": "@items('For_each_row_ad_group_m')?['valueperconversion']",
+                    "item/sanidi_conversionrate": "@items('For_each_row_ad_group_m')?['conversionrate']",
+                    "item/sanidi_allconversions": "@items('For_each_row_ad_group_m')?['allconversions']",
+                    "item/sanidi_allconversionsvalue": "@items('For_each_row_ad_group_m')?['allconversionsvalue']",
+                    "item/sanidi_viewthroughconversions": "@items('For_each_row_ad_group_m')?['viewthroughconversions']",
+                    "item/sanidi_phonecalls": "@items('For_each_row_ad_group_m')?['phonecalls']",
+                    "item/sanidi_videoviews": "@items('For_each_row_ad_group_m')?['videoviews']",
+                    "item/sanidi_videoviewrate": "@items('For_each_row_ad_group_m')?['videoviewrate']",
+                    "item/sanidi_topimpressionpct": "@items('For_each_row_ad_group_m')?['topimpressionpct']",
+                    "item/sanidi_absolutetopimpressionpct": "@items('For_each_row_ad_group_m')?['absolutetopimpressionpct']",
+                    "item/sanidi_searchimpressionshare": "@items('For_each_row_ad_group_m')?['searchimpressionshare']",
+                    "item/sanidi_searchtopimpressionshare": "@items('For_each_row_ad_group_m')?['searchtopimpressionshare']",
+                    "item/sanidi_searchabsolutetopimpressionshare": "@items('For_each_row_ad_group_m')?['searchabsolutetopimpressionshare']"
+                   },
+                   "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                    "operationId": "CreateRecord",
+                    "connectionName": "shared_commondataserviceforapps"
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              "Count_written_ad_group_m": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_ad_group_m": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Written",
+                "value": 1
+               }
+              },
+              "Count_failed_ad_group_m": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_ad_group_m": [
+                 "Failed",
+                 "TimedOut"
+                ]
+               },
+               "inputs": {
+                "name": "Failed",
+                "value": 1
+               }
+              }
+             },
+             "else": {
+              "actions": {
+               "Count_skipped_ad_group_m": {
+                "type": "IncrementVariable",
+                "runAfter": {},
+                "inputs": {
+                 "name": "Skipped",
+                 "value": 1
+                }
+               }
+              }
+             }
+            }
+           },
+           "runtimeConfiguration": {
+            "concurrency": {
+             "repetitions": 20
+            }
+           }
+          },
+          "Note_failed_Get_ad_group_m": {
+           "type": "AppendToStringVariable",
+           "runAfter": {
+            "Get_ad_group_m": [
+             "Failed",
+             "TimedOut"
+            ]
+           },
+           "inputs": {
+            "name": "Errors",
+            "value": "@{concat('ad_group_m ', outputs('Window_start_ad_group_m'), ': ', take(string(coalesce(body('Get_ad_group_m'), '')), 400), ' | ')}"
+           }
+          }
+         },
+         "runtimeConfiguration": {
+          "concurrency": {
+           "repetitions": 1
+          }
+         }
+        },
+        "List_after_ad_group_m": {
+         "runAfter": {
+          "For_each_account_ad_group_m": [
+           "Succeeded",
+           "Failed",
+           "TimedOut",
+           "Skipped"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_googleadsadgroupmonthlyinsights",
+           "$select": "sanidi_googleadsadgroupmonthlyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date eq @{outputs('Window_start_ad_group_m')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_after_ad_group_m": {
+         "type": "Select",
+         "runAfter": {
+          "List_after_ad_group_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_after_ad_group_m')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', 'true')"
+         }
+        },
+        "Map_after_ad_group_m": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_after_ad_group_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_after_ad_group_m'), ','), '}'))"
+        },
+        "Missing_items_ad_group_m": {
+         "type": "Query",
+         "runAfter": {
+          "Map_after_ad_group_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@outputs('List_items_ad_group_m')?['body/value']",
+          "where": "@and(lessOrEquals(ticks(formatDateTime(convertFromUtc(coalesce(outputs('Campaign_dates')?[item()?['_sanidi_googleadscampaign_value']]?['sanidi_startdatetime'], item()?['createdon']), 'Arab Standard Time'), 'yyyy-MM-01')), ticks(outputs('Window_start_ad_group_m'))), or(empty(outputs('Campaign_dates')?[item()?['_sanidi_googleadscampaign_value']]?['sanidi_enddatetime']), greaterOrEquals(ticks(formatDateTime(convertFromUtc(outputs('Campaign_dates')?[item()?['_sanidi_googleadscampaign_value']]?['sanidi_enddatetime'], 'Arab Standard Time'), 'yyyy-MM-01')), ticks(outputs('Window_start_ad_group_m')))))"
+         }
+        },
+        "For_each_item_ad_group_m": {
+         "type": "Foreach",
+         "foreach": "@body('Missing_items_ad_group_m')",
+         "runAfter": {
+          "Missing_items_ad_group_m": [
+           "Succeeded"
+          ]
+         },
+         "actions": {
+          "If_missing_ad_group_m": {
+           "type": "If",
+           "runAfter": {},
+           "expression": {
+            "and": [
+             {
+              "equals": [
+               "@coalesce(outputs('Map_after_ad_group_m')?[concat(items('For_each_item_ad_group_m')?['sanidi_adgroupid'], '_', formatDateTime(outputs('Window_start_ad_group_m'), 'yyyyMM'))], false)",
+               false
+              ]
+             }
+            ]
+           },
+           "actions": {
+            "Create_empty_ad_group_m": {
+             "runAfter": {},
+             "type": "OpenApiConnection",
+             "inputs": {
+              "parameters": {
+               "entityName": "sanidi_googleadsadgroupmonthlyinsights",
+               "item/sanidi_name": "@concat(coalesce(items('For_each_item_ad_group_m')?['sanidi_adgroupname'], items('For_each_item_ad_group_m')?['sanidi_adgroupid']), ' · ', substring(outputs('Window_start_ad_group_m'), 0, 7))",
+               "item/sanidi_platformid": "@items('For_each_item_ad_group_m')?['sanidi_adgroupid']",
+               "item/sanidi_insightkey": "@concat(items('For_each_item_ad_group_m')?['sanidi_adgroupid'], '_', formatDateTime(outputs('Window_start_ad_group_m'), 'yyyyMM'))",
+               "item/sanidi_date": "@outputs('Window_start_ad_group_m')",
+               "item/sanidi_month": "@int(formatDateTime(outputs('Window_start_ad_group_m'), 'MM'))",
+               "item/sanidi_year": "@int(formatDateTime(outputs('Window_start_ad_group_m'), 'yyyy'))",
+               "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(outputs('Window_start_ad_group_m')), ticks(triggerBody()?['closed_through'])))",
+               "item/sanidi_nodata": true,
+               "item/sanidi_lastsyncedon": "@utcNow()",
+               "item/sanidi_googleadsadgroup@odata.bind": "/sanidi_googleadsadgroups(@{items('For_each_item_ad_group_m')?['sanidi_googleadsadgroupid']})",
+               "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(items('For_each_item_ad_group_m')?['_transactioncurrencyid_value'], outputs('Base_currency'))})"
+              },
+              "host": {
+               "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+               "operationId": "CreateRecord",
+               "connectionName": "shared_commondataserviceforapps"
+              }
+             }
+            },
+            "Count_empty_ad_group_m": {
+             "type": "IncrementVariable",
+             "runAfter": {
+              "Create_empty_ad_group_m": [
+               "Succeeded"
+              ]
+             },
+             "inputs": {
+              "name": "Empty",
+              "value": 1
+             }
+            },
+            "Count_empty_failed_ad_group_m": {
+             "type": "IncrementVariable",
+             "runAfter": {
+              "Create_empty_ad_group_m": [
+               "Failed"
+              ]
+             },
+             "inputs": {
+              "name": "Failed",
+              "value": 1
+             }
+            }
+           },
+           "else": {
+            "actions": {}
+           }
+          }
+         },
+         "runtimeConfiguration": {
+          "concurrency": {
+           "repetitions": 20
+          }
+         }
+        }
+       },
+       "runtimeConfiguration": {
+        "concurrency": {
+         "repetitions": 1
+        }
+       }
+      }
+     }
+    },
+    "Level_ad": {
+     "type": "Scope",
+     "runAfter": {
+      "Level_ad_group": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "actions": {
+      "List_items_ad_m": {
+       "runAfter": {},
+       "type": "OpenApiConnection",
+       "inputs": {
+        "parameters": {
+         "entityName": "sanidi_googleadsadvertisements",
+         "$select": "sanidi_googleadsadvertisementid,sanidi_adid,sanidi_adname,_transactioncurrencyid_value,createdon,sanidi_startdatetime,sanidi_enddatetime",
+         "$filter": "sanidi_adid ne null"
+        },
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "operationId": "ListRecords",
+         "connectionName": "shared_commondataserviceforapps"
+        }
+       },
+       "runtimeConfiguration": {
+        "paginationPolicy": {
+         "minimumItemCount": 100000
+        }
+       }
+      },
+      "Select_items_ad_m": {
+       "type": "Select",
+       "runAfter": {
+        "List_items_ad_m": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@coalesce(outputs('List_items_ad_m')?['body/value'], json('[]'))",
+        "select": "@concat('\"', item()?['sanidi_adid'], '\":', string(item()))"
+       }
+      },
+      "Map_items_ad_m": {
+       "type": "Compose",
+       "runAfter": {
+        "Select_items_ad_m": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@json(concat('{', join(body('Select_items_ad_m'), ','), '}'))"
+      },
+      "Window_count_ad_m": {
+       "type": "Compose",
+       "runAfter": {
+        "Map_items_ad_m": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@add(mul(sub(int(formatDateTime(triggerBody()?['end_date'], 'yyyy')), int(formatDateTime(triggerBody()?['start_date'], 'yyyy'))), 12), sub(int(formatDateTime(triggerBody()?['end_date'], 'MM')), int(formatDateTime(triggerBody()?['start_date'], 'MM'))), 1)"
+      },
+      "For_each_window_ad_m": {
+       "type": "Foreach",
+       "foreach": "@range(0, outputs('Window_count_ad_m'))",
+       "runAfter": {
+        "Window_count_ad_m": [
+         "Succeeded"
+        ]
+       },
+       "actions": {
+        "Window_start_ad_m": {
+         "type": "Compose",
+         "runAfter": {},
+         "inputs": "@formatDateTime(addToTime(formatDateTime(triggerBody()?['start_date'], 'yyyy-MM-01'), items('For_each_window_ad_m'), 'Month'), 'yyyy-MM-dd')"
+        },
+        "Window_end_ad_m": {
+         "type": "Compose",
+         "runAfter": {
+          "Window_start_ad_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(greater(ticks(addDays(addToTime(outputs('Window_start_ad_m'), 1, 'Month'), -1)), ticks(triggerBody()?['end_date'])), triggerBody()?['end_date'], formatDateTime(addDays(addToTime(outputs('Window_start_ad_m'), 1, 'Month'), -1), 'yyyy-MM-dd'))"
+        },
+        "List_existing_ad_m": {
+         "runAfter": {
+          "Window_end_ad_m": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_googleadsadvertisementmonthlyinsights",
+           "$select": "sanidi_googleadsadvertisementmonthlyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date ge @{outputs('Window_start_ad_m')} and sanidi_date le @{outputs('Window_end_ad_m')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_existing_ad_m": {
+         "type": "Select",
+         "runAfter": {
+          "List_existing_ad_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_existing_ad_m')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', concat('\"', item()?['sanidi_googleadsadvertisementmonthlyinsightid'], '\"'))"
+         }
+        },
+        "Map_existing_ad_m": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_existing_ad_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_existing_ad_m'), ','), '}'))"
+        },
+        "Google_token_ad_m": {
+         "runAfter": {
+          "Map_existing_ad_m": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "body/client_id": "@parameters('Google Ads Client ID (sanidi_GoogleAdsClientId)')",
+           "body/client_secret": "@parameters('Google Ads Client Secret (sanidi_GoogleAdsClientSecret)')",
+           "body/refresh_token": "@parameters('Google Ads Refresh Token (sanidi_GoogleAdsRefreshToken)')"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+           "operationId": "GetAccessToken",
+           "connectionName": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933"
+          }
+         }
+        },
+        "For_each_account_ad_m": {
+         "type": "Foreach",
+         "foreach": "@outputs('List_client_accounts')?['body/rows']",
+         "runAfter": {
+          "Google_token_ad_m": [
+           "Succeeded"
+          ]
+         },
+         "actions": {
+          "Get_ad_m": {
+           "runAfter": {},
+           "type": "OpenApiConnection",
+           "inputs": {
+            "parameters": {
+             "customer_id": "@items('For_each_account_ad_m')?['customer_id']",
+             "access-token": "@outputs('Google_token_ad_m')?['body/access_token']",
+             "developer-token": "@parameters('Google Ads Developer Token (sanidi_GoogleAdsDeveloperToken)')",
+             "login-customer-id": "@if(empty(trim(coalesce(parameters('Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)'), ''))), replace(parameters('Google Ads Customer ID (sanidi_GoogleAdsCustomerId)'), '-', ''), replace(parameters('Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)'), '-', ''))",
+             "level": "ad",
+             "granularity": "MONTHLY",
+             "start_date": "@outputs('Window_start_ad_m')",
+             "end_date": "@outputs('Window_end_ad_m')",
+             "breakdown": "NONE"
+            },
+            "host": {
+             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+             "operationId": "GetPerformance",
+             "connectionName": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933"
+            }
+           }
+          },
+          "For_each_row_ad_m": {
+           "type": "Foreach",
+           "foreach": "@coalesce(outputs('Get_ad_m')?['body/rows'], json('[]'))",
+           "runAfter": {
+            "Get_ad_m": [
+             "Succeeded"
+            ]
+           },
+           "actions": {
+            "Parent_ad_m": {
+             "type": "Compose",
+             "runAfter": {},
+             "inputs": "@outputs('Map_items_ad_m')?[string(items('For_each_row_ad_m')?['adid'])]"
+            },
+            "If_synced_ad_m": {
+             "type": "If",
+             "runAfter": {
+              "Parent_ad_m": [
+               "Succeeded"
+              ]
+             },
+             "expression": {
+              "and": [
+               {
+                "not": {
+                 "equals": [
+                  "@outputs('Parent_ad_m')",
+                  "@null"
+                 ]
+                }
+               }
+              ]
+             },
+             "actions": {
+              "Key_ad_m": {
+               "type": "Compose",
+               "runAfter": {},
+               "inputs": "@concat(string(items('For_each_row_ad_m')?['adid']), '_', formatDateTime(items('For_each_row_ad_m')?['month'], 'yyyyMM'))"
+              },
+              "If_exists_ad_m": {
+               "type": "If",
+               "runAfter": {
+                "Key_ad_m": [
+                 "Succeeded"
+                ]
+               },
+               "expression": {
+                "and": [
+                 {
+                  "not": {
+                   "equals": [
+                    "@coalesce(outputs('Map_existing_ad_m')?[outputs('Key_ad_m')], '')",
+                    ""
+                   ]
+                  }
+                 }
+                ]
+               },
+               "actions": {
+                "Update_ad_m": {
+                 "runAfter": {},
+                 "type": "OpenApiConnection",
+                 "inputs": {
+                  "parameters": {
+                   "entityName": "sanidi_googleadsadvertisementmonthlyinsights",
+                   "recordId": "@outputs('Map_existing_ad_m')?[outputs('Key_ad_m')]",
+                   "item/sanidi_name": "@concat(coalesce(outputs('Parent_ad_m')?['sanidi_adname'], string(items('For_each_row_ad_m')?['adid'])), ' · ', substring(items('For_each_row_ad_m')?['month'], 0, 7))",
+                   "item/sanidi_platformid": "@string(items('For_each_row_ad_m')?['adid'])",
+                   "item/sanidi_insightkey": "@concat(string(items('For_each_row_ad_m')?['adid']), '_', formatDateTime(items('For_each_row_ad_m')?['month'], 'yyyyMM'))",
+                   "item/sanidi_date": "@items('For_each_row_ad_m')?['month']",
+                   "item/sanidi_month": "@int(formatDateTime(items('For_each_row_ad_m')?['month'], 'MM'))",
+                   "item/sanidi_year": "@int(formatDateTime(items('For_each_row_ad_m')?['month'], 'yyyy'))",
+                   "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_ad_m')?['month']), ticks(triggerBody()?['closed_through'])))",
+                   "item/sanidi_nodata": false,
+                   "item/sanidi_lastsyncedon": "@utcNow()",
+                   "item/sanidi_googleadsadvertisement@odata.bind": "/sanidi_googleadsadvertisements(@{outputs('Parent_ad_m')?['sanidi_googleadsadvertisementid']})",
+                   "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_ad_m')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                   "item/sanidi_rawpayload": "@if(greater(length(string(items('For_each_row_ad_m'))), 100000), substring(string(items('For_each_row_ad_m')), 0, 100000), string(items('For_each_row_ad_m')))",
+                   "item/sanidi_impressions": "@items('For_each_row_ad_m')?['impressions']",
+                   "item/sanidi_clicks": "@items('For_each_row_ad_m')?['clicks']",
+                   "item/sanidi_ctr": "@items('For_each_row_ad_m')?['ctr']",
+                   "item/sanidi_averagecpc": "@items('For_each_row_ad_m')?['averagecpc']",
+                   "item/sanidi_averagecpm": "@items('For_each_row_ad_m')?['averagecpm']",
+                   "item/sanidi_averagecost": "@items('For_each_row_ad_m')?['averagecost']",
+                   "item/sanidi_cost": "@items('For_each_row_ad_m')?['cost']",
+                   "item/sanidi_interactions": "@items('For_each_row_ad_m')?['interactions']",
+                   "item/sanidi_interactionrate": "@items('For_each_row_ad_m')?['interactionrate']",
+                   "item/sanidi_engagements": "@items('For_each_row_ad_m')?['engagements']",
+                   "item/sanidi_engagementrate": "@items('For_each_row_ad_m')?['engagementrate']",
+                   "item/sanidi_conversions": "@items('For_each_row_ad_m')?['conversions']",
+                   "item/sanidi_conversionsvalue": "@items('For_each_row_ad_m')?['conversionsvalue']",
+                   "item/sanidi_costperconversion": "@items('For_each_row_ad_m')?['costperconversion']",
+                   "item/sanidi_valueperconversion": "@items('For_each_row_ad_m')?['valueperconversion']",
+                   "item/sanidi_conversionrate": "@items('For_each_row_ad_m')?['conversionrate']",
+                   "item/sanidi_allconversions": "@items('For_each_row_ad_m')?['allconversions']",
+                   "item/sanidi_allconversionsvalue": "@items('For_each_row_ad_m')?['allconversionsvalue']",
+                   "item/sanidi_viewthroughconversions": "@items('For_each_row_ad_m')?['viewthroughconversions']",
+                   "item/sanidi_videoviews": "@items('For_each_row_ad_m')?['videoviews']",
+                   "item/sanidi_videoviewrate": "@items('For_each_row_ad_m')?['videoviewrate']",
+                   "item/sanidi_topimpressionpct": "@items('For_each_row_ad_m')?['topimpressionpct']",
+                   "item/sanidi_absolutetopimpressionpct": "@items('For_each_row_ad_m')?['absolutetopimpressionpct']"
+                  },
+                  "host": {
+                   "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                   "operationId": "UpdateOnlyRecord",
+                   "connectionName": "shared_commondataserviceforapps"
+                  }
+                 }
+                }
+               },
+               "else": {
+                "actions": {
+                 "Create_ad_m": {
+                  "runAfter": {},
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                   "parameters": {
+                    "entityName": "sanidi_googleadsadvertisementmonthlyinsights",
+                    "item/sanidi_name": "@concat(coalesce(outputs('Parent_ad_m')?['sanidi_adname'], string(items('For_each_row_ad_m')?['adid'])), ' · ', substring(items('For_each_row_ad_m')?['month'], 0, 7))",
+                    "item/sanidi_platformid": "@string(items('For_each_row_ad_m')?['adid'])",
+                    "item/sanidi_insightkey": "@concat(string(items('For_each_row_ad_m')?['adid']), '_', formatDateTime(items('For_each_row_ad_m')?['month'], 'yyyyMM'))",
+                    "item/sanidi_date": "@items('For_each_row_ad_m')?['month']",
+                    "item/sanidi_month": "@int(formatDateTime(items('For_each_row_ad_m')?['month'], 'MM'))",
+                    "item/sanidi_year": "@int(formatDateTime(items('For_each_row_ad_m')?['month'], 'yyyy'))",
+                    "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_ad_m')?['month']), ticks(triggerBody()?['closed_through'])))",
+                    "item/sanidi_nodata": false,
+                    "item/sanidi_lastsyncedon": "@utcNow()",
+                    "item/sanidi_googleadsadvertisement@odata.bind": "/sanidi_googleadsadvertisements(@{outputs('Parent_ad_m')?['sanidi_googleadsadvertisementid']})",
+                    "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_ad_m')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                    "item/sanidi_rawpayload": "@if(greater(length(string(items('For_each_row_ad_m'))), 100000), substring(string(items('For_each_row_ad_m')), 0, 100000), string(items('For_each_row_ad_m')))",
+                    "item/sanidi_impressions": "@items('For_each_row_ad_m')?['impressions']",
+                    "item/sanidi_clicks": "@items('For_each_row_ad_m')?['clicks']",
+                    "item/sanidi_ctr": "@items('For_each_row_ad_m')?['ctr']",
+                    "item/sanidi_averagecpc": "@items('For_each_row_ad_m')?['averagecpc']",
+                    "item/sanidi_averagecpm": "@items('For_each_row_ad_m')?['averagecpm']",
+                    "item/sanidi_averagecost": "@items('For_each_row_ad_m')?['averagecost']",
+                    "item/sanidi_cost": "@items('For_each_row_ad_m')?['cost']",
+                    "item/sanidi_interactions": "@items('For_each_row_ad_m')?['interactions']",
+                    "item/sanidi_interactionrate": "@items('For_each_row_ad_m')?['interactionrate']",
+                    "item/sanidi_engagements": "@items('For_each_row_ad_m')?['engagements']",
+                    "item/sanidi_engagementrate": "@items('For_each_row_ad_m')?['engagementrate']",
+                    "item/sanidi_conversions": "@items('For_each_row_ad_m')?['conversions']",
+                    "item/sanidi_conversionsvalue": "@items('For_each_row_ad_m')?['conversionsvalue']",
+                    "item/sanidi_costperconversion": "@items('For_each_row_ad_m')?['costperconversion']",
+                    "item/sanidi_valueperconversion": "@items('For_each_row_ad_m')?['valueperconversion']",
+                    "item/sanidi_conversionrate": "@items('For_each_row_ad_m')?['conversionrate']",
+                    "item/sanidi_allconversions": "@items('For_each_row_ad_m')?['allconversions']",
+                    "item/sanidi_allconversionsvalue": "@items('For_each_row_ad_m')?['allconversionsvalue']",
+                    "item/sanidi_viewthroughconversions": "@items('For_each_row_ad_m')?['viewthroughconversions']",
+                    "item/sanidi_videoviews": "@items('For_each_row_ad_m')?['videoviews']",
+                    "item/sanidi_videoviewrate": "@items('For_each_row_ad_m')?['videoviewrate']",
+                    "item/sanidi_topimpressionpct": "@items('For_each_row_ad_m')?['topimpressionpct']",
+                    "item/sanidi_absolutetopimpressionpct": "@items('For_each_row_ad_m')?['absolutetopimpressionpct']"
+                   },
+                   "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                    "operationId": "CreateRecord",
+                    "connectionName": "shared_commondataserviceforapps"
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              "Count_written_ad_m": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_ad_m": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Written",
+                "value": 1
+               }
+              },
+              "Count_failed_ad_m": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_ad_m": [
+                 "Failed",
+                 "TimedOut"
+                ]
+               },
+               "inputs": {
+                "name": "Failed",
+                "value": 1
+               }
+              }
+             },
+             "else": {
+              "actions": {
+               "Count_skipped_ad_m": {
+                "type": "IncrementVariable",
+                "runAfter": {},
+                "inputs": {
+                 "name": "Skipped",
+                 "value": 1
+                }
+               }
+              }
+             }
+            }
+           },
+           "runtimeConfiguration": {
+            "concurrency": {
+             "repetitions": 20
+            }
+           }
+          },
+          "Note_failed_Get_ad_m": {
+           "type": "AppendToStringVariable",
+           "runAfter": {
+            "Get_ad_m": [
+             "Failed",
+             "TimedOut"
+            ]
+           },
+           "inputs": {
+            "name": "Errors",
+            "value": "@{concat('ad_m ', outputs('Window_start_ad_m'), ': ', take(string(coalesce(body('Get_ad_m'), '')), 400), ' | ')}"
+           }
+          }
+         },
+         "runtimeConfiguration": {
+          "concurrency": {
+           "repetitions": 1
+          }
+         }
+        },
+        "List_after_ad_m": {
+         "runAfter": {
+          "For_each_account_ad_m": [
+           "Succeeded",
+           "Failed",
+           "TimedOut",
+           "Skipped"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_googleadsadvertisementmonthlyinsights",
+           "$select": "sanidi_googleadsadvertisementmonthlyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date eq @{outputs('Window_start_ad_m')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_after_ad_m": {
+         "type": "Select",
+         "runAfter": {
+          "List_after_ad_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_after_ad_m')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', 'true')"
+         }
+        },
+        "Map_after_ad_m": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_after_ad_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_after_ad_m'), ','), '}'))"
+        },
+        "Missing_items_ad_m": {
+         "type": "Query",
+         "runAfter": {
+          "Map_after_ad_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@outputs('List_items_ad_m')?['body/value']",
+          "where": "@and(lessOrEquals(ticks(formatDateTime(convertFromUtc(coalesce(item()?['sanidi_startdatetime'], item()?['createdon']), 'Arab Standard Time'), 'yyyy-MM-01')), ticks(outputs('Window_start_ad_m'))), or(empty(coalesce(item()?['sanidi_enddatetime'], '')), greaterOrEquals(ticks(formatDateTime(convertFromUtc(coalesce(item()?['sanidi_enddatetime'], ''), 'Arab Standard Time'), 'yyyy-MM-01')), ticks(outputs('Window_start_ad_m')))))"
+         }
+        },
+        "For_each_item_ad_m": {
+         "type": "Foreach",
+         "foreach": "@body('Missing_items_ad_m')",
+         "runAfter": {
+          "Missing_items_ad_m": [
+           "Succeeded"
+          ]
+         },
+         "actions": {
+          "If_missing_ad_m": {
+           "type": "If",
+           "runAfter": {},
+           "expression": {
+            "and": [
+             {
+              "equals": [
+               "@coalesce(outputs('Map_after_ad_m')?[concat(items('For_each_item_ad_m')?['sanidi_adid'], '_', formatDateTime(outputs('Window_start_ad_m'), 'yyyyMM'))], false)",
+               false
+              ]
+             }
+            ]
+           },
+           "actions": {
+            "Create_empty_ad_m": {
+             "runAfter": {},
+             "type": "OpenApiConnection",
+             "inputs": {
+              "parameters": {
+               "entityName": "sanidi_googleadsadvertisementmonthlyinsights",
+               "item/sanidi_name": "@concat(coalesce(items('For_each_item_ad_m')?['sanidi_adname'], items('For_each_item_ad_m')?['sanidi_adid']), ' · ', substring(outputs('Window_start_ad_m'), 0, 7))",
+               "item/sanidi_platformid": "@items('For_each_item_ad_m')?['sanidi_adid']",
+               "item/sanidi_insightkey": "@concat(items('For_each_item_ad_m')?['sanidi_adid'], '_', formatDateTime(outputs('Window_start_ad_m'), 'yyyyMM'))",
+               "item/sanidi_date": "@outputs('Window_start_ad_m')",
+               "item/sanidi_month": "@int(formatDateTime(outputs('Window_start_ad_m'), 'MM'))",
+               "item/sanidi_year": "@int(formatDateTime(outputs('Window_start_ad_m'), 'yyyy'))",
+               "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(outputs('Window_start_ad_m')), ticks(triggerBody()?['closed_through'])))",
+               "item/sanidi_nodata": true,
+               "item/sanidi_lastsyncedon": "@utcNow()",
+               "item/sanidi_googleadsadvertisement@odata.bind": "/sanidi_googleadsadvertisements(@{items('For_each_item_ad_m')?['sanidi_googleadsadvertisementid']})",
+               "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(items('For_each_item_ad_m')?['_transactioncurrencyid_value'], outputs('Base_currency'))})"
+              },
+              "host": {
+               "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+               "operationId": "CreateRecord",
+               "connectionName": "shared_commondataserviceforapps"
+              }
+             }
+            },
+            "Count_empty_ad_m": {
+             "type": "IncrementVariable",
+             "runAfter": {
+              "Create_empty_ad_m": [
+               "Succeeded"
+              ]
+             },
+             "inputs": {
+              "name": "Empty",
+              "value": 1
+             }
+            },
+            "Count_empty_failed_ad_m": {
+             "type": "IncrementVariable",
+             "runAfter": {
+              "Create_empty_ad_m": [
+               "Failed"
+              ]
+             },
+             "inputs": {
+              "name": "Failed",
+              "value": 1
+             }
+            }
+           },
+           "else": {
+            "actions": {}
+           }
+          }
+         },
+         "runtimeConfiguration": {
+          "concurrency": {
+           "repetitions": 20
+          }
+         }
+        }
+       },
+       "runtimeConfiguration": {
+        "concurrency": {
+         "repetitions": 1
+        }
+       }
+      }
+     }
+    },
+    "Level_asset_group": {
+     "type": "Scope",
+     "runAfter": {
+      "Level_ad": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "actions": {
+      "List_items_asset_group_m": {
+       "runAfter": {},
+       "type": "OpenApiConnection",
+       "inputs": {
+        "parameters": {
+         "entityName": "sanidi_googleadsassetgroups",
+         "$select": "sanidi_googleadsassetgroupid,sanidi_assetgroupid,sanidi_assetgroupname,_transactioncurrencyid_value,createdon,_sanidi_googleadscampaign_value",
+         "$filter": "sanidi_assetgroupid ne null"
+        },
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "operationId": "ListRecords",
+         "connectionName": "shared_commondataserviceforapps"
+        }
+       },
+       "runtimeConfiguration": {
+        "paginationPolicy": {
+         "minimumItemCount": 100000
+        }
+       }
+      },
+      "Select_items_asset_group_m": {
+       "type": "Select",
+       "runAfter": {
+        "List_items_asset_group_m": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@coalesce(outputs('List_items_asset_group_m')?['body/value'], json('[]'))",
+        "select": "@concat('\"', item()?['sanidi_assetgroupid'], '\":', string(item()))"
+       }
+      },
+      "Map_items_asset_group_m": {
+       "type": "Compose",
+       "runAfter": {
+        "Select_items_asset_group_m": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@json(concat('{', join(body('Select_items_asset_group_m'), ','), '}'))"
+      },
+      "Window_count_asset_group_m": {
+       "type": "Compose",
+       "runAfter": {
+        "Map_items_asset_group_m": [
+         "Succeeded"
+        ]
+       },
+       "inputs": "@add(mul(sub(int(formatDateTime(triggerBody()?['end_date'], 'yyyy')), int(formatDateTime(triggerBody()?['start_date'], 'yyyy'))), 12), sub(int(formatDateTime(triggerBody()?['end_date'], 'MM')), int(formatDateTime(triggerBody()?['start_date'], 'MM'))), 1)"
+      },
+      "For_each_window_asset_group_m": {
+       "type": "Foreach",
+       "foreach": "@range(0, outputs('Window_count_asset_group_m'))",
+       "runAfter": {
+        "Window_count_asset_group_m": [
+         "Succeeded"
+        ]
+       },
+       "actions": {
+        "Window_start_asset_group_m": {
+         "type": "Compose",
+         "runAfter": {},
+         "inputs": "@formatDateTime(addToTime(formatDateTime(triggerBody()?['start_date'], 'yyyy-MM-01'), items('For_each_window_asset_group_m'), 'Month'), 'yyyy-MM-dd')"
+        },
+        "Window_end_asset_group_m": {
+         "type": "Compose",
+         "runAfter": {
+          "Window_start_asset_group_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@if(greater(ticks(addDays(addToTime(outputs('Window_start_asset_group_m'), 1, 'Month'), -1)), ticks(triggerBody()?['end_date'])), triggerBody()?['end_date'], formatDateTime(addDays(addToTime(outputs('Window_start_asset_group_m'), 1, 'Month'), -1), 'yyyy-MM-dd'))"
+        },
+        "List_existing_asset_group_m": {
+         "runAfter": {
+          "Window_end_asset_group_m": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_googleadsassetgroupmonthlyinsights",
+           "$select": "sanidi_googleadsassetgroupmonthlyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date ge @{outputs('Window_start_asset_group_m')} and sanidi_date le @{outputs('Window_end_asset_group_m')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_existing_asset_group_m": {
+         "type": "Select",
+         "runAfter": {
+          "List_existing_asset_group_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_existing_asset_group_m')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', concat('\"', item()?['sanidi_googleadsassetgroupmonthlyinsightid'], '\"'))"
+         }
+        },
+        "Map_existing_asset_group_m": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_existing_asset_group_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_existing_asset_group_m'), ','), '}'))"
+        },
+        "Google_token_asset_group_m": {
+         "runAfter": {
+          "Map_existing_asset_group_m": [
+           "Succeeded"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "body/client_id": "@parameters('Google Ads Client ID (sanidi_GoogleAdsClientId)')",
+           "body/client_secret": "@parameters('Google Ads Client Secret (sanidi_GoogleAdsClientSecret)')",
+           "body/refresh_token": "@parameters('Google Ads Refresh Token (sanidi_GoogleAdsRefreshToken)')"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+           "operationId": "GetAccessToken",
+           "connectionName": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933"
+          }
+         }
+        },
+        "For_each_account_asset_group_m": {
+         "type": "Foreach",
+         "foreach": "@outputs('List_client_accounts')?['body/rows']",
+         "runAfter": {
+          "Google_token_asset_group_m": [
+           "Succeeded"
+          ]
+         },
+         "actions": {
+          "Get_asset_group_m": {
+           "runAfter": {},
+           "type": "OpenApiConnection",
+           "inputs": {
+            "parameters": {
+             "customer_id": "@items('For_each_account_asset_group_m')?['customer_id']",
+             "access-token": "@outputs('Google_token_asset_group_m')?['body/access_token']",
+             "developer-token": "@parameters('Google Ads Developer Token (sanidi_GoogleAdsDeveloperToken)')",
+             "login-customer-id": "@if(empty(trim(coalesce(parameters('Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)'), ''))), replace(parameters('Google Ads Customer ID (sanidi_GoogleAdsCustomerId)'), '-', ''), replace(parameters('Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)'), '-', ''))",
+             "level": "asset_group",
+             "granularity": "MONTHLY",
+             "start_date": "@outputs('Window_start_asset_group_m')",
+             "end_date": "@outputs('Window_end_asset_group_m')",
+             "breakdown": "NONE"
+            },
+            "host": {
+             "apiId": "/providers/Microsoft.PowerApps/apis/shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933",
+             "operationId": "GetPerformance",
+             "connectionName": "shared_sanidi-5fgoogle-20ads-5f43b530b23a0dc933"
+            }
+           }
+          },
+          "For_each_row_asset_group_m": {
+           "type": "Foreach",
+           "foreach": "@coalesce(outputs('Get_asset_group_m')?['body/rows'], json('[]'))",
+           "runAfter": {
+            "Get_asset_group_m": [
+             "Succeeded"
+            ]
+           },
+           "actions": {
+            "Parent_asset_group_m": {
+             "type": "Compose",
+             "runAfter": {},
+             "inputs": "@outputs('Map_items_asset_group_m')?[string(items('For_each_row_asset_group_m')?['assetgroupid'])]"
+            },
+            "If_synced_asset_group_m": {
+             "type": "If",
+             "runAfter": {
+              "Parent_asset_group_m": [
+               "Succeeded"
+              ]
+             },
+             "expression": {
+              "and": [
+               {
+                "not": {
+                 "equals": [
+                  "@outputs('Parent_asset_group_m')",
+                  "@null"
+                 ]
+                }
+               }
+              ]
+             },
+             "actions": {
+              "Key_asset_group_m": {
+               "type": "Compose",
+               "runAfter": {},
+               "inputs": "@concat(string(items('For_each_row_asset_group_m')?['assetgroupid']), '_', formatDateTime(items('For_each_row_asset_group_m')?['month'], 'yyyyMM'))"
+              },
+              "If_exists_asset_group_m": {
+               "type": "If",
+               "runAfter": {
+                "Key_asset_group_m": [
+                 "Succeeded"
+                ]
+               },
+               "expression": {
+                "and": [
+                 {
+                  "not": {
+                   "equals": [
+                    "@coalesce(outputs('Map_existing_asset_group_m')?[outputs('Key_asset_group_m')], '')",
+                    ""
+                   ]
+                  }
+                 }
+                ]
+               },
+               "actions": {
+                "Update_asset_group_m": {
+                 "runAfter": {},
+                 "type": "OpenApiConnection",
+                 "inputs": {
+                  "parameters": {
+                   "entityName": "sanidi_googleadsassetgroupmonthlyinsights",
+                   "recordId": "@outputs('Map_existing_asset_group_m')?[outputs('Key_asset_group_m')]",
+                   "item/sanidi_name": "@concat(coalesce(outputs('Parent_asset_group_m')?['sanidi_assetgroupname'], string(items('For_each_row_asset_group_m')?['assetgroupid'])), ' · ', substring(items('For_each_row_asset_group_m')?['month'], 0, 7))",
+                   "item/sanidi_platformid": "@string(items('For_each_row_asset_group_m')?['assetgroupid'])",
+                   "item/sanidi_insightkey": "@concat(string(items('For_each_row_asset_group_m')?['assetgroupid']), '_', formatDateTime(items('For_each_row_asset_group_m')?['month'], 'yyyyMM'))",
+                   "item/sanidi_date": "@items('For_each_row_asset_group_m')?['month']",
+                   "item/sanidi_month": "@int(formatDateTime(items('For_each_row_asset_group_m')?['month'], 'MM'))",
+                   "item/sanidi_year": "@int(formatDateTime(items('For_each_row_asset_group_m')?['month'], 'yyyy'))",
+                   "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_asset_group_m')?['month']), ticks(triggerBody()?['closed_through'])))",
+                   "item/sanidi_nodata": false,
+                   "item/sanidi_lastsyncedon": "@utcNow()",
+                   "item/sanidi_googleadsassetgroup@odata.bind": "/sanidi_googleadsassetgroups(@{outputs('Parent_asset_group_m')?['sanidi_googleadsassetgroupid']})",
+                   "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_asset_group_m')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                   "item/sanidi_rawpayload": "@if(greater(length(string(items('For_each_row_asset_group_m'))), 100000), substring(string(items('For_each_row_asset_group_m')), 0, 100000), string(items('For_each_row_asset_group_m')))",
+                   "item/sanidi_impressions": "@items('For_each_row_asset_group_m')?['impressions']",
+                   "item/sanidi_clicks": "@items('For_each_row_asset_group_m')?['clicks']",
+                   "item/sanidi_ctr": "@items('For_each_row_asset_group_m')?['ctr']",
+                   "item/sanidi_averagecpc": "@items('For_each_row_asset_group_m')?['averagecpc']",
+                   "item/sanidi_averagecost": "@items('For_each_row_asset_group_m')?['averagecost']",
+                   "item/sanidi_cost": "@items('For_each_row_asset_group_m')?['cost']",
+                   "item/sanidi_interactions": "@items('For_each_row_asset_group_m')?['interactions']",
+                   "item/sanidi_interactionrate": "@items('For_each_row_asset_group_m')?['interactionrate']",
+                   "item/sanidi_engagements": "@items('For_each_row_asset_group_m')?['engagements']",
+                   "item/sanidi_engagementrate": "@items('For_each_row_asset_group_m')?['engagementrate']",
+                   "item/sanidi_conversions": "@items('For_each_row_asset_group_m')?['conversions']",
+                   "item/sanidi_conversionsvalue": "@items('For_each_row_asset_group_m')?['conversionsvalue']",
+                   "item/sanidi_costperconversion": "@items('For_each_row_asset_group_m')?['costperconversion']",
+                   "item/sanidi_valueperconversion": "@items('For_each_row_asset_group_m')?['valueperconversion']",
+                   "item/sanidi_conversionrate": "@items('For_each_row_asset_group_m')?['conversionrate']",
+                   "item/sanidi_allconversions": "@items('For_each_row_asset_group_m')?['allconversions']",
+                   "item/sanidi_allconversionsvalue": "@items('For_each_row_asset_group_m')?['allconversionsvalue']",
+                   "item/sanidi_viewthroughconversions": "@items('For_each_row_asset_group_m')?['viewthroughconversions']"
+                  },
+                  "host": {
+                   "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                   "operationId": "UpdateOnlyRecord",
+                   "connectionName": "shared_commondataserviceforapps"
+                  }
+                 }
+                }
+               },
+               "else": {
+                "actions": {
+                 "Create_asset_group_m": {
+                  "runAfter": {},
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                   "parameters": {
+                    "entityName": "sanidi_googleadsassetgroupmonthlyinsights",
+                    "item/sanidi_name": "@concat(coalesce(outputs('Parent_asset_group_m')?['sanidi_assetgroupname'], string(items('For_each_row_asset_group_m')?['assetgroupid'])), ' · ', substring(items('For_each_row_asset_group_m')?['month'], 0, 7))",
+                    "item/sanidi_platformid": "@string(items('For_each_row_asset_group_m')?['assetgroupid'])",
+                    "item/sanidi_insightkey": "@concat(string(items('For_each_row_asset_group_m')?['assetgroupid']), '_', formatDateTime(items('For_each_row_asset_group_m')?['month'], 'yyyyMM'))",
+                    "item/sanidi_date": "@items('For_each_row_asset_group_m')?['month']",
+                    "item/sanidi_month": "@int(formatDateTime(items('For_each_row_asset_group_m')?['month'], 'MM'))",
+                    "item/sanidi_year": "@int(formatDateTime(items('For_each_row_asset_group_m')?['month'], 'yyyy'))",
+                    "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(items('For_each_row_asset_group_m')?['month']), ticks(triggerBody()?['closed_through'])))",
+                    "item/sanidi_nodata": false,
+                    "item/sanidi_lastsyncedon": "@utcNow()",
+                    "item/sanidi_googleadsassetgroup@odata.bind": "/sanidi_googleadsassetgroups(@{outputs('Parent_asset_group_m')?['sanidi_googleadsassetgroupid']})",
+                    "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(outputs('Parent_asset_group_m')?['_transactioncurrencyid_value'], outputs('Base_currency'))})",
+                    "item/sanidi_rawpayload": "@if(greater(length(string(items('For_each_row_asset_group_m'))), 100000), substring(string(items('For_each_row_asset_group_m')), 0, 100000), string(items('For_each_row_asset_group_m')))",
+                    "item/sanidi_impressions": "@items('For_each_row_asset_group_m')?['impressions']",
+                    "item/sanidi_clicks": "@items('For_each_row_asset_group_m')?['clicks']",
+                    "item/sanidi_ctr": "@items('For_each_row_asset_group_m')?['ctr']",
+                    "item/sanidi_averagecpc": "@items('For_each_row_asset_group_m')?['averagecpc']",
+                    "item/sanidi_averagecost": "@items('For_each_row_asset_group_m')?['averagecost']",
+                    "item/sanidi_cost": "@items('For_each_row_asset_group_m')?['cost']",
+                    "item/sanidi_interactions": "@items('For_each_row_asset_group_m')?['interactions']",
+                    "item/sanidi_interactionrate": "@items('For_each_row_asset_group_m')?['interactionrate']",
+                    "item/sanidi_engagements": "@items('For_each_row_asset_group_m')?['engagements']",
+                    "item/sanidi_engagementrate": "@items('For_each_row_asset_group_m')?['engagementrate']",
+                    "item/sanidi_conversions": "@items('For_each_row_asset_group_m')?['conversions']",
+                    "item/sanidi_conversionsvalue": "@items('For_each_row_asset_group_m')?['conversionsvalue']",
+                    "item/sanidi_costperconversion": "@items('For_each_row_asset_group_m')?['costperconversion']",
+                    "item/sanidi_valueperconversion": "@items('For_each_row_asset_group_m')?['valueperconversion']",
+                    "item/sanidi_conversionrate": "@items('For_each_row_asset_group_m')?['conversionrate']",
+                    "item/sanidi_allconversions": "@items('For_each_row_asset_group_m')?['allconversions']",
+                    "item/sanidi_allconversionsvalue": "@items('For_each_row_asset_group_m')?['allconversionsvalue']",
+                    "item/sanidi_viewthroughconversions": "@items('For_each_row_asset_group_m')?['viewthroughconversions']"
+                   },
+                   "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+                    "operationId": "CreateRecord",
+                    "connectionName": "shared_commondataserviceforapps"
+                   }
+                  }
+                 }
+                }
+               }
+              },
+              "Count_written_asset_group_m": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_asset_group_m": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Written",
+                "value": 1
+               }
+              },
+              "Count_failed_asset_group_m": {
+               "type": "IncrementVariable",
+               "runAfter": {
+                "If_exists_asset_group_m": [
+                 "Failed",
+                 "TimedOut"
+                ]
+               },
+               "inputs": {
+                "name": "Failed",
+                "value": 1
+               }
+              }
+             },
+             "else": {
+              "actions": {
+               "Count_skipped_asset_group_m": {
+                "type": "IncrementVariable",
+                "runAfter": {},
+                "inputs": {
+                 "name": "Skipped",
+                 "value": 1
+                }
+               }
+              }
+             }
+            }
+           },
+           "runtimeConfiguration": {
+            "concurrency": {
+             "repetitions": 20
+            }
+           }
+          },
+          "Note_failed_Get_asset_group_m": {
+           "type": "AppendToStringVariable",
+           "runAfter": {
+            "Get_asset_group_m": [
+             "Failed",
+             "TimedOut"
+            ]
+           },
+           "inputs": {
+            "name": "Errors",
+            "value": "@{concat('asset_group_m ', outputs('Window_start_asset_group_m'), ': ', take(string(coalesce(body('Get_asset_group_m'), '')), 400), ' | ')}"
+           }
+          }
+         },
+         "runtimeConfiguration": {
+          "concurrency": {
+           "repetitions": 1
+          }
+         }
+        },
+        "List_after_asset_group_m": {
+         "runAfter": {
+          "For_each_account_asset_group_m": [
+           "Succeeded",
+           "Failed",
+           "TimedOut",
+           "Skipped"
+          ]
+         },
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "sanidi_googleadsassetgroupmonthlyinsights",
+           "$select": "sanidi_googleadsassetgroupmonthlyinsightid,sanidi_insightkey",
+           "$filter": "sanidi_date eq @{outputs('Window_start_asset_group_m')}"
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         },
+         "runtimeConfiguration": {
+          "paginationPolicy": {
+           "minimumItemCount": 100000
+          }
+         }
+        },
+        "Select_after_asset_group_m": {
+         "type": "Select",
+         "runAfter": {
+          "List_after_asset_group_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@coalesce(outputs('List_after_asset_group_m')?['body/value'], json('[]'))",
+          "select": "@concat('\"', item()?['sanidi_insightkey'], '\":', 'true')"
+         }
+        },
+        "Map_after_asset_group_m": {
+         "type": "Compose",
+         "runAfter": {
+          "Select_after_asset_group_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": "@json(concat('{', join(body('Select_after_asset_group_m'), ','), '}'))"
+        },
+        "Missing_items_asset_group_m": {
+         "type": "Query",
+         "runAfter": {
+          "Map_after_asset_group_m": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "from": "@outputs('List_items_asset_group_m')?['body/value']",
+          "where": "@and(lessOrEquals(ticks(formatDateTime(convertFromUtc(coalesce(outputs('Campaign_dates')?[item()?['_sanidi_googleadscampaign_value']]?['sanidi_startdatetime'], item()?['createdon']), 'Arab Standard Time'), 'yyyy-MM-01')), ticks(outputs('Window_start_asset_group_m'))), or(empty(outputs('Campaign_dates')?[item()?['_sanidi_googleadscampaign_value']]?['sanidi_enddatetime']), greaterOrEquals(ticks(formatDateTime(convertFromUtc(outputs('Campaign_dates')?[item()?['_sanidi_googleadscampaign_value']]?['sanidi_enddatetime'], 'Arab Standard Time'), 'yyyy-MM-01')), ticks(outputs('Window_start_asset_group_m')))))"
+         }
+        },
+        "For_each_item_asset_group_m": {
+         "type": "Foreach",
+         "foreach": "@body('Missing_items_asset_group_m')",
+         "runAfter": {
+          "Missing_items_asset_group_m": [
+           "Succeeded"
+          ]
+         },
+         "actions": {
+          "If_missing_asset_group_m": {
+           "type": "If",
+           "runAfter": {},
+           "expression": {
+            "and": [
+             {
+              "equals": [
+               "@coalesce(outputs('Map_after_asset_group_m')?[concat(items('For_each_item_asset_group_m')?['sanidi_assetgroupid'], '_', formatDateTime(outputs('Window_start_asset_group_m'), 'yyyyMM'))], false)",
+               false
+              ]
+             }
+            ]
+           },
+           "actions": {
+            "Create_empty_asset_group_m": {
+             "runAfter": {},
+             "type": "OpenApiConnection",
+             "inputs": {
+              "parameters": {
+               "entityName": "sanidi_googleadsassetgroupmonthlyinsights",
+               "item/sanidi_name": "@concat(coalesce(items('For_each_item_asset_group_m')?['sanidi_assetgroupname'], items('For_each_item_asset_group_m')?['sanidi_assetgroupid']), ' · ', substring(outputs('Window_start_asset_group_m'), 0, 7))",
+               "item/sanidi_platformid": "@items('For_each_item_asset_group_m')?['sanidi_assetgroupid']",
+               "item/sanidi_insightkey": "@concat(items('For_each_item_asset_group_m')?['sanidi_assetgroupid'], '_', formatDateTime(outputs('Window_start_asset_group_m'), 'yyyyMM'))",
+               "item/sanidi_date": "@outputs('Window_start_asset_group_m')",
+               "item/sanidi_month": "@int(formatDateTime(outputs('Window_start_asset_group_m'), 'MM'))",
+               "item/sanidi_year": "@int(formatDateTime(outputs('Window_start_asset_group_m'), 'yyyy'))",
+               "item/sanidi_periodclosed": "@if(empty(triggerBody()?['closed_through']), false, lessOrEquals(ticks(outputs('Window_start_asset_group_m')), ticks(triggerBody()?['closed_through'])))",
+               "item/sanidi_nodata": true,
+               "item/sanidi_lastsyncedon": "@utcNow()",
+               "item/sanidi_googleadsassetgroup@odata.bind": "/sanidi_googleadsassetgroups(@{items('For_each_item_asset_group_m')?['sanidi_googleadsassetgroupid']})",
+               "item/transactioncurrencyid@odata.bind": "/transactioncurrencies(@{coalesce(items('For_each_item_asset_group_m')?['_transactioncurrencyid_value'], outputs('Base_currency'))})"
+              },
+              "host": {
+               "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+               "operationId": "CreateRecord",
+               "connectionName": "shared_commondataserviceforapps"
+              }
+             }
+            },
+            "Count_empty_asset_group_m": {
+             "type": "IncrementVariable",
+             "runAfter": {
+              "Create_empty_asset_group_m": [
+               "Succeeded"
+              ]
+             },
+             "inputs": {
+              "name": "Empty",
+              "value": 1
+             }
+            },
+            "Count_empty_failed_asset_group_m": {
+             "type": "IncrementVariable",
+             "runAfter": {
+              "Create_empty_asset_group_m": [
+               "Failed"
+              ]
+             },
+             "inputs": {
+              "name": "Failed",
+              "value": 1
+             }
+            }
+           },
+           "else": {
+            "actions": {}
+           }
+          }
+         },
+         "runtimeConfiguration": {
+          "concurrency": {
+           "repetitions": 20
+          }
+         }
+        }
+       },
+       "runtimeConfiguration": {
+        "concurrency": {
+         "repetitions": 1
+        }
+       }
+      }
+     }
+    },
+    "Respond_to_a_Power_App_or_flow": {
+     "type": "Response",
+     "kind": "PowerApp",
+     "runAfter": {
+      "Level_asset_group": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "inputs": {
+      "statusCode": 200,
+      "body": {
+       "written": "@variables('Written')",
+       "empty_months": "@variables('Empty')",
+       "skipped": "@variables('Skipped')",
+       "failed": "@variables('Failed')",
+       "errors": "@{take(variables('Errors'), 4000)}"
+      },
+      "schema": {
+       "type": "object",
+       "properties": {
+        "written": {
+         "title": "written",
+         "type": "integer"
+        },
+        "empty_months": {
+         "title": "empty_months",
+         "type": "integer"
+        },
+        "skipped": {
+         "title": "skipped",
+         "type": "integer"
+        },
+        "failed": {
+         "title": "failed",
+         "type": "integer"
+        },
+        "errors": {
+         "title": "errors",
+         "type": "string"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "templateName": ""
+ },
+ "schemaVersion": "1.0.0.0"
+}

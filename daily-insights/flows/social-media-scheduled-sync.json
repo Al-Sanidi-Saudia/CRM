@@ -1,0 +1,133 @@
+{
+ "properties": {
+  "connectionReferences": {
+   "shared_commondataserviceforapps": {
+    "api": {
+     "name": "shared_commondataserviceforapps"
+    },
+    "connection": {
+     "connectionReferenceLogicalName": "sanidi_sharedcommondataserviceforapps_79822"
+    },
+    "runtimeSource": "embedded"
+   }
+  },
+  "definition": {
+   "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+   "contentVersion": "1.0.0.0",
+   "parameters": {
+    "$authentication": {
+     "defaultValue": {},
+     "type": "SecureObject"
+    },
+    "$connections": {
+     "defaultValue": {},
+     "type": "Object"
+    }
+   },
+   "triggers": {
+    "Recurrence": {
+     "type": "Recurrence",
+     "recurrence": {
+      "frequency": "Day",
+      "interval": 1,
+      "timeZone": "Arab Standard Time",
+      "schedule": {
+       "hours": [
+        "5",
+        "8",
+        "12",
+        "16"
+       ],
+       "minutes": [
+        0
+       ]
+      }
+     }
+    }
+   },
+   "actions": {
+    "Now": {
+     "type": "Compose",
+     "runAfter": {},
+     "inputs": "@convertFromUtc(utcNow(), 'Arab Standard Time')"
+    },
+    "Morning_run": {
+     "type": "Compose",
+     "runAfter": {
+      "Now": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@equals(formatDateTime(outputs('Now'), 'HH'), '05')"
+    },
+    "Friday": {
+     "type": "Compose",
+     "runAfter": {
+      "Morning_run": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@equals(dayOfWeek(outputs('Now')), 5)"
+    },
+    "List_platforms": {
+     "runAfter": {
+      "Friday": [
+       "Succeeded"
+      ]
+     },
+     "type": "OpenApiConnection",
+     "inputs": {
+      "parameters": {
+       "entityName": "sanidi_integrationplatforms",
+       "$select": "sanidi_integrationplatformid,sanidi_name",
+       "$filter": "sanidi_isconfigured eq true and (sanidi_connectionactive eq true or sanidi_connectionactive eq null)"
+      },
+      "host": {
+       "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+       "operationId": "ListRecords",
+       "connectionName": "shared_commondataserviceforapps"
+      }
+     }
+    },
+    "For_each_platform": {
+     "type": "Foreach",
+     "foreach": "@outputs('List_platforms')?['body/value']",
+     "runAfter": {
+      "List_platforms": [
+       "Succeeded"
+      ]
+     },
+     "actions": {
+      "Create_request": {
+       "runAfter": {},
+       "type": "OpenApiConnection",
+       "inputs": {
+        "parameters": {
+         "entityName": "sanidi_integrationsyncrequests",
+         "item/sanidi_name": "@{items('For_each_platform')?['sanidi_name']} - @{if(outputs('Morning_run'), 'Scheduled Daily', 'Scheduled Intraday')} - @{formatDateTime(outputs('Now'), 'yyyy-MM-dd HH:mm')}",
+         "item/sanidi_platform@odata.bind": "/sanidi_integrationplatforms(@{items('For_each_platform')?['sanidi_integrationplatformid']})",
+         "item/sanidi_synctype": "@if(outputs('Morning_run'), 100000004, 100000005)",
+         "item/sanidi_triggeredby": 100000001,
+         "item/sanidi_includedata": "@outputs('Morning_run')",
+         "item/sanidi_weeklyrun": "@and(outputs('Morning_run'), outputs('Friday'))"
+        },
+        "host": {
+         "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+         "operationId": "CreateRecord",
+         "connectionName": "shared_commondataserviceforapps"
+        }
+       }
+      }
+     },
+     "runtimeConfiguration": {
+      "concurrency": {
+       "repetitions": 4
+      }
+     }
+    }
+   }
+  },
+  "templateName": ""
+ },
+ "schemaVersion": "1.0.0.0"
+}

@@ -1,0 +1,744 @@
+{
+ "properties": {
+  "connectionReferences": {
+   "shared_commondataserviceforapps": {
+    "api": {
+     "name": "shared_commondataserviceforapps"
+    },
+    "connection": {
+     "connectionReferenceLogicalName": "sanidi_sharedcommondataserviceforapps_79822"
+    },
+    "runtimeSource": "embedded"
+   }
+  },
+  "definition": {
+   "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+   "contentVersion": "1.0.0.0",
+   "parameters": {
+    "$authentication": {
+     "defaultValue": {},
+     "type": "SecureObject"
+    },
+    "$connections": {
+     "defaultValue": {},
+     "type": "Object"
+    },
+    "Google Ads Client ID (sanidi_GoogleAdsClientId)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_GoogleAdsClientId"
+     }
+    },
+    "Google Ads Client Secret (sanidi_GoogleAdsClientSecret)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_GoogleAdsClientSecret"
+     }
+    },
+    "Google Ads Refresh Token (sanidi_GoogleAdsRefreshToken)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_GoogleAdsRefreshToken"
+     }
+    },
+    "Google Ads Developer Token (sanidi_GoogleAdsDeveloperToken)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_GoogleAdsDeveloperToken"
+     }
+    },
+    "Google Ads Login Customer ID (sanidi_GoogleAdsLoginCustomerId)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_GoogleAdsLoginCustomerId"
+     }
+    },
+    "Google Ads Customer ID (sanidi_GoogleAdsCustomerId)": {
+     "defaultValue": "",
+     "type": "String",
+     "metadata": {
+      "schemaName": "sanidi_GoogleAdsCustomerId"
+     }
+    }
+   },
+   "triggers": {
+    "manual": {
+     "type": "Request",
+     "kind": "Button",
+     "inputs": {
+      "schema": {
+       "type": "object",
+       "properties": {
+        "run_type": {
+         "title": "Run type",
+         "type": "string",
+         "description": "daily (05:00), intraday, daymonth (button) or alltime (button).",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "TEXT"
+        },
+        "include_data": {
+         "title": "Include data",
+         "type": "boolean",
+         "description": "Run the data sync first and wait for its cascade.",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "BOOLEAN"
+        },
+        "weekly": {
+         "title": "Weekly run",
+         "type": "boolean",
+         "description": "Friday 05:00: reload the last 28 days (Google Ads 90).",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "BOOLEAN"
+        },
+        "full_load_from": {
+         "title": "Full load from",
+         "type": "string",
+         "description": "All time: first day to load (YYYY-MM-DD); empty = the platform's maximum history.",
+         "x-ms-dynamically-added": true,
+         "x-ms-content-hint": "TEXT"
+        }
+       },
+       "required": [
+        "run_type"
+       ]
+      }
+     }
+    }
+   },
+   "actions": {
+    "Init_log": {
+     "type": "InitializeVariable",
+     "runAfter": {},
+     "inputs": {
+      "variables": [
+       {
+        "name": "Log",
+        "type": "string",
+        "value": ""
+       }
+      ]
+     }
+    },
+    "Init_failed_steps": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Init_log": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "FailedSteps",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "Today": {
+     "type": "Compose",
+     "runAfter": {
+      "Init_failed_steps": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@formatDateTime(convertFromUtc(utcNow(), 'Arab Standard Time'), 'yyyy-MM-dd')"
+    },
+    "Two_days_ago": {
+     "type": "Compose",
+     "runAfter": {
+      "Today": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@formatDateTime(addDays(outputs('Today'), -2), 'yyyy-MM-dd')"
+    },
+    "This_month": {
+     "type": "Compose",
+     "runAfter": {
+      "Two_days_ago": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@formatDateTime(outputs('Today'), 'yyyy-MM-01')"
+    },
+    "Previous_month": {
+     "type": "Compose",
+     "runAfter": {
+      "This_month": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@formatDateTime(addToTime(outputs('This_month'), -1, 'Month'), 'yyyy-MM-dd')"
+    },
+    "Month_before_previous": {
+     "type": "Compose",
+     "runAfter": {
+      "Previous_month": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@formatDateTime(addToTime(outputs('This_month'), -2, 'Month'), 'yyyy-MM-dd')"
+    },
+    "Last_day_of_month": {
+     "type": "Compose",
+     "runAfter": {
+      "Month_before_previous": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@addDays(addToTime(outputs('This_month'), 1, 'Month'), -1)"
+    },
+    "Last_friday_of_month": {
+     "type": "Compose",
+     "runAfter": {
+      "Last_day_of_month": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@formatDateTime(addDays(outputs('Last_day_of_month'), mul(-1, mod(add(sub(dayOfWeek(outputs('Last_day_of_month')), 5), 7), 7))), 'yyyy-MM-dd')"
+    },
+    "Months_closed_through": {
+     "type": "Compose",
+     "runAfter": {
+      "Last_friday_of_month": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@if(greaterOrEquals(ticks(outputs('Today')), ticks(outputs('Last_friday_of_month'))), outputs('Previous_month'), outputs('Month_before_previous'))"
+    },
+    "Earliest": {
+     "type": "Compose",
+     "runAfter": {
+      "Months_closed_through": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@formatDateTime(addDays(addToTime(outputs('Today'), -37, 'Month'), 1), 'yyyy-MM-dd')"
+    },
+    "Full_load_from": {
+     "type": "Compose",
+     "runAfter": {
+      "Earliest": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@if(empty(trim(coalesce(triggerBody()?['full_load_from'], ''))), outputs('Earliest'), formatDateTime(triggerBody()?['full_load_from'], 'yyyy-MM-dd'))"
+    },
+    "Daily_from": {
+     "type": "Compose",
+     "runAfter": {
+      "Full_load_from": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@if(equals(triggerBody()?['run_type'], 'alltime'), outputs('Full_load_from'), if(equals(triggerBody()?['run_type'], 'intraday'), outputs('Today'), if(equals(triggerBody()?['weekly'], true), formatDateTime(addDays(outputs('Today'), -89), 'yyyy-MM-dd'), outputs('Two_days_ago'))))"
+    },
+    "Monthly_from": {
+     "type": "Compose",
+     "runAfter": {
+      "Daily_from": [
+       "Succeeded"
+      ]
+     },
+     "inputs": "@if(equals(triggerBody()?['run_type'], 'intraday'), outputs('This_month'), if(and(equals(triggerBody()?['weekly'], true), not(equals(triggerBody()?['run_type'], 'alltime'))), formatDateTime(addDays(outputs('Today'), -89), 'yyyy-MM-01'), formatDateTime(outputs('Daily_from'), 'yyyy-MM-01')))"
+    },
+    "Init_quiet_checks": {
+     "type": "InitializeVariable",
+     "runAfter": {
+      "Monthly_from": [
+       "Succeeded"
+      ]
+     },
+     "inputs": {
+      "variables": [
+       {
+        "name": "QuietChecks",
+        "type": "integer",
+        "value": 0
+       }
+      ]
+     }
+    },
+    "If_data": {
+     "type": "If",
+     "runAfter": {
+      "Init_quiet_checks": [
+       "Succeeded"
+      ]
+     },
+     "expression": {
+      "and": [
+       {
+        "equals": [
+         "@or(equals(triggerBody()?['run_type'], 'daily'), and(equals(triggerBody()?['run_type'], 'alltime'), equals(triggerBody()?['include_data'], true)))",
+         true
+        ]
+       }
+      ]
+     },
+     "actions": {
+      "Data_sync": {
+       "type": "Workflow",
+       "runAfter": {},
+       "inputs": {
+        "host": {
+         "workflowReferenceName": "b10505e5-822c-5641-8499-e8324198b469"
+        },
+        "body": {},
+        "retryPolicy": {
+         "type": "none"
+        }
+       }
+      },
+      "Wait_before_checking": {
+       "type": "Wait",
+       "runAfter": {
+        "Data_sync": [
+         "Succeeded",
+         "Failed",
+         "TimedOut",
+         "Skipped"
+        ]
+       },
+       "inputs": {
+        "interval": {
+         "count": 3,
+         "unit": "Minute"
+        }
+       }
+      },
+      "Init_quiet": {
+       "type": "SetVariable",
+       "runAfter": {
+        "Wait_before_checking": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "name": "QuietChecks",
+        "value": 0
+       }
+      },
+      "Wait_for_cascade": {
+       "type": "Until",
+       "runAfter": {
+        "Init_quiet": [
+         "Succeeded"
+        ]
+       },
+       "expression": "@greaterOrEquals(variables('QuietChecks'), 2)",
+       "limit": {
+        "count": 15,
+        "timeout": "PT40M"
+       },
+       "actions": {
+        "Running_child_flows": {
+         "runAfter": {},
+         "type": "OpenApiConnection",
+         "inputs": {
+          "parameters": {
+           "entityName": "flowruns",
+           "$select": "flowrunid",
+           "$filter": "(_workflow_value eq 3574fbc1-642c-5d29-8757-9521a4b03c8e or _workflow_value eq 511feda4-57bc-5009-bf26-21dd79bb8fe9 or _workflow_value eq 5f9e257b-5d19-5fe5-9a1e-974434268472) and status eq 'Running'",
+           "$top": 1
+          },
+          "host": {
+           "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+           "operationId": "ListRecords",
+           "connectionName": "shared_commondataserviceforapps"
+          }
+         }
+        },
+        "If_quiet": {
+         "type": "If",
+         "runAfter": {
+          "Running_child_flows": [
+           "Succeeded"
+          ]
+         },
+         "expression": {
+          "and": [
+           {
+            "equals": [
+             "@length(outputs('Running_child_flows')?['body/value'])",
+             0
+            ]
+           }
+          ]
+         },
+         "actions": {
+          "Quiet": {
+           "type": "IncrementVariable",
+           "runAfter": {},
+           "inputs": {
+            "name": "QuietChecks",
+            "value": 1
+           }
+          }
+         },
+         "else": {
+          "actions": {
+           "Busy": {
+            "type": "SetVariable",
+            "runAfter": {},
+            "inputs": {
+             "name": "QuietChecks",
+             "value": 0
+            }
+           }
+          }
+         }
+        },
+        "Wait_2_minutes": {
+         "type": "Wait",
+         "runAfter": {
+          "If_quiet": [
+           "Succeeded"
+          ]
+         },
+         "inputs": {
+          "interval": {
+           "count": 2,
+           "unit": "Minute"
+          }
+         }
+        }
+       }
+      },
+      "Log_wait": {
+       "type": "AppendToStringVariable",
+       "runAfter": {
+        "Wait_for_cascade": [
+         "Succeeded",
+         "Failed",
+         "TimedOut",
+         "Skipped"
+        ]
+       },
+       "inputs": {
+        "name": "Log",
+        "value": "@{concat('Data cascade: ', if(greaterOrEquals(variables('QuietChecks'), 2), 'finished', 'still running after 30 minutes, continued'), decodeUriComponent('%0A'))}"
+       }
+      },
+      "Log_Data_sync": {
+       "type": "AppendToStringVariable",
+       "runAfter": {
+        "Data_sync": [
+         "Succeeded",
+         "Failed",
+         "TimedOut",
+         "Skipped"
+        ]
+       },
+       "inputs": {
+        "name": "Log",
+        "value": "@{concat('Data sync: ', actions('Data_sync')?['status'], ' [', formatDateTime(convertFromUtc(utcNow(), 'Arab Standard Time'), 'HH:mm'), ']', decodeUriComponent('%0A'))}"
+       }
+      },
+      "Count_Data_sync": {
+       "type": "If",
+       "runAfter": {
+        "Log_Data_sync": [
+         "Succeeded"
+        ]
+       },
+       "expression": {
+        "or": [
+         {
+          "not": {
+           "equals": [
+            "@actions('Data_sync')?['status']",
+            "Succeeded"
+           ]
+          }
+         }
+        ]
+       },
+       "actions": {
+        "Failed_Data_sync": {
+         "type": "IncrementVariable",
+         "runAfter": {},
+         "inputs": {
+          "name": "FailedSteps",
+          "value": 1
+         }
+        }
+       },
+       "else": {
+        "actions": {}
+       }
+      }
+     },
+     "else": {
+      "actions": {}
+     }
+    },
+    "Lifetime_insights": {
+     "type": "Workflow",
+     "runAfter": {
+      "If_data": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "inputs": {
+      "host": {
+       "workflowReferenceName": "59399b2c-080a-50b0-afcf-b803145237cf"
+      },
+      "body": {},
+      "retryPolicy": {
+       "type": "none"
+      }
+     }
+    },
+    "Log_Lifetime_insights": {
+     "type": "AppendToStringVariable",
+     "runAfter": {
+      "Lifetime_insights": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "inputs": {
+      "name": "Log",
+      "value": "@{concat('Lifetime insights: ', actions('Lifetime_insights')?['status'], ' [', formatDateTime(convertFromUtc(utcNow(), 'Arab Standard Time'), 'HH:mm'), ']', decodeUriComponent('%0A'))}"
+     }
+    },
+    "Count_Lifetime_insights": {
+     "type": "If",
+     "runAfter": {
+      "Log_Lifetime_insights": [
+       "Succeeded"
+      ]
+     },
+     "expression": {
+      "or": [
+       {
+        "not": {
+         "equals": [
+          "@actions('Lifetime_insights')?['status']",
+          "Succeeded"
+         ]
+        }
+       }
+      ]
+     },
+     "actions": {
+      "Failed_Lifetime_insights": {
+       "type": "IncrementVariable",
+       "runAfter": {},
+       "inputs": {
+        "name": "FailedSteps",
+        "value": 1
+       }
+      }
+     },
+     "else": {
+      "actions": {}
+     }
+    },
+    "Daily_insights": {
+     "type": "Workflow",
+     "runAfter": {
+      "Count_Lifetime_insights": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "inputs": {
+      "host": {
+       "workflowReferenceName": "322ddfa7-f9ee-5256-b501-70f4395bf440"
+      },
+      "body": {
+       "start_date": "@outputs('Daily_from')",
+       "end_date": "@outputs('Today')",
+       "closed_through": "@outputs('Two_days_ago')"
+      },
+      "retryPolicy": {
+       "type": "none"
+      }
+     }
+    },
+    "Log_Daily_insights": {
+     "type": "AppendToStringVariable",
+     "runAfter": {
+      "Daily_insights": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "inputs": {
+      "name": "Log",
+      "value": "@{concat('Daily insights: ', actions('Daily_insights')?['status'], ' (written ', string(coalesce(body('Daily_insights')?['written'], 0)), ', empty months ', string(coalesce(body('Daily_insights')?['empty_months'], 0)), ', skipped ', string(coalesce(body('Daily_insights')?['skipped'], 0)), ', failed ', string(coalesce(body('Daily_insights')?['failed'], 0)), ')', if(empty(body('Daily_insights')?['errors']), '', concat(' ', body('Daily_insights')?['errors'])), ' [', formatDateTime(convertFromUtc(utcNow(), 'Arab Standard Time'), 'HH:mm'), ']', decodeUriComponent('%0A'))}"
+     }
+    },
+    "Count_Daily_insights": {
+     "type": "If",
+     "runAfter": {
+      "Log_Daily_insights": [
+       "Succeeded"
+      ]
+     },
+     "expression": {
+      "or": [
+       {
+        "not": {
+         "equals": [
+          "@actions('Daily_insights')?['status']",
+          "Succeeded"
+         ]
+        }
+       },
+       {
+        "greater": [
+         "@int(coalesce(body('Daily_insights')?['failed'], 0))",
+         0
+        ]
+       }
+      ]
+     },
+     "actions": {
+      "Failed_Daily_insights": {
+       "type": "IncrementVariable",
+       "runAfter": {},
+       "inputs": {
+        "name": "FailedSteps",
+        "value": 1
+       }
+      }
+     },
+     "else": {
+      "actions": {}
+     }
+    },
+    "Monthly_insights": {
+     "type": "Workflow",
+     "runAfter": {
+      "Count_Daily_insights": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "inputs": {
+      "host": {
+       "workflowReferenceName": "54017837-946b-500d-87e2-f454537c5ad1"
+      },
+      "body": {
+       "start_date": "@outputs('Monthly_from')",
+       "end_date": "@outputs('Today')",
+       "closed_through": "@outputs('Months_closed_through')"
+      },
+      "retryPolicy": {
+       "type": "none"
+      }
+     }
+    },
+    "Log_Monthly_insights": {
+     "type": "AppendToStringVariable",
+     "runAfter": {
+      "Monthly_insights": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "inputs": {
+      "name": "Log",
+      "value": "@{concat('Monthly insights: ', actions('Monthly_insights')?['status'], ' (written ', string(coalesce(body('Monthly_insights')?['written'], 0)), ', empty months ', string(coalesce(body('Monthly_insights')?['empty_months'], 0)), ', skipped ', string(coalesce(body('Monthly_insights')?['skipped'], 0)), ', failed ', string(coalesce(body('Monthly_insights')?['failed'], 0)), ')', if(empty(body('Monthly_insights')?['errors']), '', concat(' ', body('Monthly_insights')?['errors'])), ' [', formatDateTime(convertFromUtc(utcNow(), 'Arab Standard Time'), 'HH:mm'), ']', decodeUriComponent('%0A'))}"
+     }
+    },
+    "Count_Monthly_insights": {
+     "type": "If",
+     "runAfter": {
+      "Log_Monthly_insights": [
+       "Succeeded"
+      ]
+     },
+     "expression": {
+      "or": [
+       {
+        "not": {
+         "equals": [
+          "@actions('Monthly_insights')?['status']",
+          "Succeeded"
+         ]
+        }
+       },
+       {
+        "greater": [
+         "@int(coalesce(body('Monthly_insights')?['failed'], 0))",
+         0
+        ]
+       }
+      ]
+     },
+     "actions": {
+      "Failed_Monthly_insights": {
+       "type": "IncrementVariable",
+       "runAfter": {},
+       "inputs": {
+        "name": "FailedSteps",
+        "value": 1
+       }
+      }
+     },
+     "else": {
+      "actions": {}
+     }
+    },
+    "Respond_to_a_Power_App_or_flow": {
+     "type": "Response",
+     "kind": "PowerApp",
+     "runAfter": {
+      "Count_Monthly_insights": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "inputs": {
+      "statusCode": 200,
+      "body": {
+       "status": "@{if(greater(variables('FailedSteps'), 0), 'Failed', 'Succeeded')}",
+       "log": "@{variables('Log')}"
+      },
+      "schema": {
+       "type": "object",
+       "properties": {
+        "status": {
+         "title": "status",
+         "type": "string"
+        },
+        "log": {
+         "title": "log",
+         "type": "string"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "templateName": ""
+ },
+ "schemaVersion": "1.0.0.0"
+}
