@@ -1,4 +1,4 @@
-# Social Media Daily Insights: feasibility study and plan (AlSanidi-UAT)
+# Social Media Daily and Monthly Insights: feasibility study and plan (AlSanidi-UAT)
 
 Status: **draft for approval. Nothing has been changed in Dataverse.** Everything below comes from read-only checks of
 UAT (tables, connectors, flows) and from each platform's official API documentation.
@@ -7,7 +7,7 @@ Environment: `https://operations-alsenidiuat.crm4.dynamics.com`
 Solution: **AlSanidi | Marketing** (`AlSanidiMarketing`), publisher prefix **`sanidi`**
 
 Goal: one row per day per synced item (campaign / ad set or ad squad or ad group / asset group / ad) with that day's
-statistics, for Meta, Snap, TikTok and Google Ads. The **driver is the 13 tables we already sync**: a daily row is
+statistics (and one row per month, §1.6), for Meta, Snap, TikTok and Google Ads. The **driver is the 13 tables we already sync**: a daily row is
 written only for an item that exists in those tables, and it is linked to that item.
 
 ---
@@ -33,7 +33,7 @@ written only for an item that exists in those tables, and it is linked to that i
 | How far back | **37 months** | Async reports from 2013-01-01 | Not stated in the docs | **37 months** for daily (`segments.date`) since 1 June 2026 |
 | Day boundary | Ad account time zone | Ad account time zone (must align to its day boundaries) | Ad account time zone | Account time zone |
 | When a day stops changing | "Insights … do not change after **28 days**" | "Metrics are finalized **48 hours** after the end of the day"; conversions can still change after that | Not stated in the report docs (checked in the live check, §3 step 2) | Conversions keep arriving for the conversion window (up to 90 days) |
-| Deleted / archived items | Only returned when filtered with `ad.effective_status` (DELETED / ARCHIVED), or queried by ID | Returned by ID | To check live: the lifetime report already leaves deleted items out | Returned (REMOVED status) |
+| Deleted / archived items | Only returned when filtered with `ad.effective_status` (DELETED / ARCHIVED), or queried by ID | Returned by ID | Left out by default (`campaign_status` / `adgroup_status` / `ad_status` default to `STATUS_NOT_DELETE`); returned with `STATUS_ALL` | Returned (REMOVED status) |
 | Money | Account currency | **Micro-currency** (÷ 1,000,000) | Account currency | Micros (connector already converts) |
 
 What this means for the design:
@@ -54,7 +54,7 @@ What this means for the design:
 |---|---|---|
 | **Google Ads** `sanidi_googleads` | `GetPerformance` with `ALL_TIME` / `TOTAL` | **None.** `GetPerformance` already has `granularity = DAILY` + `start_date` / `end_date` for all 4 levels. |
 | **Snap** `sanidi_snap` | `Get…Stats` per item with `granularity=LIFETIME` | **None required.** `GetCampaignStats` already accepts `DAY`, `start_time` / `end_time` and `breakdown = adsquad / ad`. Optional: add `breakdown` to `GetAdAccountStats` (one call per account instead of one per campaign). |
-| **TikTok** `sanidi_tiktok` | `GetLifetimeInsights` (metric chunks of 50, merged rows) | **Small:** new action `GetDailyInsights`, the same as `GetLifetimeInsights` but with `stat_time_day` + `start_date` / `end_date` (≤ 30 days). `RunReport` alone can't be used because the 198 metrics have to be split into chunks and merged. |
+| **TikTok** `sanidi_tiktok` | `GetLifetimeInsights` (metric chunks of 50, merged rows) | **Small:** new action `GetDailyInsights`, the same as `GetLifetimeInsights` but with `stat_time_day` + `start_date` / `end_date` (≤ 30 days), and the status filter set to `STATUS_ALL` so deleted items are included. `RunReport` alone can't be used because the 198 metrics have to be split into chunks and merged. |
 | **Meta** `sanidi_meta` | `GetDetailsFromAdID` per item with `insights.date_preset(maximum){…}` | **Small:** new action `GetDailyInsights` → `GET /act_{account_id}/insights` with `level`, `time_range`, `time_increment=1`, `filtering` (to include DELETED / ARCHIVED), all pages. The connector's existing account-insights action has unfilled path placeholders and no `level`, so it can't be used as is. The connector's definition is not in the repo yet; it is exported to `connectors/meta-ads/` first. |
 
 ### 1.4 Metrics per daily table (same columns as today's lifetime insights)
@@ -72,6 +72,38 @@ The 13 tables hold 3,669 items today (Meta 218, Snap 1,387, Google Ads 313, TikT
 for an item that delivered on that day, so a day has at most 3,669 rows and in practice far fewer.
 A 28-day rolling refresh means at most about 100,000 updates a run, and in practice a small part of that. A year of
 daily rows stays well inside normal Dataverse capacity. The exact numbers come out of the live check (§3, step 2).
+
+### 1.6 Monthly statistics straight from the source (not summed from the daily rows)
+
+**All 4 platforms can return a month, or month-to-date, as one total per item in one request.** The platform calculates
+the total itself, so unique metrics (reach, uniques, frequency) are real monthly values. Summing daily rows can't give
+those.
+
+| Platform | Month-to-date in one call (official API) | Monthly unit available? | Unique metrics for the month | History |
+|---|---|---|---|---|
+| **Meta** | `date_preset=this_month` (also `last_month`), `level` = campaign / adset / ad; or `time_range` + `time_increment=monthly` ("one result set for each calendar month") | **Yes** (`time_increment=monthly`) | Reach / frequency for the period requested | 37 months |
+| **Snap** | `granularity=TOTAL` with `start_time` = 1st of the month 00:00 and `end_time` = today 00:00, ad account time zone ("time must be of day boundary") | No MONTH granularity; TOTAL over the month gives the same result | `uniques` / `frequency` are allowed with TOTAL (not with HOUR) | No cap stated for TOTAL |
+| **TikTok** | `/report/integrated/get/` with only the ID dimension (`campaign_id` / `adgroup_id` / `ad_id`, **no** `stat_time_day`) and `start_date` = 1st of the month, `end_date` = today: one total per item | No month dimension (only `stat_time_day` / `stat_time_hour`); a range without a time dimension gives the month total | `reach` = "unique users who saw your ads at least once", `frequency` "over a given time period" | Up to 365 days per request |
+| **Google Ads** | `segments.date DURING THIS_MONTH` (also `LAST_MONTH`), or `segments.month` | **Yes** (`segments.month`) | Google's metric set here has no unique metrics | **11 years** for monthly (daily: 37 months) |
+
+Connectors:
+- **Google Ads:** none. `GetPerformance` already has `date_range = THIS_MONTH / LAST_MONTH` and `granularity = MONTHLY`.
+- **Snap:** none. `Get…Stats` already accepts `TOTAL` with `start_time` / `end_time`.
+- **Meta / TikTok:** the new `GetDailyInsights` actions (§1.3) get a *period* input (day or month), so one action serves both.
+
+How the monthly figures are kept up to date:
+- Every run reloads the **current month** (month-to-date). The same row is overwritten until the month ends.
+- The **previous month** is still reloaded for the first 28 days of the new month (90 for Google Ads), because its
+  conversions keep changing (§1.2). After that it is final.
+- Back-fill: one request per month, per account and per level (Snap: per campaign, unless the account-level option in
+  §1.3 is added).
+
+Where to store them: **13 monthly tables**, `sanidi_<parent>monthlyinsight` (for example
+`sanidi_metacampaignmonthlyinsight`), built exactly like the daily ones but with **Month** (Date Only, 1st of the
+month) and **Month to Date** (Yes while the month is still running). Keeping them separate from the daily tables means
+a view or a report can never add monthly rows to daily rows and count the same spend twice. The other way would be
+one table per structure with a *Period* column (Day / Month): half the tables, but every view, chart and report then
+has to filter on Period. (Decision 7.)
 
 ---
 
@@ -207,21 +239,25 @@ entries, environment variables and flows.
 | 4 | Sync Control | Separate *Daily Insights* button (page change) or under the existing *Insights* button |
 | 5 | Deleted / archived items | Load their days too (Meta via the `effective_status` filter), as long as the item exists in the synced table |
 | 6 | Solution | New patch "AlSanidi \| Marketing \| Daily Insights" |
+| 7 | Monthly statistics (§1.6) | Yes, from the source: 13 separate `…monthlyinsight` tables, refreshed together with the daily ones by the same 4 flows |
 
 ---
 
 ## Sources (official documentation)
 
 - Meta: [Ad Account Insights reference](https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/)
-  (`time_increment`, `level`, `time_range`, 37 months), [Insights API](https://developers.facebook.com/docs/marketing-api/insights/)
+  (`time_increment` incl. `monthly`, `level`, `time_range`, `date_preset` incl. `this_month` / `last_month`, 37 months), [Insights API](https://developers.facebook.com/docs/marketing-api/insights/)
   (deleted / archived objects), [Limits and best practices](https://developers.facebook.com/docs/marketing-api/insights/best-practices/)
   (stable after 28 days, rate limits)
 - Snap: [Measurement](https://developers.snap.com/api/marketing-api/Ads-API/measurement) (DAY granularity, 31-day
-  limit, day boundaries, finalized after 48 hours, `breakdown`)
+  limit, day boundaries, finalized after 48 hours, `breakdown`, TOTAL with start / end, uniques not at HOUR)
 - TikTok: [Run a synchronous report](https://business-api.tiktok.com/portal/docs/run-a-synchronous-report/v1.3)
-  (`stat_time_day`, 30-day limit, `query_lifetime`)
+  (`stat_time_day`, 30-day limit, 365 days without a time dimension, `query_lifetime`),
+  [Basic reports: supported dimensions](https://business-api.tiktok.com/portal/docs?id=1751443956638721) (time
+  dimensions, `STATUS_NOT_DELETE` default), [Basic reports: supported metrics](https://business-api.tiktok.com/portal/docs?id=1751443967255553) (reach, frequency)
 - Google Ads: [Segmentation](https://developers.google.com/google-ads/api/docs/reporting/segmentation),
-  [Date ranges](https://developers.google.com/google-ads/api/docs/query/date-ranges) (37 months for daily),
+  [Date ranges](https://developers.google.com/google-ads/api/docs/query/date-ranges) (THIS_MONTH / LAST_MONTH,
+  `segments.month`, 37 months for daily, 11 years for monthly),
   [Data retention policy, 1 June 2026](https://ads-developers.googleblog.com/2026/05/new-data-retention-policy-for-google.html),
   [asset_group fields](https://developers.google.com/google-ads/api/fields/v26/asset_group) (`date` segment selectable),
   [Conversion window](https://support.google.com/google-ads/answer/3123169) (up to 90 days)
