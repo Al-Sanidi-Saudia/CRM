@@ -244,7 +244,7 @@ def add_attribute(dv, logical, metadata, solution):
             # Metadata changes run one at a time per environment ("Cannot start another [EntityCustomization]",
             # "Cannot start the requested operation ... another [Import] running"): wait and retry.
             transient = (not isinstance(e, RuntimeError) or "unexpected error" in text
-                         or "cannot start" in text or "timeout" in text)
+                         or "cannot start" in text or "timeout" in text or "sql error" in text)
             if attempt == 9 or not transient:
                 raise
             time.sleep(30 * (attempt + 1))
@@ -354,7 +354,9 @@ if __name__ == "__main__":
             break
         except (urllib.error.URLError, ConnectionError, TimeoutError, RuntimeError) as e:
             # Network errors, and "Cannot start another [EntityCustomization]" (metadata changes run one at a time).
-            if attempt == 19 or (isinstance(e, RuntimeError) and "cannot start" not in str(e).lower()):
+            # ... and transient Azure SQL errors (e.g. 40197, a failover) reported as "Sql error".
+            if attempt == 19 or (isinstance(e, RuntimeError) and "cannot start" not in str(e).lower()
+                                 and "sql error" not in str(e).lower()):
                 raise
             print(f"retrying in 60 s: {str(e)[:150]}", flush=True)
             time.sleep(60)
