@@ -342,7 +342,7 @@
          "Succeeded"
         ]
        },
-       "inputs": "@add(mul(sub(int(formatDateTime(triggerBody()?['end_date'], 'yyyy')), int(formatDateTime(triggerBody()?['start_date'], 'yyyy'))), 12), sub(int(formatDateTime(triggerBody()?['end_date'], 'MM')), int(formatDateTime(triggerBody()?['start_date'], 'MM'))), 1)"
+       "inputs": "@add(add(mul(sub(int(formatDateTime(triggerBody()?['end_date'], 'yyyy')), int(formatDateTime(triggerBody()?['start_date'], 'yyyy'))), 12), sub(int(formatDateTime(triggerBody()?['end_date'], 'MM')), int(formatDateTime(triggerBody()?['start_date'], 'MM')))), 1)"
       },
       "For_each_window_campaign_m": {
        "type": "Foreach",
@@ -864,10 +864,70 @@
       }
      }
     },
+    "If_Level_campaign_failed": {
+     "type": "If",
+     "runAfter": {
+      "Level_campaign": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "expression": {
+      "and": [
+       {
+        "not": {
+         "equals": [
+          "@actions('Level_campaign')?['status']",
+          "Succeeded"
+         ]
+        }
+       }
+      ]
+     },
+     "actions": {
+      "Count_Level_campaign_failed": {
+       "type": "IncrementVariable",
+       "runAfter": {},
+       "inputs": {
+        "name": "Failed",
+        "value": 1
+       }
+      },
+      "Failed_actions_Level_campaign": {
+       "type": "Query",
+       "runAfter": {
+        "Count_Level_campaign_failed": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@result('Level_campaign')",
+        "where": "@equals(item()?['status'], 'Failed')"
+       }
+      },
+      "Note_Level_campaign_failed": {
+       "type": "AppendToStringVariable",
+       "runAfter": {
+        "Failed_actions_Level_campaign": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "name": "Errors",
+        "value": "@{concat('Level campaign: ', actions('Level_campaign')?['status'], ' at ', coalesce(first(body('Failed_actions_Level_campaign'))?['name'], '?'), ' (', take(string(coalesce(first(body('Failed_actions_Level_campaign'))?['error']?['message'], '')), 300), ') | ')}"
+       }
+      }
+     },
+     "else": {
+      "actions": {}
+     }
+    },
     "Level_adsquad": {
      "type": "Scope",
      "runAfter": {
-      "Level_campaign": [
+      "If_Level_campaign_failed": [
        "Succeeded",
        "Failed",
        "TimedOut",
@@ -924,7 +984,7 @@
          "Succeeded"
         ]
        },
-       "inputs": "@add(mul(sub(int(formatDateTime(triggerBody()?['end_date'], 'yyyy')), int(formatDateTime(triggerBody()?['start_date'], 'yyyy'))), 12), sub(int(formatDateTime(triggerBody()?['end_date'], 'MM')), int(formatDateTime(triggerBody()?['start_date'], 'MM'))), 1)"
+       "inputs": "@add(add(mul(sub(int(formatDateTime(triggerBody()?['end_date'], 'yyyy')), int(formatDateTime(triggerBody()?['start_date'], 'yyyy'))), 12), sub(int(formatDateTime(triggerBody()?['end_date'], 'MM')), int(formatDateTime(triggerBody()?['start_date'], 'MM')))), 1)"
       },
       "For_each_window_adsquad_m": {
        "type": "Foreach",
@@ -1431,10 +1491,70 @@
       }
      }
     },
+    "If_Level_adsquad_failed": {
+     "type": "If",
+     "runAfter": {
+      "Level_adsquad": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "expression": {
+      "and": [
+       {
+        "not": {
+         "equals": [
+          "@actions('Level_adsquad')?['status']",
+          "Succeeded"
+         ]
+        }
+       }
+      ]
+     },
+     "actions": {
+      "Count_Level_adsquad_failed": {
+       "type": "IncrementVariable",
+       "runAfter": {},
+       "inputs": {
+        "name": "Failed",
+        "value": 1
+       }
+      },
+      "Failed_actions_Level_adsquad": {
+       "type": "Query",
+       "runAfter": {
+        "Count_Level_adsquad_failed": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@result('Level_adsquad')",
+        "where": "@equals(item()?['status'], 'Failed')"
+       }
+      },
+      "Note_Level_adsquad_failed": {
+       "type": "AppendToStringVariable",
+       "runAfter": {
+        "Failed_actions_Level_adsquad": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "name": "Errors",
+        "value": "@{concat('Level adsquad: ', actions('Level_adsquad')?['status'], ' at ', coalesce(first(body('Failed_actions_Level_adsquad'))?['name'], '?'), ' (', take(string(coalesce(first(body('Failed_actions_Level_adsquad'))?['error']?['message'], '')), 300), ') | ')}"
+       }
+      }
+     },
+     "else": {
+      "actions": {}
+     }
+    },
     "Level_ad": {
      "type": "Scope",
      "runAfter": {
-      "Level_adsquad": [
+      "If_Level_adsquad_failed": [
        "Succeeded",
        "Failed",
        "TimedOut",
@@ -1491,7 +1611,7 @@
          "Succeeded"
         ]
        },
-       "inputs": "@add(mul(sub(int(formatDateTime(triggerBody()?['end_date'], 'yyyy')), int(formatDateTime(triggerBody()?['start_date'], 'yyyy'))), 12), sub(int(formatDateTime(triggerBody()?['end_date'], 'MM')), int(formatDateTime(triggerBody()?['start_date'], 'MM'))), 1)"
+       "inputs": "@add(add(mul(sub(int(formatDateTime(triggerBody()?['end_date'], 'yyyy')), int(formatDateTime(triggerBody()?['start_date'], 'yyyy'))), 12), sub(int(formatDateTime(triggerBody()?['end_date'], 'MM')), int(formatDateTime(triggerBody()?['start_date'], 'MM')))), 1)"
       },
       "For_each_window_ad_m": {
        "type": "Foreach",
@@ -2013,11 +2133,71 @@
       }
      }
     },
+    "If_Level_ad_failed": {
+     "type": "If",
+     "runAfter": {
+      "Level_ad": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "expression": {
+      "and": [
+       {
+        "not": {
+         "equals": [
+          "@actions('Level_ad')?['status']",
+          "Succeeded"
+         ]
+        }
+       }
+      ]
+     },
+     "actions": {
+      "Count_Level_ad_failed": {
+       "type": "IncrementVariable",
+       "runAfter": {},
+       "inputs": {
+        "name": "Failed",
+        "value": 1
+       }
+      },
+      "Failed_actions_Level_ad": {
+       "type": "Query",
+       "runAfter": {
+        "Count_Level_ad_failed": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@result('Level_ad')",
+        "where": "@equals(item()?['status'], 'Failed')"
+       }
+      },
+      "Note_Level_ad_failed": {
+       "type": "AppendToStringVariable",
+       "runAfter": {
+        "Failed_actions_Level_ad": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "name": "Errors",
+        "value": "@{concat('Level ad: ', actions('Level_ad')?['status'], ' at ', coalesce(first(body('Failed_actions_Level_ad'))?['name'], '?'), ' (', take(string(coalesce(first(body('Failed_actions_Level_ad'))?['error']?['message'], '')), 300), ') | ')}"
+       }
+      }
+     },
+     "else": {
+      "actions": {}
+     }
+    },
     "Respond_to_a_Power_App_or_flow": {
      "type": "Response",
      "kind": "PowerApp",
      "runAfter": {
-      "Level_ad": [
+      "If_Level_ad_failed": [
        "Succeeded",
        "Failed",
        "TimedOut",

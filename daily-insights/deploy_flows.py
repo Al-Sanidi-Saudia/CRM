@@ -526,8 +526,8 @@ def level_scope(platform, parent_key, level, id_key, monthly):
     loop = f"For_each_window_{tag}"
     idx = f"items('{loop}')"
     if monthly:
-        count = (f"@add(mul(sub(int(formatDateTime({end}, 'yyyy')), int(formatDateTime({start}, 'yyyy'))), 12), "
-                 f"sub(int(formatDateTime({end}, 'MM')), int(formatDateTime({start}, 'MM'))), 1)")
+        count = (f"@add(add(mul(sub(int(formatDateTime({end}, 'yyyy')), int(formatDateTime({start}, 'yyyy'))), 12), "
+                 f"sub(int(formatDateTime({end}, 'MM')), int(formatDateTime({start}, 'MM')))), 1)")
         w_start_expr = f"@formatDateTime(addToTime(formatDateTime({start}, 'yyyy-MM-01'), {idx}, 'Month'), 'yyyy-MM-dd')"
         w_end_expr = (f"@if(greater(ticks(addDays(addToTime(outputs('Window_start_{tag}'), 1, 'Month'), -1)), "
                       f"ticks({end})), {end}, formatDateTime(addDays(addToTime(outputs('Window_start_{tag}'), 1, "
@@ -643,7 +643,23 @@ def insight_flow(platform, monthly):
         scope_name = f"Level_{level}"
         actions[scope_name] = {"type": "Scope", "runAfter": after(prev, statuses=ALL),
                                "actions": level_scope(platform, parent_key, level, id_key, monthly)}
-        prev = scope_name
+        # A level that fails (not just a row) is reported: Run Sync marks the step Failed when failed > 0.
+        actions[f"If_{scope_name}_failed"] = {
+            "type": "If", "runAfter": after(scope_name, statuses=ALL),
+            "expression": {"and": [{"not": {"equals": [f"@actions('{scope_name}')?['status']", "Succeeded"]}}]},
+            "actions": {
+                f"Count_{scope_name}_failed": incr("Failed", {}),
+                f"Failed_actions_{scope_name}": {
+                    "type": "Query", "runAfter": after(f"Count_{scope_name}_failed"),
+                    "inputs": {"from": f"@result('{scope_name}')", "where": "@equals(item()?['status'], 'Failed')"}},
+                f"Note_{scope_name}_failed": {
+                    "type": "AppendToStringVariable", "runAfter": after(f"Failed_actions_{scope_name}"),
+                    "inputs": {"name": "Errors", "value": f"@{{concat('Level {level}: ', actions('{scope_name}')?['status'], "
+                                                         f"' at ', coalesce(first(body('Failed_actions_{scope_name}'))?['name'], '?'), "
+                                                         f"' (', take(string(coalesce(first(body('Failed_actions_{scope_name}'))?"
+                                                         "['error']?['message'], '')), 300), ') | ')}"}}},
+            "else": {"actions": {}}}
+        prev = f"If_{scope_name}_failed"
     actions["Respond_to_a_Power_App_or_flow"] = respond({
         "written": "@variables('Written')", "empty_months": "@variables('Empty')", "skipped": "@variables('Skipped')",
         "failed": "@variables('Failed')", "errors": "@{take(variables('Errors'), 4000)}"}, after(prev, statuses=ALL))

@@ -651,10 +651,70 @@
       }
      }
     },
+    "If_Level_campaign_failed": {
+     "type": "If",
+     "runAfter": {
+      "Level_campaign": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "expression": {
+      "and": [
+       {
+        "not": {
+         "equals": [
+          "@actions('Level_campaign')?['status']",
+          "Succeeded"
+         ]
+        }
+       }
+      ]
+     },
+     "actions": {
+      "Count_Level_campaign_failed": {
+       "type": "IncrementVariable",
+       "runAfter": {},
+       "inputs": {
+        "name": "Failed",
+        "value": 1
+       }
+      },
+      "Failed_actions_Level_campaign": {
+       "type": "Query",
+       "runAfter": {
+        "Count_Level_campaign_failed": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@result('Level_campaign')",
+        "where": "@equals(item()?['status'], 'Failed')"
+       }
+      },
+      "Note_Level_campaign_failed": {
+       "type": "AppendToStringVariable",
+       "runAfter": {
+        "Failed_actions_Level_campaign": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "name": "Errors",
+        "value": "@{concat('Level campaign: ', actions('Level_campaign')?['status'], ' at ', coalesce(first(body('Failed_actions_Level_campaign'))?['name'], '?'), ' (', take(string(coalesce(first(body('Failed_actions_Level_campaign'))?['error']?['message'], '')), 300), ') | ')}"
+       }
+      }
+     },
+     "else": {
+      "actions": {}
+     }
+    },
     "Level_adset": {
      "type": "Scope",
      "runAfter": {
-      "Level_campaign": [
+      "If_Level_campaign_failed": [
        "Succeeded",
        "Failed",
        "TimedOut",
@@ -1056,10 +1116,70 @@
       }
      }
     },
+    "If_Level_adset_failed": {
+     "type": "If",
+     "runAfter": {
+      "Level_adset": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "expression": {
+      "and": [
+       {
+        "not": {
+         "equals": [
+          "@actions('Level_adset')?['status']",
+          "Succeeded"
+         ]
+        }
+       }
+      ]
+     },
+     "actions": {
+      "Count_Level_adset_failed": {
+       "type": "IncrementVariable",
+       "runAfter": {},
+       "inputs": {
+        "name": "Failed",
+        "value": 1
+       }
+      },
+      "Failed_actions_Level_adset": {
+       "type": "Query",
+       "runAfter": {
+        "Count_Level_adset_failed": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@result('Level_adset')",
+        "where": "@equals(item()?['status'], 'Failed')"
+       }
+      },
+      "Note_Level_adset_failed": {
+       "type": "AppendToStringVariable",
+       "runAfter": {
+        "Failed_actions_Level_adset": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "name": "Errors",
+        "value": "@{concat('Level adset: ', actions('Level_adset')?['status'], ' at ', coalesce(first(body('Failed_actions_Level_adset'))?['name'], '?'), ' (', take(string(coalesce(first(body('Failed_actions_Level_adset'))?['error']?['message'], '')), 300), ') | ')}"
+       }
+      }
+     },
+     "else": {
+      "actions": {}
+     }
+    },
     "Level_ad": {
      "type": "Scope",
      "runAfter": {
-      "Level_adset": [
+      "If_Level_adset_failed": [
        "Succeeded",
        "Failed",
        "TimedOut",
@@ -1461,11 +1581,71 @@
       }
      }
     },
+    "If_Level_ad_failed": {
+     "type": "If",
+     "runAfter": {
+      "Level_ad": [
+       "Succeeded",
+       "Failed",
+       "TimedOut",
+       "Skipped"
+      ]
+     },
+     "expression": {
+      "and": [
+       {
+        "not": {
+         "equals": [
+          "@actions('Level_ad')?['status']",
+          "Succeeded"
+         ]
+        }
+       }
+      ]
+     },
+     "actions": {
+      "Count_Level_ad_failed": {
+       "type": "IncrementVariable",
+       "runAfter": {},
+       "inputs": {
+        "name": "Failed",
+        "value": 1
+       }
+      },
+      "Failed_actions_Level_ad": {
+       "type": "Query",
+       "runAfter": {
+        "Count_Level_ad_failed": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "from": "@result('Level_ad')",
+        "where": "@equals(item()?['status'], 'Failed')"
+       }
+      },
+      "Note_Level_ad_failed": {
+       "type": "AppendToStringVariable",
+       "runAfter": {
+        "Failed_actions_Level_ad": [
+         "Succeeded"
+        ]
+       },
+       "inputs": {
+        "name": "Errors",
+        "value": "@{concat('Level ad: ', actions('Level_ad')?['status'], ' at ', coalesce(first(body('Failed_actions_Level_ad'))?['name'], '?'), ' (', take(string(coalesce(first(body('Failed_actions_Level_ad'))?['error']?['message'], '')), 300), ') | ')}"
+       }
+      }
+     },
+     "else": {
+      "actions": {}
+     }
+    },
     "Respond_to_a_Power_App_or_flow": {
      "type": "Response",
      "kind": "PowerApp",
      "runAfter": {
-      "Level_ad": [
+      "If_Level_ad_failed": [
        "Succeeded",
        "Failed",
        "TimedOut",
