@@ -510,11 +510,23 @@
             }
            }
           },
-          "For_each_row_campaign_m": {
-           "type": "Foreach",
-           "foreach": "@coalesce(outputs('Get_campaign_m')?['body/rows'], json('[]'))",
+          "Active_rows_campaign_m": {
+           "type": "Query",
            "runAfter": {
             "Get_campaign_m": [
+             "Succeeded"
+            ]
+           },
+           "inputs": {
+            "from": "@coalesce(outputs('Get_campaign_m')?['body/rows'], json('[]'))",
+            "where": "@or(greater(float(coalesce(item()?['impressions'], 0)), 0), greater(float(coalesce(item()?['cost'], 0)), 0))"
+           }
+          },
+          "For_each_row_campaign_m": {
+           "type": "Foreach",
+           "foreach": "@body('Active_rows_campaign_m')",
+           "runAfter": {
+            "Active_rows_campaign_m": [
              "Succeeded"
             ]
            },
@@ -1146,11 +1158,23 @@
             }
            }
           },
-          "For_each_row_ad_group_m": {
-           "type": "Foreach",
-           "foreach": "@coalesce(outputs('Get_ad_group_m')?['body/rows'], json('[]'))",
+          "Active_rows_ad_group_m": {
+           "type": "Query",
            "runAfter": {
             "Get_ad_group_m": [
+             "Succeeded"
+            ]
+           },
+           "inputs": {
+            "from": "@coalesce(outputs('Get_ad_group_m')?['body/rows'], json('[]'))",
+            "where": "@or(greater(float(coalesce(item()?['impressions'], 0)), 0), greater(float(coalesce(item()?['cost'], 0)), 0))"
+           }
+          },
+          "For_each_row_ad_group_m": {
+           "type": "Foreach",
+           "foreach": "@body('Active_rows_ad_group_m')",
+           "runAfter": {
+            "Active_rows_ad_group_m": [
              "Succeeded"
             ]
            },
@@ -1780,11 +1804,23 @@
             }
            }
           },
-          "For_each_row_ad_m": {
-           "type": "Foreach",
-           "foreach": "@coalesce(outputs('Get_ad_m')?['body/rows'], json('[]'))",
+          "Active_rows_ad_m": {
+           "type": "Query",
            "runAfter": {
             "Get_ad_m": [
+             "Succeeded"
+            ]
+           },
+           "inputs": {
+            "from": "@coalesce(outputs('Get_ad_m')?['body/rows'], json('[]'))",
+            "where": "@or(greater(float(coalesce(item()?['impressions'], 0)), 0), greater(float(coalesce(item()?['cost'], 0)), 0))"
+           }
+          },
+          "For_each_row_ad_m": {
+           "type": "Foreach",
+           "foreach": "@body('Active_rows_ad_m')",
+           "runAfter": {
+            "Active_rows_ad_m": [
              "Succeeded"
             ]
            },
@@ -2406,11 +2442,23 @@
             }
            }
           },
-          "For_each_row_asset_group_m": {
-           "type": "Foreach",
-           "foreach": "@coalesce(outputs('Get_asset_group_m')?['body/rows'], json('[]'))",
+          "Active_rows_asset_group_m": {
+           "type": "Query",
            "runAfter": {
             "Get_asset_group_m": [
+             "Succeeded"
+            ]
+           },
+           "inputs": {
+            "from": "@coalesce(outputs('Get_asset_group_m')?['body/rows'], json('[]'))",
+            "where": "@or(greater(float(coalesce(item()?['impressions'], 0)), 0), greater(float(coalesce(item()?['cost'], 0)), 0))"
+           }
+          },
+          "For_each_row_asset_group_m": {
+           "type": "Foreach",
+           "foreach": "@body('Active_rows_asset_group_m')",
+           "runAfter": {
+            "Active_rows_asset_group_m": [
              "Succeeded"
             ]
            },

@@ -297,6 +297,15 @@ def upsert(t, tag, row, platform_id, date, metrics, monthly, closed_through, raw
     }
 
 
+def with_activity(name, rows_expr, spend_key, run_after):
+    """Rows with impressions or spend only: a period without delivery gets no data row (the month then gets an
+    empty row, No Data = Yes), the same for every platform (TikTok returns zero rows for every item)."""
+    return {name: {"type": "Query", "runAfter": run_after, "inputs": {
+        "from": rows_expr,
+        "where": f"@or(greater(float(coalesce(item()?['impressions'], 0)), 0), "
+                 f"greater(float(coalesce(item()?['{spend_key}'], 0)), 0))"}}}
+
+
 def generic_metrics(t, row):
     return {c["name"][len("sanidi_"):]: f"@{row}?['{c['name'][len('sanidi_'):]}']" for c in t["metrics"]}
 
@@ -337,8 +346,9 @@ def window_body(platform, t, level, id_key, monthly, w_start, w_end, existing_ma
         date = f"{row}?['date']"
         inner_rows = upsert(t, tag, row, f"string({row}?['{id_key}'])", date, generic_metrics(t, row), monthly,
                             closed, f"string(coalesce({row}?['rawpayload'], {row}))", existing_map, items_map)
-        inner[loop] = foreach(f"@coalesce(outputs('{call}')?['body/rows'], json('[]'))", inner_rows, after(call),
-                              ROW_CONCURRENCY)
+        inner.update(with_activity(f"Active_rows_{tag}", f"@coalesce(outputs('{call}')?['body/rows'], json('[]'))",
+                                   "spend", after(call)))
+        inner[loop] = foreach(f"@body('Active_rows_{tag}')", inner_rows, after(f"Active_rows_{tag}"), ROW_CONCURRENCY)
         inner[f"Note_failed_{call}"] = fail_note(call)
         a[outer] = foreach(accounts, inner, {}, 1)
         return a
@@ -356,10 +366,12 @@ def window_body(platform, t, level, id_key, monthly, w_start, w_end, existing_ma
         loop = f"For_each_row_{tag}"
         row = f"items('{loop}')"
         date = f"{row}?['{'month' if monthly else 'date'}']"
-        inner[loop] = foreach(f"@coalesce(outputs('{call}')?['body/rows'], json('[]'))",
+        inner.update(with_activity(f"Active_rows_{tag}", f"@coalesce(outputs('{call}')?['body/rows'], json('[]'))",
+                                   "cost", after(call)))
+        inner[loop] = foreach(f"@body('Active_rows_{tag}')",
                               upsert(t, tag, row, f"string({row}?['{id_key}'])", date, generic_metrics(t, row),
                                      monthly, closed, f"string({row})", existing_map, items_map),
-                              after(call), ROW_CONCURRENCY)
+                              after(f"Active_rows_{tag}"), ROW_CONCURRENCY)
         inner[f"Note_failed_{call}"] = fail_note(call)
         a[f"Google_token_{tag}"] = google_token()
         a[outer] = foreach("@outputs('List_client_accounts')?['body/rows']", inner, after(f"Google_token_{tag}"), 1)
