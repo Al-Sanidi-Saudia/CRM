@@ -264,7 +264,7 @@ def app(dv, apply, tables):
         for component_id, component_type in ((appmodule["appmoduleid"], 80), (sitemap["sitemapid"], 62)):
             dv.request("POST", "AddSolutionComponent", {
                 "ComponentId": component_id, "ComponentType": component_type, "SolutionUniqueName": SOLUTION,
-                "AddRequiredComponents": False, "DoNotIncludeSubcomponents": True}, idempotent=True)
+                "AddRequiredComponents": False, "DoNotIncludeSubcomponents": False}, idempotent=True)
         dv.request("POST", "PublishXml", idempotent=True, body={"ParameterXml":
                    f"<importexportxml><sitemaps><sitemap>{sitemap['sitemapid']}</sitemap></sitemaps>"
                    f"<appmodules><appmodule>{appmodule['appmoduleid']}</appmodule></appmodules></importexportxml>"})
