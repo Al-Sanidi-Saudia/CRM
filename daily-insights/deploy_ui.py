@@ -13,6 +13,7 @@ Main form "Information" (same style as the Snap / Google Ads / TikTok tables):
 Views: Active (newest first: Name, parent, Date, the platform's main metrics, Period Closed, Last Synced On) and
 Inactive (Name, parent, Date, Period Closed, Last Synced On, Created On).
 """
+import html
 import re
 import sys
 import uuid
@@ -41,7 +42,7 @@ CLASS = {
     "OwnerType": "{270BD3DB-D9AF-4782-9025-509E298DEC0A}", "subgrid": "{E7A81278-8635-4d9e-8D4D-59480B391C5B}",
 }
 TAB_AR = {"General": "عام", "Insights": "مؤشرات الأداء", "Sync": "المزامنة"}
-SECTION_AR = {"Identity": "التعريف", "Period": "الفترة", "Status": "الحالة", "Sync": "المزامنة",
+SECTION_AR = {"Identity": "الهوية", "Period": "الفترة", "Status": "الحالة", "Sync": "المزامنة",
               "Other": "أخرى", "Daily Insights": "مؤشرات الأداء اليومية",
               "Monthly Insights": "مؤشرات الأداء الشهرية"}
 AREA_TITLE = ("Social Media Insights", "مؤشرات أداء وسائل التواصل الاجتماعي")
@@ -98,8 +99,10 @@ def parent_insight_sections(dv, parent):
     out = []
     for s in re.finditer(r'<section [^>]*name="([^"]+)"[^>]*>(.*?)</section>', m.group(0), re.S):
         body = s.group(2)
-        labels = dict((int(l), d) for d, l in re.findall(
-            r'<label description="([^"]*)" languagecode="(\d+)"', body.split("<rows>")[0]))
+        # Labels come escaped from the form XML; they are escaped again when written. "(all time)" only fits the
+        # parent's lifetime insights.
+        labels = {int(l): re.sub(r"\s*\((all time|طوال المدة)\)", "", html.unescape(d)) for d, l in re.findall(
+            r'<label description="([^"]*)" languagecode="(\d+)"', body.split("<rows>")[0])}
         fields = re.findall(r'datafieldname="([^"]+)"', body)
         out.append((s.group(1), labels.get(EN, s.group(1)), labels.get(AR), fields))
     return out
