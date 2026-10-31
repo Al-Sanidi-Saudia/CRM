@@ -448,7 +448,7 @@
              "breakdown": "campaign",
              "start_time": "@concat(outputs('Window_start_campaign_m'), 'T00:00:00', outputs('Snap_offset'))",
              "end_time": "@concat(formatDateTime(addDays(outputs('Window_end_campaign_m'), 1), 'yyyy-MM-dd'), 'T00:00:00', outputs('Snap_offset'))",
-             "fields": "impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups",
+             "fields": "@if(less(ticks(outputs('Window_start_campaign_m')), ticks('2021-01-01')), 'impressions,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups', 'impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups')",
              "omit_empty": true,
              "limit": 200,
              "cursor": "@if(empty(variables('SnapCursor')), null, variables('SnapCursor'))"
@@ -658,6 +658,18 @@
                 "name": "Failed",
                 "value": 1
                }
+              },
+              "Note_failed_campaign_m": {
+               "type": "AppendToStringVariable",
+               "runAfter": {
+                "Count_failed_campaign_m": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Errors",
+                "value": "@{concat(outputs('Key_campaign_m'), ': ', take(string(coalesce(actions('Update_campaign_m')?['outputs']?['body']?['error']?['message'], actions('Create_campaign_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
+               }
               }
              },
              "else": {
@@ -841,6 +853,18 @@
              "inputs": {
               "name": "Failed",
               "value": 1
+             }
+            },
+            "Note_empty_failed_campaign_m": {
+             "type": "AppendToStringVariable",
+             "runAfter": {
+              "Count_empty_failed_campaign_m": [
+               "Succeeded"
+              ]
+             },
+             "inputs": {
+              "name": "Errors",
+              "value": "@{concat(concat(items('For_each_item_campaign_m')?['sanidi_campaignid'], '_', formatDateTime(outputs('Window_start_campaign_m'), 'yyyyMM')), ' (empty month): ', take(string(coalesce(actions('Create_empty_campaign_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
              }
             }
            },
@@ -1086,7 +1110,7 @@
              "breakdown": "adsquad",
              "start_time": "@concat(outputs('Window_start_adsquad_m'), 'T00:00:00', outputs('Snap_offset'))",
              "end_time": "@concat(formatDateTime(addDays(outputs('Window_end_adsquad_m'), 1), 'yyyy-MM-dd'), 'T00:00:00', outputs('Snap_offset'))",
-             "fields": "impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups",
+             "fields": "@if(less(ticks(outputs('Window_start_adsquad_m')), ticks('2021-01-01')), 'impressions,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups', 'impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups')",
              "omit_empty": true,
              "limit": 200
             },
@@ -1295,6 +1319,18 @@
                 "name": "Failed",
                 "value": 1
                }
+              },
+              "Note_failed_adsquad_m": {
+               "type": "AppendToStringVariable",
+               "runAfter": {
+                "Count_failed_adsquad_m": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Errors",
+                "value": "@{concat(outputs('Key_adsquad_m'), ': ', take(string(coalesce(actions('Update_adsquad_m')?['outputs']?['body']?['error']?['message'], actions('Create_adsquad_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
+               }
               }
              },
              "else": {
@@ -1468,6 +1504,18 @@
              "inputs": {
               "name": "Failed",
               "value": 1
+             }
+            },
+            "Note_empty_failed_adsquad_m": {
+             "type": "AppendToStringVariable",
+             "runAfter": {
+              "Count_empty_failed_adsquad_m": [
+               "Succeeded"
+              ]
+             },
+             "inputs": {
+              "name": "Errors",
+              "value": "@{concat(concat(items('For_each_item_adsquad_m')?['sanidi_adsquadid'], '_', formatDateTime(outputs('Window_start_adsquad_m'), 'yyyyMM')), ' (empty month): ', take(string(coalesce(actions('Create_empty_adsquad_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
              }
             }
            },
@@ -1717,7 +1765,7 @@
              "breakdown": "ad",
              "start_time": "@concat(outputs('Window_start_ad_m'), 'T00:00:00', outputs('Snap_offset'))",
              "end_time": "@concat(formatDateTime(addDays(outputs('Window_end_ad_m'), 1), 'yyyy-MM-dd'), 'T00:00:00', outputs('Snap_offset'))",
-             "fields": "impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups",
+             "fields": "@if(less(ticks(outputs('Window_start_ad_m')), ticks('2021-01-01')), 'impressions,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups', 'impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups')",
              "omit_empty": true,
              "limit": 200,
              "cursor": "@if(empty(variables('SnapCursor')), null, variables('SnapCursor'))"
@@ -1927,6 +1975,18 @@
                 "name": "Failed",
                 "value": 1
                }
+              },
+              "Note_failed_ad_m": {
+               "type": "AppendToStringVariable",
+               "runAfter": {
+                "Count_failed_ad_m": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Errors",
+                "value": "@{concat(outputs('Key_ad_m'), ': ', take(string(coalesce(actions('Update_ad_m')?['outputs']?['body']?['error']?['message'], actions('Create_ad_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
+               }
               }
              },
              "else": {
@@ -2110,6 +2170,18 @@
              "inputs": {
               "name": "Failed",
               "value": 1
+             }
+            },
+            "Note_empty_failed_ad_m": {
+             "type": "AppendToStringVariable",
+             "runAfter": {
+              "Count_empty_failed_ad_m": [
+               "Succeeded"
+              ]
+             },
+             "inputs": {
+              "name": "Errors",
+              "value": "@{concat(concat(items('For_each_item_ad_m')?['sanidi_adid'], '_', formatDateTime(outputs('Window_start_ad_m'), 'yyyyMM')), ' (empty month): ', take(string(coalesce(actions('Create_empty_ad_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
              }
             }
            },

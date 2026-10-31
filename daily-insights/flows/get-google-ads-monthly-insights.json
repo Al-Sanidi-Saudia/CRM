@@ -720,6 +720,18 @@
                 "name": "Failed",
                 "value": 1
                }
+              },
+              "Note_failed_campaign_m": {
+               "type": "AppendToStringVariable",
+               "runAfter": {
+                "Count_failed_campaign_m": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Errors",
+                "value": "@{concat(outputs('Key_campaign_m'), ': ', take(string(coalesce(actions('Update_campaign_m')?['outputs']?['body']?['error']?['message'], actions('Create_campaign_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
+               }
               }
              },
              "else": {
@@ -893,6 +905,18 @@
              "inputs": {
               "name": "Failed",
               "value": 1
+             }
+            },
+            "Note_empty_failed_campaign_m": {
+             "type": "AppendToStringVariable",
+             "runAfter": {
+              "Count_empty_failed_campaign_m": [
+               "Succeeded"
+              ]
+             },
+             "inputs": {
+              "name": "Errors",
+              "value": "@{concat(concat(items('For_each_item_campaign_m')?['sanidi_campaignid'], '_', formatDateTime(outputs('Window_start_campaign_m'), 'yyyyMM')), ' (empty month): ', take(string(coalesce(actions('Create_empty_campaign_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
              }
             }
            },
@@ -1366,6 +1390,18 @@
                 "name": "Failed",
                 "value": 1
                }
+              },
+              "Note_failed_ad_group_m": {
+               "type": "AppendToStringVariable",
+               "runAfter": {
+                "Count_failed_ad_group_m": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Errors",
+                "value": "@{concat(outputs('Key_ad_group_m'), ': ', take(string(coalesce(actions('Update_ad_group_m')?['outputs']?['body']?['error']?['message'], actions('Create_ad_group_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
+               }
               }
              },
              "else": {
@@ -1539,6 +1575,18 @@
              "inputs": {
               "name": "Failed",
               "value": 1
+             }
+            },
+            "Note_empty_failed_ad_group_m": {
+             "type": "AppendToStringVariable",
+             "runAfter": {
+              "Count_empty_failed_ad_group_m": [
+               "Succeeded"
+              ]
+             },
+             "inputs": {
+              "name": "Errors",
+              "value": "@{concat(concat(items('For_each_item_ad_group_m')?['sanidi_adgroupid'], '_', formatDateTime(outputs('Window_start_ad_group_m'), 'yyyyMM')), ' (empty month): ', take(string(coalesce(actions('Create_empty_ad_group_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
              }
             }
            },
@@ -2004,6 +2052,18 @@
                 "name": "Failed",
                 "value": 1
                }
+              },
+              "Note_failed_ad_m": {
+               "type": "AppendToStringVariable",
+               "runAfter": {
+                "Count_failed_ad_m": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Errors",
+                "value": "@{concat(outputs('Key_ad_m'), ': ', take(string(coalesce(actions('Update_ad_m')?['outputs']?['body']?['error']?['message'], actions('Create_ad_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
+               }
               }
              },
              "else": {
@@ -2177,6 +2237,18 @@
              "inputs": {
               "name": "Failed",
               "value": 1
+             }
+            },
+            "Note_empty_failed_ad_m": {
+             "type": "AppendToStringVariable",
+             "runAfter": {
+              "Count_empty_failed_ad_m": [
+               "Succeeded"
+              ]
+             },
+             "inputs": {
+              "name": "Errors",
+              "value": "@{concat(concat(items('For_each_item_ad_m')?['sanidi_adid'], '_', formatDateTime(outputs('Window_start_ad_m'), 'yyyyMM')), ' (empty month): ', take(string(coalesce(actions('Create_empty_ad_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
              }
             }
            },
@@ -2632,6 +2704,18 @@
                 "name": "Failed",
                 "value": 1
                }
+              },
+              "Note_failed_asset_group_m": {
+               "type": "AppendToStringVariable",
+               "runAfter": {
+                "Count_failed_asset_group_m": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Errors",
+                "value": "@{concat(outputs('Key_asset_group_m'), ': ', take(string(coalesce(actions('Update_asset_group_m')?['outputs']?['body']?['error']?['message'], actions('Create_asset_group_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
+               }
               }
              },
              "else": {
@@ -2805,6 +2889,18 @@
              "inputs": {
               "name": "Failed",
               "value": 1
+             }
+            },
+            "Note_empty_failed_asset_group_m": {
+             "type": "AppendToStringVariable",
+             "runAfter": {
+              "Count_empty_failed_asset_group_m": [
+               "Succeeded"
+              ]
+             },
+             "inputs": {
+              "name": "Errors",
+              "value": "@{concat(concat(items('For_each_item_asset_group_m')?['sanidi_assetgroupid'], '_', formatDateTime(outputs('Window_start_asset_group_m'), 'yyyyMM')), ' (empty month): ', take(string(coalesce(actions('Create_empty_asset_group_m')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
              }
             }
            },

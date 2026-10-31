@@ -78,6 +78,8 @@ SNAP_FIELDS = ("impressions,uniques,frequency,swipes,spend,video_views,engaged_v
                "quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,"
                "conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,"
                "conversion_page_views,conversion_sign_ups")
+# Snap refuses reach (uniques, frequency) for any date before 2021 (E1008), so earlier windows leave them out.
+SNAP_FIELDS_BEFORE_2021 = SNAP_FIELDS.replace("uniques,frequency,", "")
 # Snap reports in the ad account's time zone; start / end times need its UTC offset (zones without daylight saving).
 SNAP_OFFSETS = {"Asia/Riyadh": "+03:00", "Asia/Kuwait": "+03:00", "Asia/Qatar": "+03:00", "Asia/Bahrain": "+03:00",
                 "Asia/Aden": "+03:00", "Asia/Baghdad": "+03:00", "Asia/Dubai": "+04:00", "Asia/Muscat": "+04:00",
@@ -291,6 +293,12 @@ def upsert(t, tag, row, platform_id, date, metrics, monthly, closed_through, raw
                         "entityName": child_set, **fields})}}},
                 f"Count_written_{tag}": incr("Written", after(f"If_exists_{tag}")),
                 f"Count_failed_{tag}": incr("Failed", after(f"If_exists_{tag}", statuses=("Failed", "TimedOut"))),
+                f"Note_failed_{tag}": {
+                    "type": "AppendToStringVariable", "runAfter": after(f"Count_failed_{tag}"),
+                    "inputs": {"name": "Errors", "value": f"@{{concat({key}, ': ', take(string(coalesce("
+                                                           f"actions('Update_{tag}')?['outputs']?['body']?['error']?['message'], "
+                                                           f"actions('Create_{tag}')?['outputs']?['body']?['error']?['message'], "
+                                                           f"'')), 300), ' | ')}}"}},
             },
             "else": {"actions": {f"Count_skipped_{tag}": incr("Skipped", {})}},
         },
@@ -382,6 +390,7 @@ def window_body(platform, t, level, id_key, monthly, w_start, w_end, existing_ma
     start_time = f"concat({w_start}, 'T00:00:00', {offset})"
     end_time = (f"concat(formatDateTime(addDays({w_end}, 1), 'yyyy-MM-dd'), 'T00:00:00', {offset})")
     granularity = "TOTAL" if monthly else "DAY"
+    fields = f"@if(less(ticks({w_start}), ticks('2021-01-01')), '{SNAP_FIELDS_BEFORE_2021}', '{SNAP_FIELDS}')"
     if level == "adsquad":
         outer = "For_each_campaign_" + tag
         call = f"Get_{tag}"
@@ -389,7 +398,7 @@ def window_body(platform, t, level, id_key, monthly, w_start, w_end, existing_ma
         get = op("snap", "GetCampaignStats", {
             "campaign_id": f"@{camp}?['sanidi_campaignid']", "granularity": granularity,
             "breakdown": "adsquad", "start_time": f"@{start_time}", "end_time": f"@{end_time}",
-            "fields": SNAP_FIELDS, "omit_empty": True, "limit": 200})
+            "fields": fields, "omit_empty": True, "limit": 200})
         inner = {call: get}
         inner.update(snap_rows(t, tag, call, monthly, w_start, closed, existing_map, items_map, "adsquad"))
         inner[f"Note_failed_{call}"] = fail_note(call)
@@ -407,7 +416,7 @@ def window_body(platform, t, level, id_key, monthly, w_start, w_end, existing_ma
     page = {
         call: op("snap", "GetAdAccountStats", {
             "ad_account_id": "@outputs('Snap_account_id')", "granularity": granularity, "breakdown": breakdown,
-            "start_time": f"@{start_time}", "end_time": f"@{end_time}", "fields": SNAP_FIELDS, "omit_empty": True,
+            "start_time": f"@{start_time}", "end_time": f"@{end_time}", "fields": fields, "omit_empty": True,
             "limit": 200, "cursor": f"@if(empty(variables('SnapCursor')), null, variables('SnapCursor'))"}),
     }
     page.update(snap_rows(t, tag, call, monthly, w_start, closed, existing_map, items_map, breakdown))
@@ -612,6 +621,11 @@ def empty_months(t, p, tag, month, run_after, items_map):
                 f"Create_empty_{tag}": op("dv", "CreateRecord", {"entityName": t["schema"] + "s", **fields}),
                 f"Count_empty_{tag}": incr("Empty", after(f"Create_empty_{tag}")),
                 f"Count_empty_failed_{tag}": incr("Failed", after(f"Create_empty_{tag}", statuses=("Failed",))),
+                f"Note_empty_failed_{tag}": {
+                    "type": "AppendToStringVariable", "runAfter": after(f"Count_empty_failed_{tag}"),
+                    "inputs": {"name": "Errors", "value": f"@{{concat({key}, ' (empty month): ', take(string(coalesce("
+                                                           f"actions('Create_empty_{tag}')?['outputs']?['body']?['error']"
+                                                           f"?['message'], '')), 300), ' | ')}}"}},
             },
             "else": {"actions": {}}},
     }

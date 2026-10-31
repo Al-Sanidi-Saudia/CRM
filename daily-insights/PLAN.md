@@ -1,8 +1,10 @@
 # Social Media Daily and Monthly Insights: feasibility study and plan (AlSanidi-UAT)
 
-Status: **plan and scheduling agreed (2026-10-29), waiting for the go-ahead to build in UAT. Nothing has been changed in Dataverse.**
-Nothing is started in UAT before the plan, including the scheduling, is confirmed. Everything below comes from
-read-only checks of UAT (tables, connectors, flows) and from each platform's official API documentation only.
+Status: **built in UAT (2026-10-29 → 2026-10-31): steps 1–12 done, full load finished, Social Media - Scheduled Sync
+turned on 2026-10-31 (first run 05:00 Riyadh).** Production is a separate request (decision 31). See §6 for the
+results and for what differs from the plan below.
+The plan below was written before the build. It is based on read-only checks of UAT (tables, connectors, flows)
+and on each platform's official API documentation only.
 
 Environment: `https://operations-alsenidiuat.crm4.dynamics.com`
 Solution: **AlSanidi | Marketing** (`AlSanidiMarketing`), publisher prefix **`sanidi`**; delivered as a new patch.
@@ -423,6 +425,42 @@ The same rules everywhere (scheduler and buttons):
 | Scheduled Intraday (08/12/16) | No | Yes | Today | Current month | Nothing |
 | Day & Month to Date (button) | No | Yes | D-2 … today | Months of D-2 … today | Per §5.4 |
 | All Time (button) | Pop-up choice | Yes | Full Load From … today | Its month … current month | Per §5.4 |
+
+---
+
+---
+
+## 6. Build results (UAT)
+
+### 6.1 Full load (All Time, Data and Insights, started 2026-10-30 07:40 Riyadh)
+
+| Platform | Result | Daily rows | Monthly rows with data | Empty months | Finished (Riyadh) |
+|---|---|---|---|---|---|
+| Meta | Succeeded | 1,229 (204 skipped) | 219 | 649 | 30 Oct |
+| Google Ads | Succeeded | 13,056 | 688 | 3,957 | 30 Oct 13:25 |
+| TikTok | Failed (1 row) | 16,627 | 2,097 (3 skipped) | 21,551 | 31 Oct 01:29 |
+| Snap | Succeeded | 17,154 (160 skipped) | 2,751 (67 skipped) | 23,482 | 31 Oct 02:43 |
+
+"Skipped" = a platform row whose item isn't in the synced tables. Full loads take hours, not minutes (Snap and
+TikTok ≈ 19 h), mostly because of the monthly stage: every item gets a row for each month since it started.
+
+Found during the full load and fixed in the flows (2026-10-31):
+- **TikTok: 1 monthly row failed** to save, with no error text (row-level failures were only counted). Row
+  failures now add `<insight key>: <error>` to the request's Steps Log.
+- **Snap refuses reach (`uniques`, `frequency`) for any date before 2021** (error E1008). Windows before 2021 now
+  ask for every other field. The 110 Snap monthly rows dated 2019-09 to 2020-12 were written as empty months
+  (No Data = Yes) during the full load. They are filled only by another Snap All Time (Insights Only) run.
+
+### 6.2 Differences from the plan
+
+- **Live check (step 2):** no temporary flow. The Meta / Snap / Google connections weren't usable by the app user
+  until they were shared, so the checks were done in step 7's tests instead.
+- **Connectors:** saved in the **AlSanidi | Marketing Connectors** solution (where they already were), not in the
+  new patch.
+- **Close Previous Month:** no separate column. The last Friday of the month closes the previous month (§5.4).
+- **Days without delivery:** no daily row (impressions = 0 and spend = 0 are skipped on every platform; TikTok
+  returns zero rows for every item otherwise).
+- **Snap reach before 2021:** left blank (§6.1).
 
 ---
 

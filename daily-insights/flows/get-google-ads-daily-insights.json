@@ -679,6 +679,18 @@
                 "name": "Failed",
                 "value": 1
                }
+              },
+              "Note_failed_campaign_d": {
+               "type": "AppendToStringVariable",
+               "runAfter": {
+                "Count_failed_campaign_d": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Errors",
+                "value": "@{concat(outputs('Key_campaign_d'), ': ', take(string(coalesce(actions('Update_campaign_d')?['outputs']?['body']?['error']?['message'], actions('Create_campaign_d')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
+               }
               }
              },
              "else": {
@@ -1184,6 +1196,18 @@
                 "name": "Failed",
                 "value": 1
                }
+              },
+              "Note_failed_ad_group_d": {
+               "type": "AppendToStringVariable",
+               "runAfter": {
+                "Count_failed_ad_group_d": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Errors",
+                "value": "@{concat(outputs('Key_ad_group_d'), ': ', take(string(coalesce(actions('Update_ad_group_d')?['outputs']?['body']?['error']?['message'], actions('Create_ad_group_d')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
+               }
               }
              },
              "else": {
@@ -1681,6 +1705,18 @@
                 "name": "Failed",
                 "value": 1
                }
+              },
+              "Note_failed_ad_d": {
+               "type": "AppendToStringVariable",
+               "runAfter": {
+                "Count_failed_ad_d": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Errors",
+                "value": "@{concat(outputs('Key_ad_d'), ': ', take(string(coalesce(actions('Update_ad_d')?['outputs']?['body']?['error']?['message'], actions('Create_ad_d')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
+               }
               }
              },
              "else": {
@@ -2167,6 +2203,18 @@
                "inputs": {
                 "name": "Failed",
                 "value": 1
+               }
+              },
+              "Note_failed_asset_group_d": {
+               "type": "AppendToStringVariable",
+               "runAfter": {
+                "Count_failed_asset_group_d": [
+                 "Succeeded"
+                ]
+               },
+               "inputs": {
+                "name": "Errors",
+                "value": "@{concat(outputs('Key_asset_group_d'), ': ', take(string(coalesce(actions('Update_asset_group_d')?['outputs']?['body']?['error']?['message'], actions('Create_asset_group_d')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
                }
               }
              },

@@ -448,7 +448,7 @@
              "breakdown": "campaign",
              "start_time": "@concat(outputs('Window_start_campaign_d'), 'T00:00:00', outputs('Snap_offset'))",
              "end_time": "@concat(formatDateTime(addDays(outputs('Window_end_campaign_d'), 1), 'yyyy-MM-dd'), 'T00:00:00', outputs('Snap_offset'))",
-             "fields": "impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups",
+             "fields": "@if(less(ticks(outputs('Window_start_campaign_d')), ticks('2021-01-01')), 'impressions,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups', 'impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups')",
              "omit_empty": true,
              "limit": 200,
              "cursor": "@if(empty(variables('SnapCursor')), null, variables('SnapCursor'))"
@@ -678,6 +678,18 @@
                  "inputs": {
                   "name": "Failed",
                   "value": 1
+                 }
+                },
+                "Note_failed_campaign_d": {
+                 "type": "AppendToStringVariable",
+                 "runAfter": {
+                  "Count_failed_campaign_d": [
+                   "Succeeded"
+                  ]
+                 },
+                 "inputs": {
+                  "name": "Errors",
+                  "value": "@{concat(outputs('Key_campaign_d'), ': ', take(string(coalesce(actions('Update_campaign_d')?['outputs']?['body']?['error']?['message'], actions('Create_campaign_d')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
                  }
                 }
                },
@@ -969,7 +981,7 @@
              "breakdown": "adsquad",
              "start_time": "@concat(outputs('Window_start_adsquad_d'), 'T00:00:00', outputs('Snap_offset'))",
              "end_time": "@concat(formatDateTime(addDays(outputs('Window_end_adsquad_d'), 1), 'yyyy-MM-dd'), 'T00:00:00', outputs('Snap_offset'))",
-             "fields": "impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups",
+             "fields": "@if(less(ticks(outputs('Window_start_adsquad_d')), ticks('2021-01-01')), 'impressions,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups', 'impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups')",
              "omit_empty": true,
              "limit": 200
             },
@@ -1198,6 +1210,18 @@
                  "inputs": {
                   "name": "Failed",
                   "value": 1
+                 }
+                },
+                "Note_failed_adsquad_d": {
+                 "type": "AppendToStringVariable",
+                 "runAfter": {
+                  "Count_failed_adsquad_d": [
+                   "Succeeded"
+                  ]
+                 },
+                 "inputs": {
+                  "name": "Errors",
+                  "value": "@{concat(outputs('Key_adsquad_d'), ': ', take(string(coalesce(actions('Update_adsquad_d')?['outputs']?['body']?['error']?['message'], actions('Create_adsquad_d')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
                  }
                 }
                },
@@ -1483,7 +1507,7 @@
              "breakdown": "ad",
              "start_time": "@concat(outputs('Window_start_ad_d'), 'T00:00:00', outputs('Snap_offset'))",
              "end_time": "@concat(formatDateTime(addDays(outputs('Window_end_ad_d'), 1), 'yyyy-MM-dd'), 'T00:00:00', outputs('Snap_offset'))",
-             "fields": "impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups",
+             "fields": "@if(less(ticks(outputs('Window_start_ad_d')), ticks('2021-01-01')), 'impressions,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups', 'impressions,uniques,frequency,swipes,spend,video_views,engaged_views,screen_time_millis,quartile_1,quartile_2,quartile_3,view_completion,landing_page_views,place_opens,place_actions,conversion_purchases,conversion_purchases_value,conversion_add_cart,conversion_start_checkout,conversion_view_content,conversion_page_views,conversion_sign_ups')",
              "omit_empty": true,
              "limit": 200,
              "cursor": "@if(empty(variables('SnapCursor')), null, variables('SnapCursor'))"
@@ -1713,6 +1737,18 @@
                  "inputs": {
                   "name": "Failed",
                   "value": 1
+                 }
+                },
+                "Note_failed_ad_d": {
+                 "type": "AppendToStringVariable",
+                 "runAfter": {
+                  "Count_failed_ad_d": [
+                   "Succeeded"
+                  ]
+                 },
+                 "inputs": {
+                  "name": "Errors",
+                  "value": "@{concat(outputs('Key_ad_d'), ': ', take(string(coalesce(actions('Update_ad_d')?['outputs']?['body']?['error']?['message'], actions('Create_ad_d')?['outputs']?['body']?['error']?['message'], '')), 300), ' | ')}"
                  }
                 }
                },
