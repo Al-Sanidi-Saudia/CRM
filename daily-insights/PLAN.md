@@ -428,8 +428,6 @@ The same rules everywhere (scheduler and buttons):
 
 ---
 
----
-
 ## 6. Build results (UAT)
 
 ### 6.1 Full load (All Time, Data and Insights, started 2026-10-30 07:40 Riyadh)
