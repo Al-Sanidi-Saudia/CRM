@@ -838,8 +838,11 @@ def scheduler_flow():
             "item/sanidi_name": "@{items('For_each_platform')?['sanidi_name']} - @{if(outputs('Morning_run'), "
                                 "'Scheduled Daily', 'Scheduled Intraday')} - @{formatDateTime(outputs('Now'), "
                                 "'yyyy-MM-dd HH:mm')}",
-            "item/sanidi_platform@odata.bind": "/sanidi_integrationplatforms(@{items('For_each_platform')?"
+            # The connector names a lookup by its navigation property (sanidi_Platform), not its column.
+            "item/sanidi_Platform@odata.bind": "/sanidi_integrationplatforms(@{items('For_each_platform')?"
                                                "['sanidi_integrationplatformid']})",
+            "item/sanidi_status": 100000000,
+            "item/sanidi_startedon": "@utcNow()",
             "item/sanidi_synctype": "@if(outputs('Morning_run'), 100000004, 100000005)",
             "item/sanidi_triggeredby": 100000001,
             "item/sanidi_includedata": "@outputs('Morning_run')",
