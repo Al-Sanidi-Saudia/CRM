@@ -447,7 +447,8 @@ Found during the full load and fixed in the flows (2026-10-31):
   failures now add `<insight key>: <error>` to the request's Steps Log.
 - **Snap refuses reach (`uniques`, `frequency`) for any date before 2021** (error E1008). Windows before 2021 now
   ask for every other field. The 110 Snap monthly rows dated 2019-09 to 2020-12 were written as empty months
-  (No Data = Yes) during the full load. They are filled only by another Snap All Time (Insights Only) run.
+  (No Data = Yes) during the full load; a Snap All Time (Insights Only) rerun (31 Oct 17:26 → 1 Nov 11:21 Riyadh,
+  Succeeded, no failures) filled the 36 that had delivery. The other 74 had no delivery and stay empty.
 
 ### 6.2 Differences from the plan
 
