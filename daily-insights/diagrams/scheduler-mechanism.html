@@ -1,0 +1,77 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #F9FAFB; font-family:'Segoe UI',Arial,sans-serif; color: #101828; }
+.page { padding: 36px 40px 40px; width: max-content; }
+h1 { font-size: 28px; margin: 0 0 6px; }
+.lead { font-size: 14px; color: #475467; margin: 0 0 24px; max-width: 1500px; }
+.flow { border-radius: 10px; padding: 12px 14px; background: #fff; border: 1.5px solid #D0D5DD; }
+.flow > b { display: block; font-size: 15px; }
+.flow small { display: block; font-size: 12px; color: #475467; margin-top: 3px; line-height: 1.45; }
+.main { border-color: #6941C6; background: #F4F3FF; }
+.disp { border-color: #175CD3; background: #EFF8FF; }
+.run { border-color: #344054; background: #F2F4F7; }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 10px;
+        margin-right: 4px; color: #fff; }
+.arrow { text-align: center; font-size: 22px; color: #667085; line-height: 1; padding: 6px 0; }
+.note { font-size: 12px; color: #475467; }
+table { border-collapse: collapse; background: #fff; font-size: 13px; }
+th, td { border: 1px solid #D0D5DD; padding: 7px 10px; text-align: left; vertical-align: top; }
+th { background: #F2F4F7; font-weight: 700; }
+</style></head><body><div class="page">
+<h1>Social Media Daily &amp; Monthly Insights: sync mechanism</h1>
+<p class="lead">Every sync, scheduled or from a button, is an <b>Integration Sync Request</b> row. The dispatcher runs
+it through one <b>&lt;Platform&gt; - Run Sync</b> flow, which runs the steps one after the other. The 4 platforms run in
+parallel; one platform never runs two syncs at once. All times are Riyadh time.</p>
+<div style="display:flex; gap:28px; align-items:flex-start">
+ <div style="width:520px">
+  <div style="display:flex; gap:12px">
+   <div class="flow main" style="flex:1"><b>Social Media - Scheduled Sync</b>
+    <small>Recurrence: every day 05:00, 08:00, 12:00, 16:00</small>
+    <small>One request per platform with <i>Set Up</i> = Yes and <i>Connection Active</i> not No.<br>
+    05:00 → <b>Scheduled Daily</b> (with data; <i>Weekly Run</i> on Fridays)<br>08 / 12 / 16 → <b>Scheduled Intraday</b><br>
+    Triggered By = Schedule (no notification)</small></div>
+   <div class="flow main" style="flex:1"><b>Sync Control page</b>
+    <small>Buttons per platform:<br>• <b>Data</b> (existing data sync)<br>• <b>Day &amp; Month to Date</b><br>
+    • <b>All Time</b>: pop-up <i>Insights Only</i> / <i>Data and Insights</i>, from the platform's <i>Full Load From</i><br>
+    Triggered By = Button (notification to the presser)</small></div>
+  </div>
+  <div class="arrow">▼ creates</div>
+  <div class="flow" style="border-style:dashed"><b>Integration Sync Request</b>
+   <small>Platform, Sync Type, Status = Requested, Triggered By, Include Data, Weekly Run, Steps Log</small></div>
+  <div class="arrow">▼ on create</div>
+  <div class="flow disp"><b>Sync Control - Run Sync Request</b> <small>(dispatcher)</small>
+   <small>If the same platform already has a sync <i>Running</i>: a scheduled request waits up to 60 min, then is
+   marked <b>Skipped</b> (the next run covers the same periods). Buttons are disabled while a sync runs.<br>
+   Then sets Running and calls the platform's Run Sync flow.</small></div>
+  <div class="arrow">▼ one per platform, in parallel</div>
+  <div class="flow run"><b>Meta - Run Sync · Snap - Run Sync · Google Ads - Run Sync · TikTok - Run Sync</b>
+   <small><span class="tag" style="background:#1877F2;color:#fff">Meta</span><span class="tag" style="background:#FFE600;color:#111">Snapchat</span><span class="tag" style="background:#34A853;color:#fff">Google Ads</span><span class="tag" style="background:#111111;color:#fff">TikTok</span></small></div>
+ </div>
+ <div style="width:560px">
+  <div style="font-size:16px; font-weight:700; margin:2px 0 10px">Inside &lt;Platform&gt; - Run Sync (in order)</div>
+  <div class="flow" style="margin-bottom:8px"><b>1. Data</b><small><i>05:00 run, and All Time with <i>Data and Insights</i></i></small><small>Get &lt;Platform&gt; Campaigns, then the cascade (Dataverse triggers on the parent ID column): ad sets / ad squads / ad groups / asset groups → ads.<br>Waits until no child data flow is running (checked every 2 min, two quiet checks in a row, at most 30 min).</small></div><div class="flow" style="margin-bottom:8px"><b>2. Lifetime</b><small><i>every run</i></small><small>Get &lt;Platform&gt; Insights: lifetime metrics on the synced tables.</small></div><div class="flow" style="margin-bottom:8px"><b>3. Daily</b><small><i>every run</i></small><small>Get &lt;Platform&gt; Daily Insights (start date, end date, closed through): one row per item and day with delivery.</small></div><div class="flow" style="margin-bottom:8px"><b>4. Monthly</b><small><i>every run</i></small><small>Get &lt;Platform&gt; Monthly Insights (first month, last month): one row per item and month from the source; months without data get an empty row (No Data = Yes).</small></div><div class="flow" style="margin-bottom:8px"><b>5. Result</b><small><i>every run</i></small><small>Steps Log and status on the Integration Sync Request (Succeeded / Failed / Skipped). A failed step is logged and the next step still runs.</small></div>
+ </div>
+ <div style="width:700px">
+  <div style="font-size:16px; font-weight:700; margin:2px 0 10px">What each run covers</div>
+  
+<table>
+<tr><th>Sync type</th><th>Data</th><th>Lifetime</th><th>Daily</th><th>Monthly</th><th>Period Closed</th></tr>
+<tr><td><b>Scheduled Daily</b> (05:00)</td><td>Yes</td><td>Yes</td><td>D-2 … today</td><td>months of D-2 … today</td><td>day D-2</td></tr>
+<tr><td>+ <b>Weekly</b> (Friday 05:00)</td><td></td><td></td><td>+ last 28 days<br>(Google Ads 90)</td><td>+ current and previous month<br>(Google Ads: months of the 90 days)</td><td>+ previous month on the<br>last Friday of the month</td></tr>
+<tr><td><b>Scheduled Intraday</b> (08:00, 12:00, 16:00)</td><td>No</td><td>Yes</td><td>today</td><td>current month</td><td>nothing</td></tr>
+<tr><td><b>Day &amp; Month to Date</b> (button)</td><td>No</td><td>Yes</td><td>D-2 … today</td><td>months of D-2 … today</td><td>same rules</td></tr>
+<tr><td><b>All Time</b> (button, pop-up)</td><td>Insights Only: No<br>Data and Insights: Yes</td><td>Yes</td><td>Full Load From (or first campaign) … today</td><td>its month … current month</td><td>same rules</td></tr>
+</table>
+  <div style="height:16px"></div>
+  
+<table>
+<tr><th>Period Closed rules (scheduler and buttons)</th></tr>
+<tr><td>Day: closed when it is the day before yesterday (D-2) or older.</td></tr>
+<tr><td>Month: closed when older than the previous month; the previous month closes on the current month's last Friday.</td></tr>
+<tr><td>Today and the current month are never closed.</td></tr>
+</table>
+  <p class="note" style="margin-top:14px">D-2 = the day before yesterday. Platforms can still revise older numbers
+  (Meta up to 28 days, Google Ads conversions up to 90 days); the Friday reloads pick them up.
+  Days without delivery get no daily row.</p>
+ </div>
+</div></div></body></html>

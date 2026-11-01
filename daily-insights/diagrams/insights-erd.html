@@ -1,0 +1,932 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0"><svg xmlns="http://www.w3.org/2000/svg" width="2980" height="1590" viewBox="0 0 2980 1590" style="font-family:'Segoe UI',Arial,sans-serif"><rect width="100%" height="100%" fill="#F9FAFB"/><text x="40" y="44" font-size="28" font-weight="700" fill="#101828">Social Media Daily &amp; Monthly Insights: tables</text>
+<text x="40" y="74" font-size="14" fill="#475467">26 new insight tables (one Daily and one Monthly per synced table), each linked N : 1 to one of the 13 synced tables. Only identifier columns are shown; every insight table also has the parent's metrics, Period Closed, No Data, Last Synced On and Raw Payload.</text>
+<g transform="translate(40,88)" font-size="12" fill="#344054"><text x="0" y="14" font-weight="700" fill="#B42318">PK</text><text x="22" y="14">primary key</text><text x="110" y="14" font-weight="700" fill="#175CD3">FK</text><text x="132" y="14">lookup (N : 1)</text><text x="240" y="14" font-weight="700" fill="#6941C6">AK</text><text x="262" y="14">alternate key (one row per item and period)</text><rect x="520" y="2" width="16" height="16" rx="3" fill="#FFF1C2"/><text x="542" y="14">period columns added on request (set on every row; Month 1 = January, Weekday 1 = Sunday)</text><rect x="1090" y="2" width="16" height="16" rx="3" fill="#344054"/><text x="1112" y="14">synced table (existing)</text><path d="M1270 10 h40" stroke="#344054" stroke-width="1.5"/><path d="M1301 4 L1310 10 L1301 16" stroke="#344054" stroke-width="1.5" fill="none"/><text x="1318" y="14">1 : N (arrow at the N side; dashed = skips a level)</text></g>
+<rect x="25" y="120" width="1230" height="700" rx="12" fill="#1877F2" fill-opacity=".07" stroke="#1877F2" stroke-opacity=".5"/>
+<rect x="1285" y="120" width="1230" height="700" rx="12" fill="#FFE600" fill-opacity=".07" stroke="#FFE600" stroke-opacity=".5"/>
+<rect x="25" y="850" width="1640" height="700" rx="12" fill="#34A853" fill-opacity=".07" stroke="#34A853" stroke-opacity=".5"/>
+<rect x="1695" y="850" width="1230" height="700" rx="12" fill="#111111" fill-opacity=".07" stroke="#111111" stroke-opacity=".5"/>
+<path d="M56 268 V372" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M50 372 L56 363 L62 372" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M72 268 V280 H30 V643 H40" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M40 637 L31 643 L40 649" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M466 290 V372" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M460 372 L466 363 L472 372" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M482 290 V302 H440 V643 H450" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M450 637 L441 643 L450 649" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M876 312 V372" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M870 372 L876 363 L882 372" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M892 312 V324 H850 V643 H860" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M860 637 L851 643 L860 649" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M410 200 H450" stroke="#344054" stroke-width="1.5"/>
+<path d="M441 194 L450 200 L441 206" stroke="#344054" stroke-width="1.5" fill="none"/>
+<path d="M380 268 V340 H1200 V312" stroke="#344054" stroke-width="1.5" fill="none" stroke-dasharray="5 3"/>
+<path d="M1194 321 L1200 312 L1206 321" stroke="#344054" stroke-width="1.5" fill="none"/>
+<path d="M820 200 H860" stroke="#344054" stroke-width="1.5"/>
+<path d="M851 194 L860 200 L851 206" stroke="#344054" stroke-width="1.5" fill="none"/>
+<path d="M1316 268 V350" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1310 350 L1316 341 L1322 350" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1332 268 V280 H1290 V621 H1300" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1300 615 L1291 621 L1300 627" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1726 290 V350" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1720 350 L1726 341 L1732 350" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1742 290 V302 H1700 V621 H1710" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1710 615 L1701 621 L1710 627" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2136 290 V350" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2130 350 L2136 341 L2142 350" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2152 290 V302 H2110 V621 H2120" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2120 615 L2111 621 L2120 627" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1670 200 H1710" stroke="#344054" stroke-width="1.5"/>
+<path d="M1701 194 L1710 200 L1701 206" stroke="#344054" stroke-width="1.5" fill="none"/>
+<path d="M2080 200 H2120" stroke="#344054" stroke-width="1.5"/>
+<path d="M2111 194 L2120 200 L2111 206" stroke="#344054" stroke-width="1.5" fill="none"/>
+<path d="M56 998 V1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M50 1080 L56 1071 L62 1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M72 998 V1010 H30 V1351 H40" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M40 1345 L31 1351 L40 1357" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M466 1020 V1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M460 1080 L466 1071 L472 1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M482 1020 V1032 H440 V1351 H450" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M450 1345 L441 1351 L450 1357" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M876 1020 V1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M870 1080 L876 1071 L882 1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M892 1020 V1032 H850 V1351 H860" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M860 1345 L851 1351 L860 1357" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1286 1020 V1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1280 1080 L1286 1071 L1292 1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1302 1020 V1032 H1260 V1351 H1270" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1270 1345 L1261 1351 L1270 1357" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M410 930 H450" stroke="#344054" stroke-width="1.5"/>
+<path d="M441 924 L450 930 L441 936" stroke="#344054" stroke-width="1.5" fill="none"/>
+<path d="M820 930 H860" stroke="#344054" stroke-width="1.5"/>
+<path d="M851 924 L860 930 L851 936" stroke="#344054" stroke-width="1.5" fill="none"/>
+<path d="M380 998 V1048 H1610 V1020" stroke="#344054" stroke-width="1.5" fill="none" stroke-dasharray="5 3"/>
+<path d="M1604 1029 L1610 1020 L1616 1029" stroke="#344054" stroke-width="1.5" fill="none"/>
+<path d="M1726 998 V1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1720 1080 L1726 1071 L1732 1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1742 998 V1010 H1700 V1351 H1710" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M1710 1345 L1701 1351 L1710 1357" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2136 1020 V1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2130 1080 L2136 1071 L2142 1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2152 1020 V1032 H2110 V1351 H2120" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2120 1345 L2111 1351 L2120 1357" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2546 1020 V1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2540 1080 L2546 1071 L2552 1080" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2562 1020 V1032 H2520 V1351 H2530" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2530 1345 L2521 1351 L2530 1357" stroke="#667085" stroke-width="1.5" fill="none"/>
+<path d="M2080 930 H2120" stroke="#344054" stroke-width="1.5"/>
+<path d="M2111 924 L2120 930 L2111 936" stroke="#344054" stroke-width="1.5" fill="none"/>
+<path d="M2490 930 H2530" stroke="#344054" stroke-width="1.5"/>
+<path d="M2521 924 L2530 930 L2521 936" stroke="#344054" stroke-width="1.5" fill="none"/>
+<text x="40" y="150" font-size="20" font-weight="700" fill="#101828">Meta</text>
+<rect x="40" y="170" width="370" height="98" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M40 176 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="50" y="189" font-size="14" font-weight="700" fill="#fff">Meta Campaign</text>
+<text x="50" y="207" font-size="11.5" fill="#fff" opacity=".85">sanidi_metacampaign  (synced table)</text>
+<text x="50" y="235" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="78" y="235" font-size="12" fill="#101828">sanidi_metacampaignid</text>
+<text x="50" y="257" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="257" font-size="12" fill="#101828">sanidi_campaignid</text>
+<text x="400" y="257" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<rect x="40" y="372" width="370" height="230" rx="6" fill="#fff" stroke="#1877F2" stroke-width="1.5"/>
+<path d="M40 378 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#1877F2"/>
+<text x="50" y="391" font-size="14" font-weight="700" fill="#fff">Meta Campaign Daily Insight</text>
+<text x="50" y="409" font-size="11.5" fill="#fff" opacity=".85">sanidi_metacampaigndailyinsight</text>
+<text x="50" y="437" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="78" y="437" font-size="12" fill="#101828">sanidi_metacampaigndailyinsightid</text>
+<text x="50" y="459" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="78" y="459" font-size="12" fill="#101828">sanidi_metacampaign</text>
+<text x="400" y="459" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<text x="50" y="481" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="78" y="481" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="400" y="481" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="50" y="503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="503" font-size="12" fill="#101828">sanidi_date</text>
+<text x="400" y="503" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="43" y="510" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="50" y="525" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="525" font-size="12" fill="#101828">sanidi_day</text>
+<text x="400" y="525" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="43" y="532" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="50" y="547" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="547" font-size="12" fill="#101828">sanidi_month</text>
+<text x="400" y="547" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="43" y="554" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="50" y="569" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="569" font-size="12" fill="#101828">sanidi_year</text>
+<text x="400" y="569" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="43" y="576" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="50" y="591" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="591" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="400" y="591" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="40" y="620" width="370" height="186" rx="6" fill="#fff" stroke="#1877F2" stroke-width="1.5"/>
+<path d="M40 626 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#1877F2"/>
+<text x="50" y="639" font-size="14" font-weight="700" fill="#fff">Meta Campaign Monthly Insight</text>
+<text x="50" y="657" font-size="11.5" fill="#fff" opacity=".85">sanidi_metacampaignmonthlyinsight</text>
+<text x="50" y="685" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="78" y="685" font-size="12" fill="#101828">sanidi_metacampaignmonthlyinsightid</text>
+<text x="50" y="707" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="78" y="707" font-size="12" fill="#101828">sanidi_metacampaign</text>
+<text x="400" y="707" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<text x="50" y="729" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="78" y="729" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="400" y="729" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="50" y="751" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="751" font-size="12" fill="#101828">sanidi_date</text>
+<text x="400" y="751" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="43" y="758" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="50" y="773" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="773" font-size="12" fill="#101828">sanidi_month</text>
+<text x="400" y="773" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="43" y="780" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="50" y="795" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="795" font-size="12" fill="#101828">sanidi_year</text>
+<text x="400" y="795" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="450" y="170" width="370" height="120" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M450 176 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="460" y="189" font-size="14" font-weight="700" fill="#fff">Meta Ad Set</text>
+<text x="460" y="207" font-size="11.5" fill="#fff" opacity=".85">sanidi_metaadset  (synced table)</text>
+<text x="460" y="235" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="488" y="235" font-size="12" fill="#101828">sanidi_metaadsetid</text>
+<text x="460" y="257" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="257" font-size="12" fill="#101828">sanidi_adsetid</text>
+<text x="810" y="257" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<text x="460" y="279" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="488" y="279" font-size="12" fill="#101828">sanidi_metacampaignid</text>
+<text x="810" y="279" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<rect x="450" y="372" width="370" height="230" rx="6" fill="#fff" stroke="#1877F2" stroke-width="1.5"/>
+<path d="M450 378 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#1877F2"/>
+<text x="460" y="391" font-size="14" font-weight="700" fill="#fff">Meta Ad Set Daily Insight</text>
+<text x="460" y="409" font-size="11.5" fill="#fff" opacity=".85">sanidi_metaadsetdailyinsight</text>
+<text x="460" y="437" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="488" y="437" font-size="12" fill="#101828">sanidi_metaadsetdailyinsightid</text>
+<text x="460" y="459" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="488" y="459" font-size="12" fill="#101828">sanidi_metaadset</text>
+<text x="810" y="459" font-size="10.5" fill="#667085" text-anchor="end">→ Ad Set</text>
+<text x="460" y="481" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="488" y="481" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="810" y="481" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="460" y="503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="503" font-size="12" fill="#101828">sanidi_date</text>
+<text x="810" y="503" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="453" y="510" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="460" y="525" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="525" font-size="12" fill="#101828">sanidi_day</text>
+<text x="810" y="525" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="453" y="532" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="460" y="547" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="547" font-size="12" fill="#101828">sanidi_month</text>
+<text x="810" y="547" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="453" y="554" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="460" y="569" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="569" font-size="12" fill="#101828">sanidi_year</text>
+<text x="810" y="569" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="453" y="576" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="460" y="591" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="591" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="810" y="591" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="450" y="620" width="370" height="186" rx="6" fill="#fff" stroke="#1877F2" stroke-width="1.5"/>
+<path d="M450 626 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#1877F2"/>
+<text x="460" y="639" font-size="14" font-weight="700" fill="#fff">Meta Ad Set Monthly Insight</text>
+<text x="460" y="657" font-size="11.5" fill="#fff" opacity=".85">sanidi_metaadsetmonthlyinsight</text>
+<text x="460" y="685" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="488" y="685" font-size="12" fill="#101828">sanidi_metaadsetmonthlyinsightid</text>
+<text x="460" y="707" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="488" y="707" font-size="12" fill="#101828">sanidi_metaadset</text>
+<text x="810" y="707" font-size="10.5" fill="#667085" text-anchor="end">→ Ad Set</text>
+<text x="460" y="729" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="488" y="729" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="810" y="729" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="460" y="751" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="751" font-size="12" fill="#101828">sanidi_date</text>
+<text x="810" y="751" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="453" y="758" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="460" y="773" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="773" font-size="12" fill="#101828">sanidi_month</text>
+<text x="810" y="773" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="453" y="780" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="460" y="795" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="795" font-size="12" fill="#101828">sanidi_year</text>
+<text x="810" y="795" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="860" y="170" width="370" height="142" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M860 176 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="870" y="189" font-size="14" font-weight="700" fill="#fff">Meta Advertisement</text>
+<text x="870" y="207" font-size="11.5" fill="#fff" opacity=".85">sanidi_metaadvertisement  (synced table)</text>
+<text x="870" y="235" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="898" y="235" font-size="12" fill="#101828">sanidi_metaadvertisementid</text>
+<text x="870" y="257" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="257" font-size="12" fill="#101828">sanidi_advertisementid</text>
+<text x="1220" y="257" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<text x="870" y="279" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="898" y="279" font-size="12" fill="#101828">sanidi_metacampaignid</text>
+<text x="1220" y="279" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<text x="870" y="301" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="898" y="301" font-size="12" fill="#101828">sanidi_metaadsetid</text>
+<text x="1220" y="301" font-size="10.5" fill="#667085" text-anchor="end">→ Ad Set</text>
+<rect x="860" y="372" width="370" height="230" rx="6" fill="#fff" stroke="#1877F2" stroke-width="1.5"/>
+<path d="M860 378 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#1877F2"/>
+<text x="870" y="391" font-size="14" font-weight="700" fill="#fff">Meta Advertisement Daily Insight</text>
+<text x="870" y="409" font-size="11.5" fill="#fff" opacity=".85">sanidi_metaadvertisementdailyinsight</text>
+<text x="870" y="437" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="898" y="437" font-size="12" fill="#101828">sanidi_metaadvertisementdailyinsightid</text>
+<text x="870" y="459" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="898" y="459" font-size="12" fill="#101828">sanidi_metaadvertisement</text>
+<text x="1220" y="459" font-size="10.5" fill="#667085" text-anchor="end">→ Advertisement</text>
+<text x="870" y="481" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="898" y="481" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="1220" y="481" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="870" y="503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="503" font-size="12" fill="#101828">sanidi_date</text>
+<text x="1220" y="503" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="863" y="510" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="870" y="525" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="525" font-size="12" fill="#101828">sanidi_day</text>
+<text x="1220" y="525" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="863" y="532" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="870" y="547" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="547" font-size="12" fill="#101828">sanidi_month</text>
+<text x="1220" y="547" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="863" y="554" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="870" y="569" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="569" font-size="12" fill="#101828">sanidi_year</text>
+<text x="1220" y="569" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="863" y="576" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="870" y="591" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="591" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="1220" y="591" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="860" y="620" width="370" height="186" rx="6" fill="#fff" stroke="#1877F2" stroke-width="1.5"/>
+<path d="M860 626 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#1877F2"/>
+<text x="870" y="639" font-size="14" font-weight="700" fill="#fff">Meta Advertisement Monthly Insight</text>
+<text x="870" y="657" font-size="11.5" fill="#fff" opacity=".85">sanidi_metaadvertisementmonthlyinsight</text>
+<text x="870" y="685" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="898" y="685" font-size="12" fill="#101828">sanidi_metaadvertisementmonthlyinsightid</text>
+<text x="870" y="707" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="898" y="707" font-size="12" fill="#101828">sanidi_metaadvertisement</text>
+<text x="1220" y="707" font-size="10.5" fill="#667085" text-anchor="end">→ Advertisement</text>
+<text x="870" y="729" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="898" y="729" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="1220" y="729" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="870" y="751" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="751" font-size="12" fill="#101828">sanidi_date</text>
+<text x="1220" y="751" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="863" y="758" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="870" y="773" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="773" font-size="12" fill="#101828">sanidi_month</text>
+<text x="1220" y="773" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="863" y="780" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="870" y="795" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="795" font-size="12" fill="#101828">sanidi_year</text>
+<text x="1220" y="795" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<text x="1300" y="150" font-size="20" font-weight="700" fill="#101828">Snapchat</text>
+<rect x="1300" y="170" width="370" height="98" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M1300 176 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="1310" y="189" font-size="14" font-weight="700" fill="#fff">Snap Campaign</text>
+<text x="1310" y="207" font-size="11.5" fill="#fff" opacity=".85">sanidi_snapcampaign  (synced table)</text>
+<text x="1310" y="235" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="1338" y="235" font-size="12" fill="#101828">sanidi_snapcampaignid</text>
+<text x="1310" y="257" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1338" y="257" font-size="12" fill="#101828">sanidi_campaignid</text>
+<text x="1660" y="257" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<rect x="1300" y="350" width="370" height="230" rx="6" fill="#fff" stroke="#FFE600" stroke-width="1.5"/>
+<path d="M1300 356 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#FFE600"/>
+<text x="1310" y="369" font-size="14" font-weight="700" fill="#111">Snap Campaign Daily Insight</text>
+<text x="1310" y="387" font-size="11.5" fill="#111" opacity=".85">sanidi_snapcampaigndailyinsight</text>
+<text x="1310" y="415" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="1338" y="415" font-size="12" fill="#101828">sanidi_snapcampaigndailyinsightid</text>
+<text x="1310" y="437" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="1338" y="437" font-size="12" fill="#101828">sanidi_snapcampaign</text>
+<text x="1660" y="437" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<text x="1310" y="459" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="1338" y="459" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="1660" y="459" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="1310" y="481" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1338" y="481" font-size="12" fill="#101828">sanidi_date</text>
+<text x="1660" y="481" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="1303" y="488" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1310" y="503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1338" y="503" font-size="12" fill="#101828">sanidi_day</text>
+<text x="1660" y="503" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="1303" y="510" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1310" y="525" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1338" y="525" font-size="12" fill="#101828">sanidi_month</text>
+<text x="1660" y="525" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="1303" y="532" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1310" y="547" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1338" y="547" font-size="12" fill="#101828">sanidi_year</text>
+<text x="1660" y="547" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="1303" y="554" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1310" y="569" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1338" y="569" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="1660" y="569" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="1300" y="598" width="370" height="186" rx="6" fill="#fff" stroke="#FFE600" stroke-width="1.5"/>
+<path d="M1300 604 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#FFE600"/>
+<text x="1310" y="617" font-size="14" font-weight="700" fill="#111">Snap Campaign Monthly Insight</text>
+<text x="1310" y="635" font-size="11.5" fill="#111" opacity=".85">sanidi_snapcampaignmonthlyinsight</text>
+<text x="1310" y="663" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="1338" y="663" font-size="12" fill="#101828">sanidi_snapcampaignmonthlyinsightid</text>
+<text x="1310" y="685" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="1338" y="685" font-size="12" fill="#101828">sanidi_snapcampaign</text>
+<text x="1660" y="685" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<text x="1310" y="707" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="1338" y="707" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="1660" y="707" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="1310" y="729" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1338" y="729" font-size="12" fill="#101828">sanidi_date</text>
+<text x="1660" y="729" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="1303" y="736" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1310" y="751" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1338" y="751" font-size="12" fill="#101828">sanidi_month</text>
+<text x="1660" y="751" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="1303" y="758" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1310" y="773" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1338" y="773" font-size="12" fill="#101828">sanidi_year</text>
+<text x="1660" y="773" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="1710" y="170" width="370" height="120" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M1710 176 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="1720" y="189" font-size="14" font-weight="700" fill="#fff">Snap Ad Squad</text>
+<text x="1720" y="207" font-size="11.5" fill="#fff" opacity=".85">sanidi_snapadsquad  (synced table)</text>
+<text x="1720" y="235" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="1748" y="235" font-size="12" fill="#101828">sanidi_snapadsquadid</text>
+<text x="1720" y="257" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="257" font-size="12" fill="#101828">sanidi_adsquadid</text>
+<text x="2070" y="257" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<text x="1720" y="279" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="1748" y="279" font-size="12" fill="#101828">sanidi_snapcampaign</text>
+<text x="2070" y="279" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<rect x="1710" y="350" width="370" height="230" rx="6" fill="#fff" stroke="#FFE600" stroke-width="1.5"/>
+<path d="M1710 356 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#FFE600"/>
+<text x="1720" y="369" font-size="14" font-weight="700" fill="#111">Snap Ad Squad Daily Insight</text>
+<text x="1720" y="387" font-size="11.5" fill="#111" opacity=".85">sanidi_snapadsquaddailyinsight</text>
+<text x="1720" y="415" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="1748" y="415" font-size="12" fill="#101828">sanidi_snapadsquaddailyinsightid</text>
+<text x="1720" y="437" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="1748" y="437" font-size="12" fill="#101828">sanidi_snapadsquad</text>
+<text x="2070" y="437" font-size="10.5" fill="#667085" text-anchor="end">→ Ad Squad</text>
+<text x="1720" y="459" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="1748" y="459" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="2070" y="459" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="1720" y="481" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="481" font-size="12" fill="#101828">sanidi_date</text>
+<text x="2070" y="481" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="1713" y="488" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1720" y="503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="503" font-size="12" fill="#101828">sanidi_day</text>
+<text x="2070" y="503" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="1713" y="510" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1720" y="525" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="525" font-size="12" fill="#101828">sanidi_month</text>
+<text x="2070" y="525" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="1713" y="532" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1720" y="547" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="547" font-size="12" fill="#101828">sanidi_year</text>
+<text x="2070" y="547" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="1713" y="554" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1720" y="569" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="569" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="2070" y="569" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="1710" y="598" width="370" height="186" rx="6" fill="#fff" stroke="#FFE600" stroke-width="1.5"/>
+<path d="M1710 604 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#FFE600"/>
+<text x="1720" y="617" font-size="14" font-weight="700" fill="#111">Snap Ad Squad Monthly Insight</text>
+<text x="1720" y="635" font-size="11.5" fill="#111" opacity=".85">sanidi_snapadsquadmonthlyinsight</text>
+<text x="1720" y="663" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="1748" y="663" font-size="12" fill="#101828">sanidi_snapadsquadmonthlyinsightid</text>
+<text x="1720" y="685" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="1748" y="685" font-size="12" fill="#101828">sanidi_snapadsquad</text>
+<text x="2070" y="685" font-size="10.5" fill="#667085" text-anchor="end">→ Ad Squad</text>
+<text x="1720" y="707" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="1748" y="707" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="2070" y="707" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="1720" y="729" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="729" font-size="12" fill="#101828">sanidi_date</text>
+<text x="2070" y="729" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="1713" y="736" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1720" y="751" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="751" font-size="12" fill="#101828">sanidi_month</text>
+<text x="2070" y="751" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="1713" y="758" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1720" y="773" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="773" font-size="12" fill="#101828">sanidi_year</text>
+<text x="2070" y="773" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="2120" y="170" width="370" height="120" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M2120 176 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="2130" y="189" font-size="14" font-weight="700" fill="#fff">Snap Advertisement</text>
+<text x="2130" y="207" font-size="11.5" fill="#fff" opacity=".85">sanidi_snapadvertisement  (synced table)</text>
+<text x="2130" y="235" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="2158" y="235" font-size="12" fill="#101828">sanidi_snapadvertisementid</text>
+<text x="2130" y="257" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="257" font-size="12" fill="#101828">sanidi_adid</text>
+<text x="2480" y="257" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<text x="2130" y="279" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="2158" y="279" font-size="12" fill="#101828">sanidi_snapadsquad</text>
+<text x="2480" y="279" font-size="10.5" fill="#667085" text-anchor="end">→ Ad Squad</text>
+<rect x="2120" y="350" width="370" height="230" rx="6" fill="#fff" stroke="#FFE600" stroke-width="1.5"/>
+<path d="M2120 356 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#FFE600"/>
+<text x="2130" y="369" font-size="14" font-weight="700" fill="#111">Snap Advertisement Daily Insight</text>
+<text x="2130" y="387" font-size="11.5" fill="#111" opacity=".85">sanidi_snapadvertisementdailyinsight</text>
+<text x="2130" y="415" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="2158" y="415" font-size="12" fill="#101828">sanidi_snapadvertisementdailyinsightid</text>
+<text x="2130" y="437" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="2158" y="437" font-size="12" fill="#101828">sanidi_snapadvertisement</text>
+<text x="2480" y="437" font-size="10.5" fill="#667085" text-anchor="end">→ Advertisement</text>
+<text x="2130" y="459" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="2158" y="459" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="2480" y="459" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="2130" y="481" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="481" font-size="12" fill="#101828">sanidi_date</text>
+<text x="2480" y="481" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="2123" y="488" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2130" y="503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="503" font-size="12" fill="#101828">sanidi_day</text>
+<text x="2480" y="503" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="2123" y="510" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2130" y="525" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="525" font-size="12" fill="#101828">sanidi_month</text>
+<text x="2480" y="525" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="2123" y="532" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2130" y="547" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="547" font-size="12" fill="#101828">sanidi_year</text>
+<text x="2480" y="547" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="2123" y="554" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2130" y="569" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="569" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="2480" y="569" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="2120" y="598" width="370" height="186" rx="6" fill="#fff" stroke="#FFE600" stroke-width="1.5"/>
+<path d="M2120 604 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#FFE600"/>
+<text x="2130" y="617" font-size="14" font-weight="700" fill="#111">Snap Advertisement Monthly Insight</text>
+<text x="2130" y="635" font-size="11.5" fill="#111" opacity=".85">sanidi_snapadvertisementmonthlyinsight</text>
+<text x="2130" y="663" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="2158" y="663" font-size="12" fill="#101828">sanidi_snapadvertisementmonthlyinsightid</text>
+<text x="2130" y="685" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="2158" y="685" font-size="12" fill="#101828">sanidi_snapadvertisement</text>
+<text x="2480" y="685" font-size="10.5" fill="#667085" text-anchor="end">→ Advertisement</text>
+<text x="2130" y="707" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="2158" y="707" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="2480" y="707" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="2130" y="729" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="729" font-size="12" fill="#101828">sanidi_date</text>
+<text x="2480" y="729" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="2123" y="736" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2130" y="751" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="751" font-size="12" fill="#101828">sanidi_month</text>
+<text x="2480" y="751" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="2123" y="758" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2130" y="773" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="773" font-size="12" fill="#101828">sanidi_year</text>
+<text x="2480" y="773" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<text x="40" y="880" font-size="20" font-weight="700" fill="#101828">Google Ads</text>
+<rect x="40" y="900" width="370" height="98" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M40 906 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="50" y="919" font-size="14" font-weight="700" fill="#fff">Google Ads Campaign</text>
+<text x="50" y="937" font-size="11.5" fill="#fff" opacity=".85">sanidi_googleadscampaign  (synced table)</text>
+<text x="50" y="965" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="78" y="965" font-size="12" fill="#101828">sanidi_googleadscampaignid</text>
+<text x="50" y="987" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="987" font-size="12" fill="#101828">sanidi_campaignid</text>
+<text x="400" y="987" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<rect x="40" y="1080" width="370" height="230" rx="6" fill="#fff" stroke="#34A853" stroke-width="1.5"/>
+<path d="M40 1086 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#34A853"/>
+<text x="50" y="1099" font-size="14" font-weight="700" fill="#fff">Google Ads Campaign Daily Insight</text>
+<text x="50" y="1117" font-size="11.5" fill="#fff" opacity=".85">sanidi_googleadscampaigndailyinsight</text>
+<text x="50" y="1145" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="78" y="1145" font-size="12" fill="#101828">sanidi_googleadscampaigndailyinsightid</text>
+<text x="50" y="1167" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="78" y="1167" font-size="12" fill="#101828">sanidi_googleadscampaign</text>
+<text x="400" y="1167" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<text x="50" y="1189" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="78" y="1189" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="400" y="1189" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="50" y="1211" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="1211" font-size="12" fill="#101828">sanidi_date</text>
+<text x="400" y="1211" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="43" y="1218" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="50" y="1233" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="1233" font-size="12" fill="#101828">sanidi_day</text>
+<text x="400" y="1233" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="43" y="1240" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="50" y="1255" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="1255" font-size="12" fill="#101828">sanidi_month</text>
+<text x="400" y="1255" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="43" y="1262" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="50" y="1277" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="1277" font-size="12" fill="#101828">sanidi_year</text>
+<text x="400" y="1277" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="43" y="1284" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="50" y="1299" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="1299" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="400" y="1299" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="40" y="1328" width="370" height="186" rx="6" fill="#fff" stroke="#34A853" stroke-width="1.5"/>
+<path d="M40 1334 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#34A853"/>
+<text x="50" y="1347" font-size="14" font-weight="700" fill="#fff">Google Ads Campaign Monthly Insight</text>
+<text x="50" y="1365" font-size="11.5" fill="#fff" opacity=".85">sanidi_googleadscampaignmonthlyinsight</text>
+<text x="50" y="1393" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="78" y="1393" font-size="12" fill="#101828">sanidi_googleadscampaignmonthlyinsightid</text>
+<text x="50" y="1415" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="78" y="1415" font-size="12" fill="#101828">sanidi_googleadscampaign</text>
+<text x="400" y="1415" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<text x="50" y="1437" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="78" y="1437" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="400" y="1437" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="50" y="1459" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="1459" font-size="12" fill="#101828">sanidi_date</text>
+<text x="400" y="1459" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="43" y="1466" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="50" y="1481" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="1481" font-size="12" fill="#101828">sanidi_month</text>
+<text x="400" y="1481" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="43" y="1488" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="50" y="1503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="78" y="1503" font-size="12" fill="#101828">sanidi_year</text>
+<text x="400" y="1503" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="450" y="900" width="370" height="120" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M450 906 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="460" y="919" font-size="14" font-weight="700" fill="#fff">Google Ads Ad Group</text>
+<text x="460" y="937" font-size="11.5" fill="#fff" opacity=".85">sanidi_googleadsadgroup  (synced table)</text>
+<text x="460" y="965" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="488" y="965" font-size="12" fill="#101828">sanidi_googleadsadgroupid</text>
+<text x="460" y="987" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="987" font-size="12" fill="#101828">sanidi_adgroupid</text>
+<text x="810" y="987" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<text x="460" y="1009" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="488" y="1009" font-size="12" fill="#101828">sanidi_googleadscampaign</text>
+<text x="810" y="1009" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<rect x="450" y="1080" width="370" height="230" rx="6" fill="#fff" stroke="#34A853" stroke-width="1.5"/>
+<path d="M450 1086 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#34A853"/>
+<text x="460" y="1099" font-size="14" font-weight="700" fill="#fff">Google Ads Ad Group Daily Insight</text>
+<text x="460" y="1117" font-size="11.5" fill="#fff" opacity=".85">sanidi_googleadsadgroupdailyinsight</text>
+<text x="460" y="1145" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="488" y="1145" font-size="12" fill="#101828">sanidi_googleadsadgroupdailyinsightid</text>
+<text x="460" y="1167" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="488" y="1167" font-size="12" fill="#101828">sanidi_googleadsadgroup</text>
+<text x="810" y="1167" font-size="10.5" fill="#667085" text-anchor="end">→ Ad Group</text>
+<text x="460" y="1189" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="488" y="1189" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="810" y="1189" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="460" y="1211" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="1211" font-size="12" fill="#101828">sanidi_date</text>
+<text x="810" y="1211" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="453" y="1218" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="460" y="1233" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="1233" font-size="12" fill="#101828">sanidi_day</text>
+<text x="810" y="1233" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="453" y="1240" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="460" y="1255" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="1255" font-size="12" fill="#101828">sanidi_month</text>
+<text x="810" y="1255" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="453" y="1262" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="460" y="1277" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="1277" font-size="12" fill="#101828">sanidi_year</text>
+<text x="810" y="1277" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="453" y="1284" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="460" y="1299" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="1299" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="810" y="1299" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="450" y="1328" width="370" height="186" rx="6" fill="#fff" stroke="#34A853" stroke-width="1.5"/>
+<path d="M450 1334 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#34A853"/>
+<text x="460" y="1347" font-size="14" font-weight="700" fill="#fff">Google Ads Ad Group Monthly Insight</text>
+<text x="460" y="1365" font-size="11.5" fill="#fff" opacity=".85">sanidi_googleadsadgroupmonthlyinsight</text>
+<text x="460" y="1393" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="488" y="1393" font-size="12" fill="#101828">sanidi_googleadsadgroupmonthlyinsightid</text>
+<text x="460" y="1415" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="488" y="1415" font-size="12" fill="#101828">sanidi_googleadsadgroup</text>
+<text x="810" y="1415" font-size="10.5" fill="#667085" text-anchor="end">→ Ad Group</text>
+<text x="460" y="1437" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="488" y="1437" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="810" y="1437" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="460" y="1459" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="1459" font-size="12" fill="#101828">sanidi_date</text>
+<text x="810" y="1459" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="453" y="1466" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="460" y="1481" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="1481" font-size="12" fill="#101828">sanidi_month</text>
+<text x="810" y="1481" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="453" y="1488" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="460" y="1503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="488" y="1503" font-size="12" fill="#101828">sanidi_year</text>
+<text x="810" y="1503" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="860" y="900" width="370" height="120" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M860 906 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="870" y="919" font-size="14" font-weight="700" fill="#fff">Google Ads Advertisement</text>
+<text x="870" y="937" font-size="11.5" fill="#fff" opacity=".85">sanidi_googleadsadvertisement  (synced table)</text>
+<text x="870" y="965" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="898" y="965" font-size="12" fill="#101828">sanidi_googleadsadvertisementid</text>
+<text x="870" y="987" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="987" font-size="12" fill="#101828">sanidi_adid</text>
+<text x="1220" y="987" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<text x="870" y="1009" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="898" y="1009" font-size="12" fill="#101828">sanidi_googleadsadgroup</text>
+<text x="1220" y="1009" font-size="10.5" fill="#667085" text-anchor="end">→ Ad Group</text>
+<rect x="860" y="1080" width="370" height="230" rx="6" fill="#fff" stroke="#34A853" stroke-width="1.5"/>
+<path d="M860 1086 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#34A853"/>
+<text x="870" y="1099" font-size="14" font-weight="700" fill="#fff">Google Ads Advertisement Daily Insight</text>
+<text x="870" y="1117" font-size="11.5" fill="#fff" opacity=".85">sanidi_googleadsadvertisementdailyinsight</text>
+<text x="870" y="1145" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="898" y="1145" font-size="12" fill="#101828">sanidi_googleadsadvertisementdailyinsightid</text>
+<text x="870" y="1167" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="898" y="1167" font-size="12" fill="#101828">sanidi_googleadsadvertisement</text>
+<text x="1220" y="1167" font-size="10.5" fill="#667085" text-anchor="end">→ Advertisement</text>
+<text x="870" y="1189" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="898" y="1189" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="1220" y="1189" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="870" y="1211" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="1211" font-size="12" fill="#101828">sanidi_date</text>
+<text x="1220" y="1211" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="863" y="1218" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="870" y="1233" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="1233" font-size="12" fill="#101828">sanidi_day</text>
+<text x="1220" y="1233" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="863" y="1240" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="870" y="1255" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="1255" font-size="12" fill="#101828">sanidi_month</text>
+<text x="1220" y="1255" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="863" y="1262" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="870" y="1277" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="1277" font-size="12" fill="#101828">sanidi_year</text>
+<text x="1220" y="1277" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="863" y="1284" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="870" y="1299" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="1299" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="1220" y="1299" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="860" y="1328" width="370" height="186" rx="6" fill="#fff" stroke="#34A853" stroke-width="1.5"/>
+<path d="M860 1334 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#34A853"/>
+<text x="870" y="1347" font-size="14" font-weight="700" fill="#fff">Google Ads Advertisement Monthly Insight</text>
+<text x="870" y="1365" font-size="11.5" fill="#fff" opacity=".85">sanidi_googleadsadvertisementmonthlyinsight</text>
+<text x="870" y="1393" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="898" y="1393" font-size="12" fill="#101828">sanidi_googleadsadvertisementmonthlyinsightid</text>
+<text x="870" y="1415" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="898" y="1415" font-size="12" fill="#101828">sanidi_googleadsadvertisement</text>
+<text x="1220" y="1415" font-size="10.5" fill="#667085" text-anchor="end">→ Advertisement</text>
+<text x="870" y="1437" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="898" y="1437" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="1220" y="1437" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="870" y="1459" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="1459" font-size="12" fill="#101828">sanidi_date</text>
+<text x="1220" y="1459" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="863" y="1466" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="870" y="1481" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="1481" font-size="12" fill="#101828">sanidi_month</text>
+<text x="1220" y="1481" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="863" y="1488" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="870" y="1503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="898" y="1503" font-size="12" fill="#101828">sanidi_year</text>
+<text x="1220" y="1503" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="1270" y="900" width="370" height="120" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M1270 906 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="1280" y="919" font-size="14" font-weight="700" fill="#fff">Google Ads Asset Group</text>
+<text x="1280" y="937" font-size="11.5" fill="#fff" opacity=".85">sanidi_googleadsassetgroup  (synced table)</text>
+<text x="1280" y="965" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="1308" y="965" font-size="12" fill="#101828">sanidi_googleadsassetgroupid</text>
+<text x="1280" y="987" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1308" y="987" font-size="12" fill="#101828">sanidi_assetgroupid</text>
+<text x="1630" y="987" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<text x="1280" y="1009" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="1308" y="1009" font-size="12" fill="#101828">sanidi_googleadscampaign</text>
+<text x="1630" y="1009" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<rect x="1270" y="1080" width="370" height="230" rx="6" fill="#fff" stroke="#34A853" stroke-width="1.5"/>
+<path d="M1270 1086 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#34A853"/>
+<text x="1280" y="1099" font-size="14" font-weight="700" fill="#fff">Google Ads Asset Group Daily Insight</text>
+<text x="1280" y="1117" font-size="11.5" fill="#fff" opacity=".85">sanidi_googleadsassetgroupdailyinsight</text>
+<text x="1280" y="1145" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="1308" y="1145" font-size="12" fill="#101828">sanidi_googleadsassetgroupdailyinsightid</text>
+<text x="1280" y="1167" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="1308" y="1167" font-size="12" fill="#101828">sanidi_googleadsassetgroup</text>
+<text x="1630" y="1167" font-size="10.5" fill="#667085" text-anchor="end">→ Asset Group</text>
+<text x="1280" y="1189" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="1308" y="1189" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="1630" y="1189" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="1280" y="1211" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1308" y="1211" font-size="12" fill="#101828">sanidi_date</text>
+<text x="1630" y="1211" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="1273" y="1218" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1280" y="1233" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1308" y="1233" font-size="12" fill="#101828">sanidi_day</text>
+<text x="1630" y="1233" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="1273" y="1240" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1280" y="1255" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1308" y="1255" font-size="12" fill="#101828">sanidi_month</text>
+<text x="1630" y="1255" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="1273" y="1262" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1280" y="1277" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1308" y="1277" font-size="12" fill="#101828">sanidi_year</text>
+<text x="1630" y="1277" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="1273" y="1284" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1280" y="1299" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1308" y="1299" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="1630" y="1299" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="1270" y="1328" width="370" height="186" rx="6" fill="#fff" stroke="#34A853" stroke-width="1.5"/>
+<path d="M1270 1334 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#34A853"/>
+<text x="1280" y="1347" font-size="14" font-weight="700" fill="#fff">Google Ads Asset Group Monthly Insight</text>
+<text x="1280" y="1365" font-size="11.5" fill="#fff" opacity=".85">sanidi_googleadsassetgroupmonthlyinsight</text>
+<text x="1280" y="1393" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="1308" y="1393" font-size="12" fill="#101828">sanidi_googleadsassetgroupmonthlyinsightid</text>
+<text x="1280" y="1415" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="1308" y="1415" font-size="12" fill="#101828">sanidi_googleadsassetgroup</text>
+<text x="1630" y="1415" font-size="10.5" fill="#667085" text-anchor="end">→ Asset Group</text>
+<text x="1280" y="1437" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="1308" y="1437" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="1630" y="1437" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="1280" y="1459" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1308" y="1459" font-size="12" fill="#101828">sanidi_date</text>
+<text x="1630" y="1459" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="1273" y="1466" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1280" y="1481" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1308" y="1481" font-size="12" fill="#101828">sanidi_month</text>
+<text x="1630" y="1481" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="1273" y="1488" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1280" y="1503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1308" y="1503" font-size="12" fill="#101828">sanidi_year</text>
+<text x="1630" y="1503" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<text x="1710" y="880" font-size="20" font-weight="700" fill="#101828">TikTok</text>
+<rect x="1710" y="900" width="370" height="98" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M1710 906 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="1720" y="919" font-size="14" font-weight="700" fill="#fff">TikTok Campaign</text>
+<text x="1720" y="937" font-size="11.5" fill="#fff" opacity=".85">sanidi_tiktokcampaign  (synced table)</text>
+<text x="1720" y="965" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="1748" y="965" font-size="12" fill="#101828">sanidi_tiktokcampaignid</text>
+<text x="1720" y="987" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="987" font-size="12" fill="#101828">sanidi_campaignid</text>
+<text x="2070" y="987" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<rect x="1710" y="1080" width="370" height="230" rx="6" fill="#fff" stroke="#111111" stroke-width="1.5"/>
+<path d="M1710 1086 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#111111"/>
+<text x="1720" y="1099" font-size="14" font-weight="700" fill="#fff">TikTok Campaign Daily Insight</text>
+<text x="1720" y="1117" font-size="11.5" fill="#fff" opacity=".85">sanidi_tiktokcampaigndailyinsight</text>
+<text x="1720" y="1145" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="1748" y="1145" font-size="12" fill="#101828">sanidi_tiktokcampaigndailyinsightid</text>
+<text x="1720" y="1167" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="1748" y="1167" font-size="12" fill="#101828">sanidi_tiktokcampaign</text>
+<text x="2070" y="1167" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<text x="1720" y="1189" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="1748" y="1189" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="2070" y="1189" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="1720" y="1211" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="1211" font-size="12" fill="#101828">sanidi_date</text>
+<text x="2070" y="1211" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="1713" y="1218" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1720" y="1233" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="1233" font-size="12" fill="#101828">sanidi_day</text>
+<text x="2070" y="1233" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="1713" y="1240" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1720" y="1255" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="1255" font-size="12" fill="#101828">sanidi_month</text>
+<text x="2070" y="1255" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="1713" y="1262" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1720" y="1277" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="1277" font-size="12" fill="#101828">sanidi_year</text>
+<text x="2070" y="1277" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="1713" y="1284" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1720" y="1299" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="1299" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="2070" y="1299" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="1710" y="1328" width="370" height="186" rx="6" fill="#fff" stroke="#111111" stroke-width="1.5"/>
+<path d="M1710 1334 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#111111"/>
+<text x="1720" y="1347" font-size="14" font-weight="700" fill="#fff">TikTok Campaign Monthly Insight</text>
+<text x="1720" y="1365" font-size="11.5" fill="#fff" opacity=".85">sanidi_tiktokcampaignmonthlyinsight</text>
+<text x="1720" y="1393" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="1748" y="1393" font-size="12" fill="#101828">sanidi_tiktokcampaignmonthlyinsightid</text>
+<text x="1720" y="1415" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="1748" y="1415" font-size="12" fill="#101828">sanidi_tiktokcampaign</text>
+<text x="2070" y="1415" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<text x="1720" y="1437" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="1748" y="1437" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="2070" y="1437" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="1720" y="1459" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="1459" font-size="12" fill="#101828">sanidi_date</text>
+<text x="2070" y="1459" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="1713" y="1466" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1720" y="1481" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="1481" font-size="12" fill="#101828">sanidi_month</text>
+<text x="2070" y="1481" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="1713" y="1488" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="1720" y="1503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="1748" y="1503" font-size="12" fill="#101828">sanidi_year</text>
+<text x="2070" y="1503" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="2120" y="900" width="370" height="120" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M2120 906 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="2130" y="919" font-size="14" font-weight="700" fill="#fff">TikTok Ad Group</text>
+<text x="2130" y="937" font-size="11.5" fill="#fff" opacity=".85">sanidi_tiktokadgroup  (synced table)</text>
+<text x="2130" y="965" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="2158" y="965" font-size="12" fill="#101828">sanidi_tiktokadgroupid</text>
+<text x="2130" y="987" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="987" font-size="12" fill="#101828">sanidi_adgroupid</text>
+<text x="2480" y="987" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<text x="2130" y="1009" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="2158" y="1009" font-size="12" fill="#101828">sanidi_tiktokcampaign</text>
+<text x="2480" y="1009" font-size="10.5" fill="#667085" text-anchor="end">→ Campaign</text>
+<rect x="2120" y="1080" width="370" height="230" rx="6" fill="#fff" stroke="#111111" stroke-width="1.5"/>
+<path d="M2120 1086 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#111111"/>
+<text x="2130" y="1099" font-size="14" font-weight="700" fill="#fff">TikTok Ad Group Daily Insight</text>
+<text x="2130" y="1117" font-size="11.5" fill="#fff" opacity=".85">sanidi_tiktokadgroupdailyinsight</text>
+<text x="2130" y="1145" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="2158" y="1145" font-size="12" fill="#101828">sanidi_tiktokadgroupdailyinsightid</text>
+<text x="2130" y="1167" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="2158" y="1167" font-size="12" fill="#101828">sanidi_tiktokadgroup</text>
+<text x="2480" y="1167" font-size="10.5" fill="#667085" text-anchor="end">→ Ad Group</text>
+<text x="2130" y="1189" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="2158" y="1189" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="2480" y="1189" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="2130" y="1211" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="1211" font-size="12" fill="#101828">sanidi_date</text>
+<text x="2480" y="1211" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="2123" y="1218" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2130" y="1233" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="1233" font-size="12" fill="#101828">sanidi_day</text>
+<text x="2480" y="1233" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="2123" y="1240" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2130" y="1255" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="1255" font-size="12" fill="#101828">sanidi_month</text>
+<text x="2480" y="1255" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="2123" y="1262" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2130" y="1277" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="1277" font-size="12" fill="#101828">sanidi_year</text>
+<text x="2480" y="1277" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="2123" y="1284" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2130" y="1299" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="1299" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="2480" y="1299" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="2120" y="1328" width="370" height="186" rx="6" fill="#fff" stroke="#111111" stroke-width="1.5"/>
+<path d="M2120 1334 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#111111"/>
+<text x="2130" y="1347" font-size="14" font-weight="700" fill="#fff">TikTok Ad Group Monthly Insight</text>
+<text x="2130" y="1365" font-size="11.5" fill="#fff" opacity=".85">sanidi_tiktokadgroupmonthlyinsight</text>
+<text x="2130" y="1393" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="2158" y="1393" font-size="12" fill="#101828">sanidi_tiktokadgroupmonthlyinsightid</text>
+<text x="2130" y="1415" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="2158" y="1415" font-size="12" fill="#101828">sanidi_tiktokadgroup</text>
+<text x="2480" y="1415" font-size="10.5" fill="#667085" text-anchor="end">→ Ad Group</text>
+<text x="2130" y="1437" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="2158" y="1437" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="2480" y="1437" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="2130" y="1459" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="1459" font-size="12" fill="#101828">sanidi_date</text>
+<text x="2480" y="1459" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="2123" y="1466" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2130" y="1481" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="1481" font-size="12" fill="#101828">sanidi_month</text>
+<text x="2480" y="1481" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="2123" y="1488" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2130" y="1503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2158" y="1503" font-size="12" fill="#101828">sanidi_year</text>
+<text x="2480" y="1503" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="2530" y="900" width="370" height="120" rx="6" fill="#fff" stroke="#344054" stroke-width="1.5"/>
+<path d="M2530 906 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#344054"/>
+<text x="2540" y="919" font-size="14" font-weight="700" fill="#fff">TikTok Advertisement</text>
+<text x="2540" y="937" font-size="11.5" fill="#fff" opacity=".85">sanidi_tiktokadvertisement  (synced table)</text>
+<text x="2540" y="965" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="2568" y="965" font-size="12" fill="#101828">sanidi_tiktokadvertisementid</text>
+<text x="2540" y="987" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2568" y="987" font-size="12" fill="#101828">sanidi_adid</text>
+<text x="2890" y="987" font-size="10.5" fill="#667085" text-anchor="end">platform ID</text>
+<text x="2540" y="1009" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="2568" y="1009" font-size="12" fill="#101828">sanidi_tiktokadgroup</text>
+<text x="2890" y="1009" font-size="10.5" fill="#667085" text-anchor="end">→ Ad Group</text>
+<rect x="2530" y="1080" width="370" height="230" rx="6" fill="#fff" stroke="#111111" stroke-width="1.5"/>
+<path d="M2530 1086 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#111111"/>
+<text x="2540" y="1099" font-size="14" font-weight="700" fill="#fff">TikTok Advertisement Daily Insight</text>
+<text x="2540" y="1117" font-size="11.5" fill="#fff" opacity=".85">sanidi_tiktokadvertisementdailyinsight</text>
+<text x="2540" y="1145" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="2568" y="1145" font-size="12" fill="#101828">sanidi_tiktokadvertisementdailyinsightid</text>
+<text x="2540" y="1167" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="2568" y="1167" font-size="12" fill="#101828">sanidi_tiktokadvertisement</text>
+<text x="2890" y="1167" font-size="10.5" fill="#667085" text-anchor="end">→ Advertisement</text>
+<text x="2540" y="1189" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="2568" y="1189" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="2890" y="1189" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="2540" y="1211" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2568" y="1211" font-size="12" fill="#101828">sanidi_date</text>
+<text x="2890" y="1211" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="2533" y="1218" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2540" y="1233" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2568" y="1233" font-size="12" fill="#101828">sanidi_day</text>
+<text x="2890" y="1233" font-size="10.5" fill="#667085" text-anchor="end">whole number 1-31</text>
+<rect x="2533" y="1240" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2540" y="1255" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2568" y="1255" font-size="12" fill="#101828">sanidi_month</text>
+<text x="2890" y="1255" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="2533" y="1262" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2540" y="1277" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2568" y="1277" font-size="12" fill="#101828">sanidi_year</text>
+<text x="2890" y="1277" font-size="10.5" fill="#667085" text-anchor="end">whole number</text>
+<rect x="2533" y="1284" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2540" y="1299" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2568" y="1299" font-size="12" fill="#101828">sanidi_weekday</text>
+<text x="2890" y="1299" font-size="10.5" fill="#667085" text-anchor="end">choice Weekday</text>
+<rect x="2530" y="1328" width="370" height="186" rx="6" fill="#fff" stroke="#111111" stroke-width="1.5"/>
+<path d="M2530 1334 a6 6 0 0 1 6 -6 h358 a6 6 0 0 1 6 6 v40 h-370 z" fill="#111111"/>
+<text x="2540" y="1347" font-size="14" font-weight="700" fill="#fff">TikTok Advertisement Monthly Insight</text>
+<text x="2540" y="1365" font-size="11.5" fill="#fff" opacity=".85">sanidi_tiktokadvertisementmonthlyinsight</text>
+<text x="2540" y="1393" font-size="10.5" font-weight="700" fill="#B42318">PK</text>
+<text x="2568" y="1393" font-size="12" fill="#101828">sanidi_tiktokadvertisementmonthlyinsightid</text>
+<text x="2540" y="1415" font-size="10.5" font-weight="700" fill="#175CD3">FK</text>
+<text x="2568" y="1415" font-size="12" fill="#101828">sanidi_tiktokadvertisement</text>
+<text x="2890" y="1415" font-size="10.5" fill="#667085" text-anchor="end">→ Advertisement</text>
+<text x="2540" y="1437" font-size="10.5" font-weight="700" fill="#6941C6">AK</text>
+<text x="2568" y="1437" font-size="12" fill="#101828">sanidi_insightkey</text>
+<text x="2890" y="1437" font-size="10.5" fill="#667085" text-anchor="end">&lt;platform ID&gt;_&lt;period&gt;</text>
+<text x="2540" y="1459" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2568" y="1459" font-size="12" fill="#101828">sanidi_date</text>
+<text x="2890" y="1459" font-size="10.5" fill="#667085" text-anchor="end">date only</text>
+<rect x="2533" y="1466" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2540" y="1481" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2568" y="1481" font-size="12" fill="#101828">sanidi_month</text>
+<text x="2890" y="1481" font-size="10.5" fill="#667085" text-anchor="end">choice Month</text>
+<rect x="2533" y="1488" width="364" height="20" rx="3" fill="#FFF1C2"/>
+<text x="2540" y="1503" font-size="10.5" font-weight="700" fill="#475467"></text>
+<text x="2568" y="1503" font-size="12" fill="#101828">sanidi_year</text>
+<text x="2890" y="1503" font-size="10.5" fill="#667085" text-anchor="end">whole number</text></svg></body></html>
