@@ -77,12 +77,12 @@ def to_excel(path, title, subtitle, sections, notes):
         for row in rows:
             ws.append([number(c) for c in row])
             total = plain(row[0]) == "Total"
-            for c in ws[ws.max_row]:
+            for c in ws[ws.max_row][:len(row)]:
                 c.border = border
                 if isinstance(c.value, int):
                     c.number_format = "#,##0"
                     c.alignment = Alignment(horizontal="right")
-                if total or is_bold(row[c.column - 1]) and c.column == len(row) - (2 if len(row) > 6 else 0):
+                if total or is_bold(row[c.column - 1]):
                     c.font = Font(bold=True)
                 if total:
                     c.fill = total_fill
@@ -128,7 +128,7 @@ def to_word(path, title, subtitle, sections, notes):
             for i, value in enumerate(row):
                 para = cells[i].paragraphs[0]
                 run = para.add_run(plain(value)); run.bold = is_bold(value) or total
-                if i > 0:
+                if isinstance(number(value), int) or plain(value) == "–":
                     para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 if total:
                     shade(cells[i], "F2F4F7")
@@ -148,7 +148,8 @@ def to_pdf(path, title, subtitle, sections, notes):
                      "".join(f"<th>{html.escape(h)}</th>" for h in header) + "</tr>")
         for row in rows:
             cls = " class=total" if plain(row[0]) == "Total" else ""
-            parts.append(f"<tr{cls}>" + "".join(f"<td>{bold(c)}</td>" for c in row) + "</tr>")
+            parts.append(f"<tr{cls}>" + "".join(f"<td class=num>{bold(c)}</td>" if isinstance(number(c), int) or plain(c) == "–"
+                                         else f"<td>{bold(c)}</td>" for c in row) + "</tr>")
         parts.append("</table>")
     parts.append("<h2>Notes</h2><ul>" + "".join(f"<li>{bold(n)}</li>" for n in notes) + "</ul>")
     page = path.with_suffix(".print.html")
@@ -160,7 +161,8 @@ h1 { font-size: 20px; margin: 0 0 4px; } h2 { font-size: 14px; margin: 18px 0 6p
 table { border-collapse: collapse; width: 100%; }
 th, td { border: 1px solid #D0D5DD; padding: 5px 8px; }
 th { background: #344054; color: #fff; text-align: center; }
-td:not(:first-child) { text-align: right; }
+td.num { text-align: right; }
+h2 { break-after: avoid; } table { break-inside: avoid; }
 tr.total td { background: #F2F4F7; font-weight: 700; }
 li { margin: 3px 0; }
 </style></head><body>""" + "".join(parts) + "</body></html>", encoding="utf-8")
