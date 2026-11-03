@@ -126,55 +126,10 @@
      },
      "inputs": "@formatDateTime(outputs('Today'), 'yyyy-MM-01')"
     },
-    "Previous_month": {
-     "type": "Compose",
-     "runAfter": {
-      "This_month": [
-       "Succeeded"
-      ]
-     },
-     "inputs": "@formatDateTime(addToTime(outputs('This_month'), -1, 'Month'), 'yyyy-MM-dd')"
-    },
-    "Month_before_previous": {
-     "type": "Compose",
-     "runAfter": {
-      "Previous_month": [
-       "Succeeded"
-      ]
-     },
-     "inputs": "@formatDateTime(addToTime(outputs('This_month'), -2, 'Month'), 'yyyy-MM-dd')"
-    },
-    "Last_day_of_month": {
-     "type": "Compose",
-     "runAfter": {
-      "Month_before_previous": [
-       "Succeeded"
-      ]
-     },
-     "inputs": "@addDays(addToTime(outputs('This_month'), 1, 'Month'), -1)"
-    },
-    "Last_friday_of_month": {
-     "type": "Compose",
-     "runAfter": {
-      "Last_day_of_month": [
-       "Succeeded"
-      ]
-     },
-     "inputs": "@formatDateTime(addDays(outputs('Last_day_of_month'), mul(-1, mod(add(sub(dayOfWeek(outputs('Last_day_of_month')), 5), 7), 7))), 'yyyy-MM-dd')"
-    },
-    "Months_closed_through": {
-     "type": "Compose",
-     "runAfter": {
-      "Last_friday_of_month": [
-       "Succeeded"
-      ]
-     },
-     "inputs": "@if(greaterOrEquals(ticks(outputs('Today')), ticks(outputs('Last_friday_of_month'))), outputs('Previous_month'), outputs('Month_before_previous'))"
-    },
     "Earliest": {
      "type": "Compose",
      "runAfter": {
-      "Months_closed_through": [
+      "This_month": [
        "Succeeded"
       ]
      },
@@ -600,8 +555,7 @@
       },
       "body": {
        "start_date": "@outputs('Monthly_from')",
-       "end_date": "@outputs('Today')",
-       "closed_through": "@outputs('Months_closed_through')"
+       "end_date": "@outputs('Today')"
       },
       "retryPolicy": {
        "type": "none"

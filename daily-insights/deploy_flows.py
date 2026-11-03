@@ -103,6 +103,10 @@ def name_run(p):
 
 
 SCHEDULER = "Social Media - Scheduled Sync"
+CLOSER = "Social Media - Close Monthly Insights"
+# Days after a month ends that a platform can still change its numbers (PLAN.md §5.4): Snap finalizes after 48 hours,
+# Meta and TikTok change up to 28 days, Google Ads conversions up to 90 days.
+LATE_DAYS = {"snap": 2, "meta": 28, "tiktok": 28, "google": 90}
 
 
 # ---- building blocks --------------------------------------------------------------------------------------------
@@ -249,7 +253,9 @@ def common_fields(t, parent, platform_id, date, monthly, closed_through, no_data
         "item/sanidi_date": f"@{date}",
         "item/sanidi_month": f"@int(formatDateTime({date}, 'MM'))",
         "item/sanidi_year": f"@int(formatDateTime({date}, 'yyyy'))",
-        "item/sanidi_periodclosed": f"@if(empty({closed_through}), false, lessOrEquals(ticks({date}), ticks({closed_through})))",
+        # Months are closed only by Social Media - Close Monthly Insights; a sync creates them open.
+        "item/sanidi_periodclosed": (False if monthly else
+                                     f"@if(empty({closed_through}), false, lessOrEquals(ticks({date}), ticks({closed_through})))"),
         "item/sanidi_nodata": no_data,
         "item/sanidi_lastsyncedon": "@utcNow()",
         f"item/{t['lookup']}@odata.bind": f"/{p['set']}(@{{{parent}?['{PREFIX_PK(t['key'])}']}})",
@@ -288,7 +294,8 @@ def upsert(t, tag, row, platform_id, date, metrics, monthly, closed_through, raw
                     "type": "If", "runAfter": after(f"Key_{tag}"),
                     "expression": {"and": [{"not": {"equals": [f"@coalesce({existing_map}?[{key}], '')", ""]}}]},
                     "actions": {f"Update_{tag}": op("dv", "UpdateOnlyRecord", {
-                        "entityName": child_set, "recordId": f"@{existing_map}?[{key}]", **fields})},
+                        "entityName": child_set, "recordId": f"@{existing_map}?[{key}]",
+                        **{k: v for k, v in fields.items() if not (monthly and k == "item/sanidi_periodclosed")}})},
                     "else": {"actions": {f"Create_{tag}": op("dv", "CreateRecord", {
                         "entityName": child_set, **fields})}}},
                 f"Count_written_{tag}": incr("Written", after(f"If_exists_{tag}")),
@@ -638,10 +645,11 @@ def insight_flow(platform, monthly):
     fields = {
         "start_date": ("Start date", "string", "First day (YYYY-MM-DD); for monthly, any day of the first month.", True),
         "end_date": ("End date", "string", "Last day (YYYY-MM-DD), inclusive; usually today.", True),
-        "closed_through": ("Closed through", "string",
-                           "Rows dated on or before this date get Period Closed = Yes (YYYY-MM-DD, may be empty).",
-                           False),
     }
+    if not monthly:
+        fields["closed_through"] = ("Closed through", "string",
+                                    "Rows dated on or before this date get Period Closed = Yes (YYYY-MM-DD, may be empty).",
+                                    False)
     actions = {
         "Init_written": init("Written", "integer", 0),
         "Init_skipped": init("Skipped", "integer", 0),
@@ -712,15 +720,6 @@ def run_sync_flow(platform):
         "Today": compose(f"@formatDateTime(convertFromUtc(utcNow(), '{TZ}'), 'yyyy-MM-dd')"),
         "Two_days_ago": compose("@formatDateTime(addDays(outputs('Today'), -2), 'yyyy-MM-dd')"),
         "This_month": compose("@formatDateTime(outputs('Today'), 'yyyy-MM-01')"),
-        "Previous_month": compose("@formatDateTime(addToTime(outputs('This_month'), -1, 'Month'), 'yyyy-MM-dd')"),
-        "Month_before_previous": compose("@formatDateTime(addToTime(outputs('This_month'), -2, 'Month'), 'yyyy-MM-dd')"),
-        "Last_day_of_month": compose("@addDays(addToTime(outputs('This_month'), 1, 'Month'), -1)"),
-        "Last_friday_of_month": compose(
-            "@formatDateTime(addDays(outputs('Last_day_of_month'), mul(-1, mod(add(sub(dayOfWeek("
-            "outputs('Last_day_of_month')), 5), 7), 7))), 'yyyy-MM-dd')"),
-        # The previous month is closed from the current month's last Friday on (PLAN.md §5.4).
-        "Months_closed_through": compose("@if(greaterOrEquals(ticks(outputs('Today')), ticks(outputs('Last_friday_of_month'))), "
-                                         "outputs('Previous_month'), outputs('Month_before_previous'))"),
     }
     if platform in ("meta", "google"):
         a["Earliest"] = compose("@formatDateTime(addDays(addToTime(outputs('Today'), -37, 'Month'), 1), 'yyyy-MM-dd')")
@@ -812,8 +811,8 @@ def run_sync_flow(platform):
         "closed_through": "@outputs('Two_days_ago')"}, after("Count_Lifetime_insights", statuses=ALL))
     a.update(log("Daily_insights", {}, counts=True))
     a["Monthly_insights"] = child("Monthly_insights", flow_id(name_monthly(platform)), {
-        "start_date": "@outputs('Monthly_from')", "end_date": "@outputs('Today')",
-        "closed_through": "@outputs('Months_closed_through')"}, after("Count_Daily_insights", statuses=ALL))
+        "start_date": "@outputs('Monthly_from')", "end_date": "@outputs('Today')"},
+        after("Count_Daily_insights", statuses=ALL))
     a.update(log("Monthly_insights", {}, counts=True))
     a["Respond_to_a_Power_App_or_flow"] = respond({
         "status": "@{if(greater(variables('FailedSteps'), 0), 'Failed', 'Succeeded')}",
@@ -822,7 +821,7 @@ def run_sync_flow(platform):
 
 
 def scheduler_flow():
-    """05:00, 08:00, 12:00, 16:00 Riyadh: one Integration Sync Request per platform that is set up and active."""
+    """05:00 Riyadh: one Integration Sync Request per platform that is set up and active."""
     a = {
         "Now": compose(f"@convertFromUtc(utcNow(), '{TZ}')"),
         "Morning_run": compose("@equals(formatDateTime(outputs('Now'), 'HH'), '05')"),
@@ -854,6 +853,46 @@ def scheduler_flow():
     return definition(None, triggers, a, ["dv"])
 
 
+def closer_flow():
+    """1st of every month, 05:00 Riyadh: sets Period Closed = Yes on every open monthly insight row whose month ended
+    at least the platform's late-update days ago. Only Dataverse: no sync request, platform call or sync flow."""
+    a = {
+        "Today": compose(f"@formatDateTime(convertFromUtc(utcNow(), '{TZ}'), 'yyyy-MM-dd')"),
+        "Init_log": init("Log", "string", ""),
+    }
+    chain(a)
+    prev = "Init_log"
+    for platform, levels in LEVELS.items():
+        days = LATE_DAYS[platform]
+        cutoff = f"Close_before_{platform}"
+        # A month is closed when month end + days <= today, i.e. its first day < first day of (today + 1 - days).
+        a[cutoff] = compose(f"@formatDateTime(addDays(outputs('Today'), {1 - days}), 'yyyy-MM-01')",
+                            after(prev, statuses=ALL))
+        prev = cutoff
+        for parent_key, _, _ in levels:
+            t = spec.tables()[f"sanidi_{parent_key}monthlyinsight"]
+            table, pk = t["schema"] + "s", f"sanidi_{parent_key}monthlyinsightid"
+            lst, loop = f"List_open_{parent_key}", f"Close_{parent_key}"
+            a[lst] = op("dv", "ListRecords", {
+                "entityName": table, "$select": pk,
+                "$filter": f"sanidi_periodclosed eq false and sanidi_date lt @{{outputs('{cutoff}')}}"},
+                after(prev, statuses=ALL), paginate=True)
+            a[loop] = foreach(f"@outputs('{lst}')?['body/value']", {
+                f"Close_row_{parent_key}": op("dv", "UpdateOnlyRecord", {
+                    "entityName": table, "recordId": f"@items('{loop}')?['{pk}']",
+                    "item/sanidi_periodclosed": True})}, after(lst), ROW_CONCURRENCY)
+            note = f"Log_{parent_key}"
+            a[note] = {"type": "AppendToStringVariable", "runAfter": after(loop, statuses=ALL), "inputs": {
+                "name": "Log", "value": f"@{{concat('{parent_key}: ', actions('{loop}')?['status'], ', ', "
+                                        f"string(length(coalesce(outputs('{lst}')?['body/value'], json('[]')))), "
+                                        f"' closed before ', outputs('{cutoff}'), decodeUriComponent('%0A'))}}"}}
+            prev = note
+    triggers = {"Recurrence": {"type": "Recurrence", "recurrence": {
+        "frequency": "Month", "interval": 1, "timeZone": TZ,
+        "schedule": {"monthDays": [1], "hours": ["5"], "minutes": [0]}}}}
+    return definition(None, triggers, a, ["dv"])
+
+
 def all_flows():
     flows = {}
     for p in LEVELS:
@@ -867,9 +906,11 @@ def all_flows():
         flows[name_run(p)] = (lambda p=p: run_sync_flow(p),
                               f"Child flow run by Sync Control - Run Sync Request: one {NAMES[p]} sync request in "
                               "order (data and its cascade, lifetime, daily and monthly insights), each step logged.")
-    flows[SCHEDULER] = (scheduler_flow, "Every day at 05:00, 08:00, 12:00 and 16:00 (Riyadh): creates one "
-                                        "Integration Sync Request per active platform (05:00: data and all insights; "
-                                        "otherwise today, the current month and lifetime).")
+    flows[SCHEDULER] = (scheduler_flow, "Every day at 05:00 (Riyadh): creates one Integration Sync "
+                                        "Request per active platform (data and all insights).")
+    flows[CLOSER] = (closer_flow, "1st of every month at 05:00 (Riyadh): sets Period Closed = Yes on monthly insight "
+                                  "rows once the platform can no longer change them (Snap 2 days, Meta and TikTok 28 "
+                                  "days, Google Ads 90 days after the month ends). Not part of the syncs.")
     return flows
 
 
