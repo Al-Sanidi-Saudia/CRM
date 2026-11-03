@@ -54,7 +54,8 @@ def is_bold(text):
 
 def number(text):
     t = re.sub(r"\s*\(.*\)$", "", plain(text)).replace(",", "")  # '46 (ad sets)' -> 46
-    return int(t) if t.isdigit() else plain(text)
+    # Counts only: long digit strings are platform IDs and stay text.
+    return int(t) if t.isdigit() and len(t) <= 9 else plain(text)
 
 
 def to_excel(path, title, subtitle, sections, notes):
