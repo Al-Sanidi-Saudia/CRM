@@ -4,7 +4,7 @@
   Get <Platform> Monthly Insights   child flow: monthly rows for a month range (all levels), empty months included
   <Platform> - Run Sync             child flow: runs the steps of one sync request in order (data, wait, lifetime,
                                     daily, monthly) and reports each step
-  Social Media - Scheduled Sync     recurrence 05:00 / 08:00 / 12:00 / 16:00 (Riyadh): one sync request per platform
+  Social Media - Scheduled Sync     recurrence 05:00 (Riyadh): one sync request per platform
 
   python3 deploy_flows.py                       # write flows/*.json for review
   python3 deploy_flows.py --apply               # create the flows that don't exist yet (turned off)
@@ -850,7 +850,7 @@ def scheduler_flow():
         })}, after("List_platforms"), 4)
     triggers = {"Recurrence": {"type": "Recurrence", "recurrence": {
         "frequency": "Day", "interval": 1, "timeZone": TZ,
-        "schedule": {"hours": ["5", "8", "12", "16"], "minutes": [0]}}}}
+        "schedule": {"hours": ["5"], "minutes": [0]}}}}
     return definition(None, triggers, a, ["dv"])
 
 

@@ -33,10 +33,7 @@
       "timeZone": "Arab Standard Time",
       "schedule": {
        "hours": [
-        "5",
-        "8",
-        "12",
-        "16"
+        "5"
        ],
        "minutes": [
         0
