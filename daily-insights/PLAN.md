@@ -1,7 +1,7 @@
 # Social Media Daily and Monthly Insights: feasibility study and plan (AlSanidi-UAT)
 
 Status: **built in UAT (2026-10-29 → 2026-10-31): steps 1–12 done, full load finished, Social Media - Scheduled Sync
-turned on 2026-10-31 (first run 05:00 Riyadh).** Production is a separate request (decision 31). See §6 for the
+turned on 2026-10-31; scheduling revised 2026-11-03 (§5).** Production is a separate request (decision 31). See §6 for the
 results and for what differs from the plan below.
 The plan below was written before the build. It is based on read-only checks of UAT (tables, connectors, flows)
 and on each platform's official API documentation only.
@@ -38,9 +38,9 @@ Goal, for Meta, Snap, TikTok and Google Ads:
 | 13 | Months with no activity | **A month row is created even when there is no data**, so Power BI has no gaps: every month from the item's start month to the current (or end) month, metrics blank, **No Data** = Yes (may change later). Days with no activity get no row (§5.5) |
 | 14 | Daily history | **One full load per environment** (Sync Control *Update All Time*, from **Full Load From**), then the scheduler |
 | 15 | Monthly history | Same as 14 |
-| 16 | Daily refresh window | **3 days** at 05:00 (today, yesterday, the day before); today only at 08:00 / 12:00 / 16:00; last 28 days (Google Ads 90) on Fridays (§5) |
-| 17 | Previous month refresh | Reloaded every Friday (with the current month) until it is closed on the current month's last Friday; Google Ads reloads every month its 90 days touch (§5) |
-| 18 | Schedule | **05:00** daily (data + all insights), **08:00 / 12:00 / 16:00** (lifetime, today, current month), **Friday** reloads, last Friday closes the previous month (§5) |
+| 16 | Daily refresh window | **3 days** at 05:00 (today, yesterday, the day before); last 28 days (Google Ads 90) on Fridays (§5; 08:00 / 12:00 / 16:00 runs cancelled 2026-11-03) |
+| 17 | Previous month refresh | Every Friday reloads the current month and the 3 before it, every platform; months are closed by their own flow on the 1st once the platform's late-update window has passed (§5.4, revised 2026-11-03) |
+| 18 | Schedule | **05:00** daily (data + all insights), **Friday** reloads, **1st of the month** month closing in a separate flow (§5, revised 2026-11-03) |
 | 19 | Snap calls | **Option B**: add account-level calls to the Snap connector where Snap allows them (§1.3, explained) |
 | 20 | Meta connector | **Exported to the repo** (`connectors/meta-ads/`) before it is changed |
 | 21 | Sync Control | **3 buttons** per platform: *Data* (existing), *Update Day & Month to Date* (replaces *Insights*), *Update All Time* with an *Insights Only* / *Data and Insights* pop-up and **Full Load From** on the Integration Platform row (§3.3) |
@@ -293,8 +293,7 @@ Changes:
   - Sync Type gets new values: *Day & Month to Date*, *All Time*, *Scheduled Daily (05:00)*, *Scheduled Intraday*.
     The existing *Insights* value is kept for the history rows; the page no longer creates it.
   - New columns: **Include Data** (Yes/No, the pop-up's answer), **Triggered By** (Button / Schedule), **Weekly Run**
-    (Yes on Friday's 05:00 run), **Close Previous Month** (Yes on the last Friday of the month), **Steps Log** (text:
-    counts and timing per step).
+    (Yes on Friday's 05:00 run), **Steps Log** (text: counts and timing per step).
   - Status gets a new value: **Skipped** (§5.3).
 - **Page** (`sync-control.tsx`): the 3 buttons, the pop-up, and scheduled runs shown on the cards like button runs.
   Notifications are unchanged: only the person who pressed a button is notified (decision 22).
@@ -360,24 +359,27 @@ The 13 tables hold 3,669 items today: Meta 218, Snap 1,387, Google Ads 313, TikT
 
 ---
 
-## 5. Scheduling (agreed)
+## 5. Scheduling (agreed; revised 2026-11-03)
 
-All times are Riyadh time. "Today" and every date in a request are in the ad account's time zone (Google Ads and
-TikTok accounts are Asia/Riyadh; Meta and Snap are confirmed in the live check). The 4 platforms run in parallel; the
-steps of one platform run one after the other.
+All times are Riyadh time. "Today" and every date in a request are in the ad account's time zone (all four
+platforms' accounts are Asia/Riyadh). The 4 platforms run in parallel; the steps of one platform run one after the
+other.
+
+Revision of 3 November 2026: the 08:00, 12:00 and 16:00 runs are cancelled; the Friday run reloads the current month
+and the 3 before it; months are closed by their own flow on the 1st of the month (§5.4), no longer by the syncs.
 
 ### 5.1 When
 
-| When | Steps per platform |
-|---|---|
-| **Every day 05:00** | 1. **Data** (campaigns → cascade), then wait for the cascade (§5.2). 2. **Lifetime** insights on the main tables. 3. **Daily**: today (partial), yesterday, the day before yesterday; the day before yesterday gets Period Closed. 4. **Monthly**: every month those 3 days touch (normally the current month; on the 1st and 2nd also the previous month). |
-| **+ on Fridays (05:00 run)** | 5. **Daily** reload of the last **28 days** (Google Ads: **90 days**). 6. **Monthly** reload of the current and previous month (Google Ads: every month the 90 days touch). |
-| **+ on the last Friday of the month** | 7. The **previous month** gets Period Closed (after step 6 reloaded it). Example: September is closed on Friday 30 October. |
-| **08:00, 12:00, 16:00** | **Lifetime** insights; **daily**: today (partial); **monthly**: the current month. No data sync. |
+| When | Flow | Steps per platform |
+|---|---|---|
+| **Every day 05:00** | Social Media - Scheduled Sync | 1. **Data** (campaigns → cascade), then wait for the cascade (§5.2). 2. **Lifetime** insights on the main tables. 3. **Daily**: today (partial), yesterday, the day before yesterday; the day before yesterday gets Period Closed. 4. **Monthly**: every month those 3 days touch (normally the current month; on the 1st and 2nd also the previous month). |
+| **+ on Fridays (05:00 run)** | Social Media - Scheduled Sync | 5. **Daily** reload of the last **28 days** (Google Ads: **90 days**). 6. **Monthly** reload of the **current month and the 3 before it**, every platform (e.g. Friday 6 November: November month to date, October, September, August), which covers Google Ads' 90-day window. |
+| **1st of the month 05:00** | Social Media - Close Monthly Insights | **Closes months** (§5.4). Dataverse only: no sync request, platform call or sync flow. |
 
-The scheduler flow runs at 05:00, 08:00, 12:00 and 16:00. For each platform with *Set Up* = Yes and *Connection
-Active* not No, it creates one *Integration Sync Request* (Triggered By = Schedule; Weekly Run / Close Previous Month
-set on Fridays). The dispatcher runs it like a button press.
+The scheduler flow runs at 05:00. For each platform with *Set Up* = Yes and *Connection Active* not No, it creates
+one *Integration Sync Request* (Scheduled Daily, Triggered By = Schedule; *Weekly Run* on Fridays). The dispatcher
+runs it like a button press. Between runs, the Sync Control page's *Day & Month to Date* button refreshes lifetime,
+today and the current month on demand.
 
 ### 5.2 Order inside one run (\<Platform\> - Run Sync)
 
@@ -386,8 +388,9 @@ set on Fridays). The dispatcher runs it like a button press.
    data flows has a run in progress (checked every 2 minutes, two quiet checks in a row, at most 30 minutes). After 30
    minutes it continues and writes a warning in Steps Log.
 2. **Lifetime**: runs Get \<Platform\> Insights (unchanged flow).
-3. **Daily**: runs Get \<Platform\> Daily Insights with the date range.
-4. **Monthly**: runs Get \<Platform\> Monthly Insights with the months.
+3. **Daily**: runs Get \<Platform\> Daily Insights with the date range and the day it closes through.
+4. **Monthly**: runs Get \<Platform\> Monthly Insights with the months. New month rows are created open; a reload
+   never changes Period Closed.
 5. Writes Steps Log and the request status. A failed step is recorded and the run continues with the next step; the
    request ends **Failed** if any step failed.
 
@@ -401,30 +404,43 @@ set on Fridays). The dispatcher runs it like a button press.
 
 ### 5.4 Period Closed
 
-The same rules everywhere (scheduler and buttons):
-- **Day**: closed when it is the day before yesterday or older.
-- **Month**: closed when it is older than the previous month; the **previous month** is closed once the current month's
-  last Friday has come (the scheduler closes it on that Friday; a button run after that date closes it too).
-- Today and the current month are never closed.
-- Closed means the period is over and was refreshed after it ended. The platforms can still change older numbers
-  (Meta up to 28 days, Google Ads conversions up to 90 days), which the Friday reloads pick up.
+- **Day** (set by the syncs): closed when it is the day before yesterday or older. Today and yesterday are open.
+- **Month** (set only by **Social Media - Close Monthly Insights**, 1st of the month 05:00): a month is closed once the
+  platform can no longer change its numbers, that is once the month's end plus the platform's late-update window has
+  passed; it closes on the first 1st-of-month run after that.
+
+| Platform | Late-update window (official docs) | November 2026 closes on | Open months on 1 Dec 2026 |
+|---|---|---|---|
+| Snapchat | finalized after 48 hours | 1 Jan 2027 | Nov, Dec |
+| Meta | up to 28 days | 1 Jan 2027 | Nov, Dec |
+| TikTok | treated like Meta: 28 days | 1 Jan 2027 | Nov, Dec |
+| Google Ads | conversions up to 90 days | 1 Mar 2027 | Sep, Oct, Nov, Dec |
+
+- The flow sets Period Closed = Yes on every open monthly row whose month starts before the first day of the month
+  of (today + 1 − window days). A month row created later for an older month (e.g. a new item's full load) is closed
+  by the next run.
+- Today's month is never closed. The Friday reload (current month and the 3 before it) refreshes every month still
+  open, Google Ads included.
+- Applied on 3 November 2026: the Google Ads August and September 2026 rows (388) closed by the old rule were reopened.
 
 ### 5.5 Empty month rows
 
 - Every item in the 13 tables gets a row for **every month from its start month** (its platform start or create date)
   **to the current month**; for an item with an end date, up to its end month.
-- A month the platform returns nothing for gets a row with **blank** metrics and **No Data** = Yes.
+- A month the platform returns nothing for gets a row with **blank** metrics and **No Data** = Yes. A later reload that
+  finds data sets No Data back to No (8 items have data again after empty months: paused and restarted campaigns).
 - Days with no activity get no daily row.
 
 ### 5.6 What each sync type covers
 
-| Sync type | Data | Lifetime | Daily | Monthly | Closes |
+| Sync type | Data | Lifetime | Daily | Monthly | Closes days |
 |---|---|---|---|---|---|
 | Scheduled Daily (05:00) | Yes | Yes | D-2 … today | Months of D-2 … today | Day D-2 |
-| + Weekly (Friday) | | | + last 28 days (Google Ads 90) | + current and previous month (Google Ads: months of the 90 days) | + previous month on the last Friday |
-| Scheduled Intraday (08/12/16) | No | Yes | Today | Current month | Nothing |
-| Day & Month to Date (button) | No | Yes | D-2 … today | Months of D-2 … today | Per §5.4 |
-| All Time (button) | Pop-up choice | Yes | Full Load From … today | Its month … current month | Per §5.4 |
+| + Weekly (Friday) | | | + last 28 days (Google Ads 90) | Current month and the 3 before it | |
+| Day & Month to Date (button) | No | Yes | D-2 … today | Months of D-2 … today | Day D-2 |
+| All Time (button) | Pop-up choice | Yes | Full Load From … today | Its month … current month | Day D-2 |
+
+Months are closed by none of these: only by Social Media - Close Monthly Insights (§5.4).
 
 ---
 
@@ -456,7 +472,8 @@ Found during the full load and fixed in the flows (2026-10-31):
   until they were shared, so the checks were done in step 7's tests instead.
 - **Connectors:** saved in the **AlSanidi | Marketing Connectors** solution (where they already were), not in the
   new patch.
-- **Close Previous Month:** no separate column. The last Friday of the month closes the previous month (§5.4).
+- **Close Previous Month:** no column. Months were first closed by the last Friday's run; since 2026-11-03 they are
+  closed by Social Media - Close Monthly Insights on the 1st (§5.4).
 - **Days without delivery:** no daily row (impressions = 0 and spend = 0 are skipped on every platform; TikTok
   returns zero rows for every item otherwise).
 - **Snap reach before 2021:** left blank (§6.1).

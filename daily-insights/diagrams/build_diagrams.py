@@ -223,7 +223,8 @@ def mechanism():
         ("3. Daily", "every run", "Get &lt;Platform&gt; Daily Insights (start date, end date, closed through): one row "
          "per item and day with delivery."),
         ("4. Monthly", "every run", "Get &lt;Platform&gt; Monthly Insights (first month, last month): one row per item and "
-         "month from the source; months without data get an empty row (No Data = Yes)."),
+         "month from the source; months without data get an empty row (No Data = Yes). New rows are created open; "
+         "a reload never changes Period Closed."),
         ("5. Result", "every run", "Steps Log and status on the Integration Sync Request (Succeeded / Failed / "
          "Skipped). A failed step is logged and the next step still runs."),
     ]
@@ -232,19 +233,22 @@ def mechanism():
         for s, w, d in steps)
     cover = """
 <table>
-<tr><th>Sync type</th><th>Data</th><th>Lifetime</th><th>Daily</th><th>Monthly</th><th>Period Closed</th></tr>
-<tr><td><b>Scheduled Daily</b> (05:00)</td><td>Yes</td><td>Yes</td><td>D-2 … today</td><td>months of D-2 … today</td><td>day D-2</td></tr>
-<tr><td>+ <b>Weekly</b> (Friday 05:00)</td><td></td><td></td><td>+ last 28 days<br>(Google Ads 90)</td><td>+ current and previous month<br>(Google Ads: months of the 90 days)</td><td>+ previous month on the<br>last Friday of the month</td></tr>
-<tr><td><b>Scheduled Intraday</b> (08:00, 12:00, 16:00)</td><td>No</td><td>Yes</td><td>today</td><td>current month</td><td>nothing</td></tr>
-<tr><td><b>Day &amp; Month to Date</b> (button)</td><td>No</td><td>Yes</td><td>D-2 … today</td><td>months of D-2 … today</td><td>same rules</td></tr>
-<tr><td><b>All Time</b> (button, pop-up)</td><td>Insights Only: No<br>Data and Insights: Yes</td><td>Yes</td><td>Full Load From (or first campaign) … today</td><td>its month … current month</td><td>same rules</td></tr>
+<tr><th>Sync type</th><th>Data</th><th>Lifetime</th><th>Daily</th><th>Monthly</th><th>Closes</th></tr>
+<tr><td><b>Scheduled Daily</b> (05:00)</td><td>Yes</td><td>Yes</td><td>D-2 … today</td><td>months of D-2 … today</td><td style="white-space:nowrap">day D-2</td></tr>
+<tr><td>+ <b>Weekly</b> (Friday 05:00)</td><td></td><td></td><td>+ last 28 days<br>(Google Ads 90)</td><td>current month and<br>the 3 before it<br>(every platform)</td><td></td></tr>
+<tr><td><b>Day &amp; Month to Date</b> (button)</td><td>No</td><td>Yes</td><td>D-2 … today</td><td>months of D-2 … today</td><td style="white-space:nowrap">day D-2</td></tr>
+<tr><td><b>All Time</b> (button, pop-up)</td><td>Insights Only: No<br>Data and Insights: Yes</td><td>Yes</td><td>Full Load From (or first campaign) … today</td><td>its month … current month</td><td style="white-space:nowrap">day D-2</td></tr>
 </table>"""
     closed = """
 <table>
-<tr><th>Period Closed rules (scheduler and buttons)</th></tr>
-<tr><td>Day: closed when it is the day before yesterday (D-2) or older.</td></tr>
-<tr><td>Month: closed when older than the previous month; the previous month closes on the current month's last Friday.</td></tr>
-<tr><td>Today and the current month are never closed.</td></tr>
+<tr><th colspan="3">Period Closed</th></tr>
+<tr><td colspan="3"><b>Day</b> (by the syncs): closed when it is the day before yesterday (D-2) or older.</td></tr>
+<tr><td colspan="3"><b>Month</b> (only by <b>Social Media - Close Monthly Insights</b>, 1st of the month 05:00): closed once
+the month's end plus the platform's late-update window has passed.</td></tr>
+<tr><th>Platform</th><th>Late-update window</th><th>November 2026 closes on</th></tr>
+<tr><td>Snapchat</td><td>48 hours</td><td>1 Jan 2027</td></tr>
+<tr><td>Meta · TikTok</td><td>28 days</td><td>1 Jan 2027</td></tr>
+<tr><td>Google Ads</td><td>90 days (conversions)</td><td>1 Mar 2027</td></tr>
 </table>"""
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>{CSS}</style></head><body><div class="page">
 <h1>Social Media Daily &amp; Monthly Insights: sync mechanism</h1>
@@ -255,9 +259,9 @@ parallel; one platform never runs two syncs at once. All times are Riyadh time.<
  <div style="width:520px">
   <div style="display:flex; gap:12px">
    <div class="flow main" style="flex:1"><b>Social Media - Scheduled Sync</b>
-    <small>Recurrence: every day 05:00, 08:00, 12:00, 16:00</small>
-    <small>One request per platform with <i>Set Up</i> = Yes and <i>Connection Active</i> not No.<br>
-    05:00 → <b>Scheduled Daily</b> (with data; <i>Weekly Run</i> on Fridays)<br>08 / 12 / 16 → <b>Scheduled Intraday</b><br>
+    <small>Recurrence: every day 05:00</small>
+    <small>One request per platform with <i>Set Up</i> = Yes and <i>Connection Active</i> not No:
+    <b>Scheduled Daily</b> (with data; <i>Weekly Run</i> on Fridays)<br>
     Triggered By = Schedule (no notification)</small></div>
    <div class="flow main" style="flex:1"><b>Sync Control page</b>
     <small>Buttons per platform:<br>• <b>Data</b> (existing data sync)<br>• <b>Day &amp; Month to Date</b><br>
@@ -275,6 +279,11 @@ parallel; one platform never runs two syncs at once. All times are Riyadh time.<
   <div class="arrow">▼ one per platform, in parallel</div>
   <div class="flow run"><b>Meta - Run Sync · Snap - Run Sync · Google Ads - Run Sync · TikTok - Run Sync</b>
    <small>{platform_tags()}</small></div>
+  <div style="border-top:2px dashed #D0D5DD; margin:22px 0 14px"></div>
+  <div class="flow main"><b>Social Media - Close Monthly Insights</b> <small>(separate from the syncs)</small>
+   <small>Recurrence: 1st of every month 05:00. Dataverse only: no sync request, no platform call, no sync flow.<br>
+   Sets <b>Period Closed = Yes</b> on every open monthly insight row whose month ended at least the platform's
+   late-update window ago (Snapchat 2 days, Meta and TikTok 28, Google Ads 90).</small></div>
  </div>
  <div style="width:560px">
   <div style="font-size:16px; font-weight:700; margin:2px 0 10px">Inside &lt;Platform&gt; - Run Sync (in order)</div>
@@ -285,9 +294,8 @@ parallel; one platform never runs two syncs at once. All times are Riyadh time.<
   {cover}
   <div style="height:16px"></div>
   {closed}
-  <p class="note" style="margin-top:14px">D-2 = the day before yesterday. Platforms can still revise older numbers
-  (Meta up to 28 days, Google Ads conversions up to 90 days); the Friday reloads pick them up.
-  Days without delivery get no daily row.</p>
+  <p class="note" style="margin-top:14px">D-2 = the day before yesterday. The Friday reload (current month and the
+  3 before it) refreshes every month still open. Days without delivery get no daily row.</p>
  </div>
 </div></div></body></html>"""
 
@@ -309,43 +317,45 @@ def timetable():
         "run": ["Meta - Run Sync", "Snap - Run Sync", "Google Ads - Run Sync", "TikTok - Run Sync"],
     }
     cols = ["05:00<br><small>Sat – Thu</small>", "05:00<br><small>Friday</small>",
-            "05:00<br><small>last Friday of the month</small>", "08:00 · 12:00 · 16:00<br><small>every day</small>",
+            "05:00<br><small>1st of the month</small>",
             "Button<br><small>Data</small>", "Button<br><small>Day &amp; Month to Date</small>",
             "Button<br><small>All Time</small>"]
     Y = '<span class="y">●</span>'
     N = '<span class="n">–</span>'
     rows = [
         ("Main", "Social Media - Scheduled Sync", "Recurrence; creates one sync request per platform",
-         [Y + " Scheduled Daily", Y + " Scheduled Daily + Weekly Run", Y + " Scheduled Daily + Weekly Run",
-          Y + " Scheduled Intraday", N, N, N]),
+         [Y + " Scheduled Daily", Y + " Scheduled Daily + Weekly Run",
+          Y + " Scheduled Daily<br><small>(+ Weekly Run if a Friday)</small>", N, N, N]),
         ("Main", "Sync Control - Run Sync Request", "Dispatcher: runs when a sync request is created",
-         [Y] * 7),
+         [Y] * 6),
         ("Platform", " · ".join(names["run"]), "Run the steps below in order, one platform per flow",
-         [Y] * 4 + [N + "<br><small>the dispatcher calls Step 1 directly</small>", Y, Y]),
+         [Y] * 3 + [N + "<br><small>the dispatcher calls Step 1 directly</small>", Y, Y]),
         ("Step 1: Data", " · ".join(names["data"]), "Campaigns; starts the cascade below",
-         [Y, Y, Y, N, Y, N, Y + " with <i>Data and Insights</i>"]),
+         [Y, Y, Y, Y, N, Y + " with <i>Data and Insights</i>"]),
         ("cascade", " · ".join(names["child1"]), "Run on their own when their parent rows change",
-         [Y, Y, Y, N, Y, N, Y + " with <i>Data and Insights</i>"]),
+         [Y, Y, Y, Y, N, Y + " with <i>Data and Insights</i>"]),
         ("cascade", " · ".join(names["child2"]), "Run on their own when their parent rows change",
-         [Y, Y, Y, N, Y, N, Y + " with <i>Data and Insights</i>"]),
+         [Y, Y, Y, Y, N, Y + " with <i>Data and Insights</i>"]),
         ("Step 2: Lifetime", " · ".join(names["life"]), "Lifetime metrics on the 13 synced tables",
-         [Y] * 4 + [N, Y, Y]),
+         [Y] * 3 + [N, Y, Y]),
         ("Step 3: Daily", " · ".join(names["daily"]), "Daily insight tables",
          [Y + " D-2 … today<br><small>closes D-2</small>",
           Y + " last 28 days<br><small>Google Ads 90; closes D-2</small>",
-          Y + " last 28 days<br><small>Google Ads 90; closes D-2</small>",
-          Y + " today", N, Y + " D-2 … today", Y + " Full Load From … today"]),
-        ("Step 4: Monthly", " · ".join(names["monthly"]), "Monthly insight tables (empty months included)",
-         [Y + " months of D-2 … today", Y + " current + previous month<br><small>Google Ads: months of the 90 days</small>",
-          Y + " current + previous month<br><small>closes the previous month</small>",
-          Y + " current month", N, Y + " months of D-2 … today", Y + " every month from the start"]),
+          Y + " as that day's run", N, Y + " D-2 … today", Y + " Full Load From … today"]),
+        ("Step 4: Monthly", " · ".join(names["monthly"]), "Monthly insight tables (empty months included); never closes",
+         [Y + " months of D-2 … today", Y + " current month + the 3 before it<br><small>every platform</small>",
+          Y + " as that day's run", N, Y + " months of D-2 … today", Y + " every month from the start"]),
+        ("Closing", "Social Media - Close Monthly Insights",
+         "Separate from the syncs (Dataverse only): sets Period Closed on monthly rows",
+         [N, N, Y + " months past the late-update window<br><small>Snapchat 2 days · Meta, TikTok 28 · "
+          "Google Ads 90</small>", N, N, N]),
     ]
-    group_colour = {"Main": "#F4F3FF", "Platform": "#F2F4F7", "cascade": "#FCFCFD"}
+    group_colour = {"Main": "#F4F3FF", "Platform": "#F2F4F7", "cascade": "#FCFCFD", "Closing": "#FEF6EE"}
     body = []
     for group, flows, what, cells in rows:
         bg = group_colour.get(group, "#fff")
         label = "↳ cascade" if group == "cascade" else group
-        flows = "<br>".join(flows.split(" · ")) if group not in ("Main",) else flows
+        flows = "<br>".join(flows.split(" · ")) if group not in ("Main", "Closing") else flows
         body.append(f'<tr style="background:{bg}"><td class="g">{label}</td><td><b>{flows}</b><br>'
                     f'<small>{what}</small></td>' + "".join(f"<td class=c>{c}</td>" for c in cells) + "</tr>")
     head = "".join(f"<th class=c>{c}</th>" for c in cols)
@@ -361,8 +371,9 @@ small { color: #475467; }
 for all 4 platforms in parallel: {platform_tags()}. A sync that would overlap the same platform's running sync waits
 up to 60 minutes, then is Skipped. The Data button (data only) works as before: the dispatcher runs the campaigns flow directly.</p>
 <table><tr><th>Level</th><th>Flows (Meta · Snap · Google Ads · TikTok)</th>{head}</tr>{''.join(body)}</table>
-<p class="note" style="margin-top:12px">D-2 = the day before yesterday. Typical duration of a run in UAT: 05:00
-12 – 60 min, intraday 5 – 35 min per platform; an All Time full load takes hours (Snap / TikTok ≈ 19 h).</p>
+<p class="note" style="margin-top:12px">D-2 = the day before yesterday. Typical duration of a 05:00 run in UAT:
+12 – 60 min per platform; an All Time full load takes hours (Snap / TikTok ≈ 19 h). Revised 3 November 2026: no
+08:00 / 12:00 / 16:00 runs; months are closed only by Social Media - Close Monthly Insights.</p>
 </div></body></html>"""
 
 
