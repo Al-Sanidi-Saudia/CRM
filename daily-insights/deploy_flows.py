@@ -737,8 +737,8 @@ def run_sync_flow(platform):
         f"@if(equals({run_type}, 'alltime'), outputs('Full_load_from'), if(equals({run_type}, 'intraday'), "
         f"outputs('Today'), if({weekly}, formatDateTime(addDays(outputs('Today'), -{lookback}), 'yyyy-MM-dd'), "
         "outputs('Two_days_ago'))))")
-    previous_or_lookback = ("formatDateTime(addDays(outputs('Today'), -89), 'yyyy-MM-01')" if platform == "google"
-                            else "outputs('Previous_month')")
+    # Friday reload: the current month and the 3 before it, every platform (covers Google Ads' 90-day window).
+    previous_or_lookback = "formatDateTime(addToTime(outputs('This_month'), -3, 'Month'), 'yyyy-MM-dd')"
     a["Monthly_from"] = compose(
         f"@if(equals({run_type}, 'intraday'), outputs('This_month'), if(and({weekly}, not(equals({run_type}, 'alltime'))), "
         f"{previous_or_lookback}, formatDateTime(outputs('Daily_from'), 'yyyy-MM-01')))")

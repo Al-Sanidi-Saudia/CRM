@@ -241,7 +241,7 @@
        "Succeeded"
       ]
      },
-     "inputs": "@if(equals(triggerBody()?['run_type'], 'intraday'), outputs('This_month'), if(and(equals(triggerBody()?['weekly'], true), not(equals(triggerBody()?['run_type'], 'alltime'))), outputs('Previous_month'), formatDateTime(outputs('Daily_from'), 'yyyy-MM-01')))"
+     "inputs": "@if(equals(triggerBody()?['run_type'], 'intraday'), outputs('This_month'), if(and(equals(triggerBody()?['weekly'], true), not(equals(triggerBody()?['run_type'], 'alltime'))), formatDateTime(addToTime(outputs('This_month'), -3, 'Month'), 'yyyy-MM-dd'), formatDateTime(outputs('Daily_from'), 'yyyy-MM-01')))"
     },
     "Init_quiet_checks": {
      "type": "InitializeVariable",
