@@ -10,9 +10,10 @@ from dict4 import D as D4
 from dict_tiktok_caps import D as DTC
 from dict_tiktok import D as DT
 from dict_seasons import D as DS
+from dict_insights import D as DI
 
 DICT = {}
-for d in (DC, D1, D2, D3, D4, DTC, DT, DS):  # later wins
+for d in (DC, D1, D2, D3, D4, DTC, DT, DS, DI):  # later wins
     DICT.update(d)
 # Texts first added for TikTok: on other components they never replace Arabic that is already there.
 TIKTOK_ONLY = (set(DTC) | set(DT)) - set().union(DC, D1, D2, D3, D4)

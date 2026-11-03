@@ -1,0 +1,503 @@
+# Social Media Daily and Monthly Insights: feasibility study and plan (AlSanidi-UAT)
+
+Status: **built in UAT (2026-10-29 → 2026-10-31): steps 1–12 done, full load finished, Social Media - Scheduled Sync
+turned on 2026-10-31; scheduling revised 2026-11-03 (§5).** Production is a separate request (decision 31). See §6 for the
+results and for what differs from the plan below.
+The plan below was written before the build. It is based on read-only checks of UAT (tables, connectors, flows)
+and on each platform's official API documentation only.
+
+Environment: `https://operations-alsenidiuat.crm4.dynamics.com`
+Solution: **AlSanidi | Marketing** (`AlSanidiMarketing`), publisher prefix **`sanidi`**; delivered as a new patch.
+
+Goal, for Meta, Snap, TikTok and Google Ads:
+- **Daily:** one row per day per synced item (campaign / ad set, ad squad or ad group / asset group / ad), with that
+  day's statistics as the platform reports them.
+- **Monthly:** one row per month per synced item, with the month's statistics **as the platform reports them for the
+  month** (never summed from the daily rows).
+- The **driver is the 13 tables we already sync**: a row is written only for an item that exists in those tables, and
+  it is linked to that item.
+
+---
+
+## 0. Agreed decisions
+
+| # | Topic | Decision |
+|---|---|---|
+| 1 | Daily table design | **13 daily tables**, one per synced table (§3.1) |
+| 2 | Monthly table design | **13 separate monthly tables** (§3.1) |
+| 3 | Metrics | **All** the metrics we sync as lifetime insights today, on both daily and monthly tables (§1.4) |
+| 4 | Raw Payload | **Yes**: every row keeps the platform's original row as JSON |
+| 5 | Ownership | **User-owned** |
+| 6 | Driver | Confirmed: rows are written only for items that exist in the 13 tables; the others are skipped and counted |
+| 7 | Records in our tables | **Active and inactive** records |
+| 8 | Deleted / archived items on the platforms | **Included** (Meta `ad.effective_status` filter, TikTok `STATUS_ALL`) |
+| 9 | Levels | **All 13**, Google Ads Asset Groups included |
+| 10 | Ad accounts | The same accounts the current sync reads (existing environment variables and connections) |
+| 11 | Today's partial day | **Included**; overwritten by every run until the day is over (§5) |
+| 12 | Month to date | **Up to now, today included**; overwritten by every run until the month is over (§5) |
+| 13 | Months with no activity | **A month row is created even when there is no data**, so Power BI has no gaps: every month from the item's start month to the current (or end) month, metrics blank, **No Data** = Yes (may change later). Days with no activity get no row (§5.5) |
+| 14 | Daily history | **One full load per environment** (Sync Control *Update All Time*, from **Full Load From**), then the scheduler |
+| 15 | Monthly history | Same as 14 |
+| 16 | Daily refresh window | **3 days** at 05:00 (today, yesterday, the day before); last 28 days (Google Ads 90) on Fridays (§5; 08:00 / 12:00 / 16:00 runs cancelled 2026-11-03) |
+| 17 | Previous month refresh | Every Friday reloads the current month and the 3 before it, every platform; months are closed by their own flow on the 1st once the platform's late-update window has passed (§5.4, revised 2026-11-03) |
+| 18 | Schedule | **05:00** daily (data + all insights), **Friday** reloads, **1st of the month** month closing in a separate flow (§5, revised 2026-11-03) |
+| 19 | Snap calls | **Option B**: add account-level calls to the Snap connector where Snap allows them (§1.3, explained) |
+| 20 | Meta connector | **Exported to the repo** (`connectors/meta-ads/`) before it is changed |
+| 21 | Sync Control | **3 buttons** per platform: *Data* (existing), *Update Day & Month to Date* (replaces *Insights*), *Update All Time* with an *Insights Only* / *Data and Insights* pop-up and **Full Load From** on the Integration Platform row (§3.3) |
+| 22 | Notifications | **Nobody** for scheduled runs; the person who pressed the button for Sync Control runs (as today) |
+| 23 | Forms | **Daily Insights** and **Monthly Insights** subgrids on each of the 13 parent forms (Insights tab) |
+| 24 | Site map | New area **Social Media Insights** in the AlSanidi \| Marketing app, one group per platform with its daily and monthly tables (§3.1). The parent-form subgrids stay too |
+| 25 | Charts | **None for now** |
+| 26 | Security | **AlSanidi \| Marketing \| Manager**: Read, Append, Append To (organization) on the 26 tables. No other role for now. The role is in the solution, so its new privileges go in the patch |
+| 27 | Arabic | **Yes** (ar-SA, existing glossary) |
+| 28 | Solution | **New patch**: *AlSanidi \| Marketing \| Daily & Monthly Insights* |
+| 29 | Live check | **A temporary test flow in UAT**, deleted afterwards (§3.6 step 2) |
+| 30 | Approvals in UAT | **One approval for the whole UAT build**; a report after each step |
+| 31 | Production | **A separate request** after you confirm UAT |
+| 32 | Existing lifetime insights | **Unchanged**: lifetime *Get … Insights* flows, lifetime columns and the cost roll-up (their schedule is part of §5) |
+| 33 | Child data flow triggers | **Limited to the data columns**, so insights updates no longer start a data re-sync (§3.2) |
+| 34 | 05:00 order | Data → wait for the cascade (max 30 min) → lifetime → daily → monthly; platforms in parallel (§5.2) |
+| 35 | Overlaps | Scheduled runs go through *Integration Sync Request* and the dispatcher; one run per platform at a time (§5.3) |
+| 36 | Month change | The 05:00 monthly step covers every month the 3-day window touches (§5.1) |
+| 37 | Friday daily reload | Last 28 days (Google Ads 90), so daily rows stay consistent with the monthly ones (§5.1) |
+| 38 | Flag name | **Period Closed** (period over and refreshed after it ended; not "final") (§5.4) |
+| 39 | Intraday data sync | **None**: items created during the day get insights from the next 05:00 run |
+| 40 | Time zones | Each account's own time zone, as the API reports it (§5) |
+| 41 | Date-part columns | Daily: **Day**, **Month** (choice), **Year**, **Weekday** (choice). Monthly: **Month** (choice), **Year**. Set on every row from its date; choices numbered from 1 (§3.1) |
+| 42 | Forms, views, translation | Tidy main form and Active / Inactive views with the key insight fields on all 26 tables; everything translated to ar-SA (§3.1, §3.4) |
+| 43 | Patch | Everything built or changed goes into the new patch, ready for the Production request (§3.6) |
+
+---
+
+## 1. Feasibility study (official API documentation)
+
+### 1.1 Daily statistics: all 4 platforms provide them
+
+| Platform | Daily statistics? | How you ask for one row per day | Levels with daily data |
+|---|---|---|---|
+| **Meta** (Graph API v26.0) | **Yes** | Insights edge with `time_increment=1` ("number of days from 1 to 90") and `time_range`, `level` = campaign / adset / ad | Campaign, Ad set, Ad |
+| **Snap** (Marketing API v1) | **Yes** | Stats endpoints with `granularity=DAY`, `start_time` / `end_time` on the ad account's day boundaries | Campaign, Ad squad, Ad |
+| **TikTok** (API for Business v1.3) | **Yes** | `/report/integrated/get/` with `stat_time_day` in `dimensions`, `data_level` = AUCTION_CAMPAIGN / ADGROUP / AD | Campaign, Ad group, Ad |
+| **Google Ads** (API v25) | **Yes** | GAQL with `segments.date` in the SELECT and a finite date range in the WHERE | Campaign, Ad group, Ad, Asset group (`date` is a selectable segment for `asset_group`) |
+
+### 1.2 Monthly statistics from the source: all 4 platforms provide them
+
+The platform calculates the month total itself, so unique metrics (reach, uniques, frequency) are real monthly values.
+
+| Platform | Month (or month-to-date) in one request | Monthly unit? | Unique metrics for the month |
+|---|---|---|---|
+| **Meta** | `time_range` = 1st of the month → today, or `date_preset=this_month` / `last_month`; `time_increment=monthly` gives "one result set for each calendar month" | **Yes** (`time_increment=monthly`) | Reach / frequency for the period requested |
+| **Snap** | `granularity=TOTAL` with `start_time` = 1st of the month 00:00 and `end_time` = a day boundary, ad account time zone | No MONTH granularity; TOTAL over the month gives the month | `uniques` / `frequency` allowed with TOTAL (not with HOUR) |
+| **TikTok** | `/report/integrated/get/` with only the ID dimension (no `stat_time_day`), `start_date` = 1st of the month, `end_date` = today: one total per item | No month dimension (only `stat_time_day` / `stat_time_hour`); a range without a time dimension gives the month | `reach` = "unique users who saw your ads at least once"; `frequency` "over a given time period" |
+| **Google Ads** | `segments.date DURING THIS_MONTH` / `LAST_MONTH`, or `segments.month` | **Yes** (`segments.month`) | None in our metric set |
+
+### 1.3 Limits that shape the design
+
+| | Meta | Snap | TikTok | Google Ads |
+|---|---|---|---|---|
+| Max range per daily request | `time_increment` 1, range up to 37 months | **31 days** (DAY, synchronous); async requests have no cap | **30 days** with `stat_time_day` | No cap (finite range required) |
+| Max range per monthly request | 37 months | No cap stated for TOTAL | **365 days** without a time dimension | No cap |
+| How far back | **37 months** | Async reports from 2013-01-01 | Not stated | Daily **37 months** (since 1 June 2026); monthly **11 years** |
+| Day boundary | Ad account time zone | Ad account time zone | Ad account time zone | Account time zone |
+| When a day stops changing | "do not change after **28 days**" | "finalized **48 hours** after the end of the day"; conversions can still change | Not stated (observed in the live check) | Conversions arrive for the conversion window (up to **90 days**) |
+| Deleted / archived items | Returned only with an `ad.effective_status` filter (DELETED / ARCHIVED) or by ID | Returned by ID | Left out by default (`campaign_status` / `adgroup_status` / `ad_status` = `STATUS_NOT_DELETE`); returned with `STATUS_ALL` | Returned (REMOVED status) |
+| Money | Account currency | **Micro-currency** (÷ 1,000,000) | Account currency | Micros (connector converts) |
+| Response size | Paged | ≤ 200 entities per page; very large synchronous responses are rejected (E9001) → async | Paged (1,000 per page) | Paged |
+
+What this means for the design:
+1. **Refresh windows.** Recent days and months keep changing, so runs reload a window, not just the last day. The daily
+   window (2–3 days) is set in §5; the previous month is reloaded for 28 days (Google Ads 90).
+2. **Chunking.** Daily loads are split into 30-day windows (TikTok's limit, under Snap's 31). Monthly loads are one
+   request per month.
+3. **Date-only columns.** Day and month are the platform's account-time-zone dates, stored as *Date Only* so they never
+   shift with the user's time zone.
+4. **Unique metrics** (reach, uniques, frequency) are kept per day and per month as the platform sends them. They must
+   never be summed across days or months.
+5. **Rates** (CTR, CPC, CPM, ROAS…) are kept as sent. Totals over a period must be recalculated from the counts.
+
+### 1.4 Metrics (all of today's lifetime metrics, on both daily and monthly tables)
+
+| Platform | Columns per level |
+|---|---|
+| Meta | 28 (campaign / ad set / ad), including the values taken from `actions` (purchases, landing page views…) |
+| Snap | 29 |
+| Google Ads | 28 campaign, 27 ad group, 23 ad, 18 asset group |
+| TikTok | 198 (the 204 agreed metrics minus the ones TikTok refuses) |
+
+### 1.5 Connectors
+
+| Connector | Daily and monthly: change |
+|---|---|
+| **Google Ads** `sanidi_googleads` | **None.** `GetPerformance` already has `granularity = DAILY / MONTHLY`, `start_date` / `end_date` and `THIS_MONTH` / `LAST_MONTH`, for all 4 levels. |
+| **Snap** `sanidi_snap` | Decision 19 (B): add `breakdown` to `GetAdAccountStats`, plus `limit` / paging. See the explanation below. |
+| **TikTok** `sanidi_tiktok` | New action **`GetPeriodInsights`**: the same as `GetLifetimeInsights` (metric chunks of 50, merged rows) with a *period* input. Day uses `stat_time_day` and ≤ 30-day ranges; month uses no time dimension, one request per month. The status filters are set to `STATUS_ALL`. |
+| **Meta** `sanidi_meta` | Exported to `connectors/meta-ads/` first. New action **`GetPeriodInsights`**: `GET /act_{account_id}/insights` with `level`, `time_range`, `time_increment` (1 or `monthly`), and `filtering` on `ad.effective_status` including DELETED / ARCHIVED, all pages. |
+
+**Snap: what decision 19 means.** Snap reports statistics per object: you ask an ad account, a campaign, an ad squad or
+an ad for its stats. The `breakdown` parameter makes one request return the stats of that object's children too. The
+official docs allow these combinations:
+
+| Request on | `breakdown=campaign` | `breakdown=adsquad` | `breakdown=ad` |
+|---|---|---|---|
+| Ad account | **Yes** (only here) | No | **Yes** |
+| Campaign | No | **Yes** (only here) | **Yes** |
+
+- **Today's connector (option A)** only has `breakdown` on the campaign request. Every level therefore costs one request
+  **per campaign** (192 campaigns today), per period window: about 192 requests for campaigns, 192 for ad squads and
+  192 for ads.
+- **Option B (agreed)** adds `breakdown` to the ad account request:
+  - Campaigns: **1 request per ad account**.
+  - Ads: **1 request per ad account**.
+  - Ad squads: still **1 request per campaign**, because Snap only gives the ad squad breakdown on the campaign request.
+- Large account-level pages are paged (≤ 200 per page). If Snap rejects a page as too large (E9001), the connector
+  switches to Snap's async report for that request.
+
+---
+
+## 2. Option comparison (decided: separate tables)
+
+| | One table for everything | **13 tables per period (chosen)** |
+|---|---|---|
+| Columns | ~280 metrics + ~110 currency base columns + 13 lookups; a Meta row uses ~30 | Each table only its own 18–198 metrics + 1 lookup |
+| Fidelity | Mixed platform metrics | Same columns and names as the parent's Insights tab |
+| Cross-platform reporting | In the app | In Power BI |
+| Maintenance | Shared table for every change | Same pattern and scripts as the 13 synced tables |
+
+Daily and monthly are kept in separate tables, so a report can never add monthly rows to daily rows.
+
+---
+
+## 3. Build plan (UAT; one approval for the whole build, a report after each step)
+
+### 3.1 Tables (26)
+
+| Parent table | Daily table | Monthly table |
+|---|---|---|
+| `sanidi_metacampaign` | `sanidi_metacampaigndailyinsight` | `sanidi_metacampaignmonthlyinsight` |
+| `sanidi_metaadset` | `sanidi_metaadsetdailyinsight` | `sanidi_metaadsetmonthlyinsight` |
+| `sanidi_metaadvertisement` | `sanidi_metaadvertisementdailyinsight` | `sanidi_metaadvertisementmonthlyinsight` |
+| `sanidi_snapcampaign` | `sanidi_snapcampaigndailyinsight` | `sanidi_snapcampaignmonthlyinsight` |
+| `sanidi_snapadsquad` | `sanidi_snapadsquaddailyinsight` | `sanidi_snapadsquadmonthlyinsight` |
+| `sanidi_snapadvertisement` | `sanidi_snapadvertisementdailyinsight` | `sanidi_snapadvertisementmonthlyinsight` |
+| `sanidi_googleadscampaign` | `sanidi_googleadscampaigndailyinsight` | `sanidi_googleadscampaignmonthlyinsight` |
+| `sanidi_googleadsadgroup` | `sanidi_googleadsadgroupdailyinsight` | `sanidi_googleadsadgroupmonthlyinsight` |
+| `sanidi_googleadsadvertisement` | `sanidi_googleadsadvertisementdailyinsight` | `sanidi_googleadsadvertisementmonthlyinsight` |
+| `sanidi_googleadsassetgroup` | `sanidi_googleadsassetgroupdailyinsight` | `sanidi_googleadsassetgroupmonthlyinsight` |
+| `sanidi_tiktokcampaign` | `sanidi_tiktokcampaigndailyinsight` | `sanidi_tiktokcampaignmonthlyinsight` |
+| `sanidi_tiktokadgroup` | `sanidi_tiktokadgroupdailyinsight` | `sanidi_tiktokadgroupmonthlyinsight` |
+| `sanidi_tiktokadvertisement` | `sanidi_tiktokadvertisementdailyinsight` | `sanidi_tiktokadvertisementmonthlyinsight` |
+
+Display names follow the parent: *Meta Campaign Daily Insight* / *Meta Campaign Monthly Insight*, and so on. The
+longest logical name, `sanidi_googleadsadvertisementmonthlyinsight`, is 43 characters, under Dataverse's limit of 50.
+
+Every table:
+- User-owned, currency-enabled, in the patch.
+- **Name** (primary): `<item name> · YYYY-MM-DD` (daily) / `<item name> · YYYY-MM` (monthly).
+- **Date** (`sanidi_date`, Date Only; for monthly tables it is the 1st of the month).
+- **Date parts**, set on every row from its date (the account-time-zone date), for filtering and Power BI:
+
+  | Column | Daily tables | Monthly tables | Type |
+  |---|---|---|---|
+  | **Day** (`sanidi_day`) | Yes | | Whole number 1–31 |
+  | **Month** (`sanidi_month`) | Yes | Yes | Choice (global `sanidi_month`): 1 January … 12 December |
+  | **Year** (`sanidi_year`) | Yes | Yes | Whole number |
+  | **Weekday** (`sanidi_weekday`) | Yes | | Choice (global `sanidi_weekday`): 1 Sunday, 2 Monday … 7 Saturday |
+
+  The two choices are global, so all 26 tables share the same values and labels.
+- **Platform ID**: the campaign / ad set / … ID, as text.
+- **Insight Key** (`<platform ID>_<YYYYMMDD>` / `<platform ID>_<YYYYMM>`) with an **alternate key**, so every write
+  is an upsert and a period is never duplicated.
+- The parent lookup (cascade **Remove Link**, like the existing lookups).
+- All the parent's insight columns: same logical names, labels, types and choices.
+- **Period Closed** (Yes/No): set by the rules in §5.4; never Yes for today or the current month.
+- **No Data** (Yes/No): Yes on a month row created without platform data (decision 13).
+- **Last Synced On**, **Raw Payload**.
+
+Forms and views (same style as the Snap / Google Ads / TikTok tables):
+- Main form **"Information"**:
+  - Header: Date, Period Closed, Last Synced On.
+  - **General** tab: *Identity* (Name, parent lookup, Platform ID), *Period* (Date, Day, Month, Year, Weekday on daily
+    tables; Date, Month, Year on monthly), *Status* (Period Closed, No Data).
+  - **Insights** tab: the parent's Insights sections, with the same sections and order (Delivery & Cost, Video,
+    Engagement…).
+  - **Sync** tab: Last Synced On, Raw Payload.
+- Views:
+  - **Active** (default, newest first): Name, parent lookup, Date, then the platform's main insight fields (as in the
+    parent's Active view: cost / spend, impressions, clicks, CTR, conversions / purchases, conversion value, reach where
+    the platform has it), then Period Closed, Last Synced On.
+  - **Inactive**: Name, parent lookup, Date, Period Closed, Last Synced On, Created On.
+  - The exact columns per table are listed in `spec.py` (step 1).
+- Each parent form gets **Daily Insights** and **Monthly Insights** subgrids (newest first) in its Insights tab.
+- **Site map**: a new area **Social Media Insights** in the AlSanidi | Marketing app, with one group per platform:
+
+  | Group | Subareas (in this order) |
+  |---|---|
+  | Meta | Campaign Daily, Campaign Monthly, Ad Set Daily, Ad Set Monthly, Advertisement Daily, Advertisement Monthly |
+  | Snap | Campaign, Ad Squad, Advertisement (Daily, Monthly each) |
+  | Google Ads | Campaign, Ad Group, Asset Group, Advertisement (Daily, Monthly each) |
+  | TikTok | Campaign, Ad Group, Advertisement (Daily, Monthly each) |
+
+- No charts (decision 25).
+- Manager role: Read, Append, Append To (organization).
+
+### 3.2 Flows
+
+**New insight flows** (two per platform), in the patch, with stored connections and a Respond step (needed to run them as
+child flows):
+
+| Flow | Does |
+|---|---|
+| **Get \<Platform\> Daily Insights** | Daily rows for a date range (all levels) |
+| **Get \<Platform\> Monthly Insights** | Monthly rows for a list of months (all levels) |
+
+Each one:
+1. Gets its range from its inputs, set by the platform's run flow (§5).
+2. For each ad account and level, calls the platform once per window (daily: ≤ 30 days; monthly: one month), see §1.5.
+3. **Driver:** lists that level's records from the synced table (active and inactive, platform ID not empty) and keeps
+   only report rows whose ID matches. Rows for items not in Dataverse are skipped and counted.
+4. Upserts each row by Insight Key, binding the parent lookup and setting **Period Closed** with the rules in §5.4.
+5. Monthly only: creates the **empty month rows** (§5.5).
+6. Responds with counts per level: written, empty months created, skipped, errors.
+
+**Run flows** (one per platform), **\<Platform\> - Run Sync** (instant, child flow): run the steps of a sync request in
+order (Data, wait for the data cascade, Lifetime, Daily, Monthly). See §5.2.
+
+**Scheduler flow**, **Social Media - Scheduled Sync** (recurrence): creates the scheduled sync requests. See §5.1.
+
+**Changed existing flows:**
+- **Sync Control - Run Sync Request** (dispatcher): new sync types go to the platform's *Run Sync* flow (4 new cases),
+  and the waiting / skipping rule in §5.3.
+- **The 9 child data flows** (Get Meta AdSets / Advertisements, Get Snap Ad Squads / Advertisements, Get Google Ads Ad
+  Groups / Advertisements / Asset Groups, Get TikTok Ad Groups / Advertisements): their trigger is limited to the columns
+  only the data flows write (suggestion 1). The data sync still cascades as today, but lifetime insights updates no
+  longer start a data re-sync. The exact columns per flow are listed in `spec.py` before the change.
+  - Why: today the trigger fires on any change of the parent row. Since 15 October in UAT, Get Snap Advertisements ran
+    7,439 times and Map Snap Advertisement Spend 12,323 times, against 15 Snap Campaigns / Insights runs.
+
+The lifetime *Get … Insights* flows, their columns and the cost roll-up are not changed (decision 32).
+
+### 3.3 Sync Control
+
+Each platform card has **3 buttons** (decision Q5):
+
+| Button | Sync type | Runs |
+|---|---|---|
+| **Data** | Data (existing, unchanged) | Get \<Platform\> Campaigns, then the cascade |
+| **Update Day & Month to Date** | *Day & Month to Date* (new) | Lifetime → daily (day before yesterday, yesterday, today) → monthly (every month those 3 days touch). No data. Replaces the existing **Insights** button. |
+| **Update All Time** | *All Time* (new) | A pop-up asks **Insights Only** or **Data and Insights**. Then (Data and wait if chosen) → lifetime → daily from **Full Load From** to today → monthly from that month to the current month. |
+
+Changes:
+- **Integration Platform**: new column **Full Load From** (Date Only). Empty = each platform's maximum history: Meta 37
+  months; Google Ads 37 months for daily, 11 years for monthly; Snap and TikTok from each item's start.
+- **Integration Sync Request**:
+  - Sync Type gets new values: *Day & Month to Date*, *All Time*, *Scheduled Daily (05:00)*, *Scheduled Intraday*.
+    The existing *Insights* value is kept for the history rows; the page no longer creates it.
+  - New columns: **Include Data** (Yes/No, the pop-up's answer), **Triggered By** (Button / Schedule), **Weekly Run**
+    (Yes on Friday's 05:00 run), **Steps Log** (text: counts and timing per step).
+  - Status gets a new value: **Skipped** (§5.3).
+- **Page** (`sync-control.tsx`): the 3 buttons, the pop-up, and scheduled runs shown on the cards like button runs.
+  Notifications are unchanged: only the person who pressed a button is notified (decision 22).
+
+### 3.4 Arabic (ar-SA)
+
+Same process and glossary as `translations/AlSanidiMarketing/`, for everything new or changed: the 26 tables (names,
+columns, descriptions, choice values including the Month and Weekday choices), forms (tabs, sections), views, the
+*Social Media Insights* site map area and groups, the new flows, the new Sync Control columns and choice values, and the
+page's buttons and pop-up texts.
+
+### 3.6 Patch contents (for the Production request)
+
+New patch **AlSanidi | Marketing | Daily & Monthly Insights** of `AlSanidiMarketing`, holding everything this work
+builds or changes:
+
+| Component | In the patch |
+|---|---|
+| Tables | The 26 new tables with all columns, alternate keys, forms and views |
+| Choices | Global `sanidi_month`, `sanidi_weekday` |
+| Relationships | The 26 lookups to the parent tables |
+| Parent tables | The 13 parent forms (new subgrids) |
+| Sync Control tables | Integration Platform (Full Load From), Integration Sync Request (new columns and choice values) |
+| Connectors | Meta, Snap, TikTok (changed) |
+| Flows | 8 insight flows, 4 Run Sync flows, the scheduler, the dispatcher, the 9 child data flows (trigger change) |
+| App | AlSanidi \| Marketing app (new tables) and its site map (new area) |
+| Sync Control page | The updated generative page |
+| Security role | AlSanidi \| Marketing \| Manager (new privileges) |
+| Translations | ar-SA for all of the above |
+
+Not in a solution, so they are set per environment as part of the Production request: the **Full Load From** value on
+each Integration Platform row (data), and the full load itself.
+
+### 3.5 Execution order
+
+| # | Step | Where |
+|---|---|---|
+| 1 | `daily-insights/spec.py`: the 26 tables, columns copied from the parents' insight columns (live metadata), keys, forms, views; the 9 trigger column lists | repo |
+| 2 | **Live check:** a temporary test flow in UAT runs one daily and one monthly request per platform and level (read-only API calls). Confirms the fields, deleted items, Google asset-group daily rows, Snap breakdowns, Meta / Snap account time zones and real row counts. Deleted afterwards. | UAT |
+| 3 | Connectors: export Meta to the repo; `GetPeriodInsights` for Meta and TikTok; Snap account-level breakdown | repo, then UAT |
+| 4 | New patch; 26 tables + columns + alternate keys + lookups, publish | UAT |
+| 5 | Forms, views, parent subgrids, app tables + *Social Media Insights* site map area, Manager role, publish | UAT |
+| 6 | 8 insight flows, 4 run flows (off) | UAT |
+| 7 | Test: one week and one month per platform, through the run flows; check the rows against the platforms' own UIs | UAT |
+| 8 | Sync Control: new columns and choice values, dispatcher cases, page (3 buttons, pop-up) | UAT |
+| 9 | Trigger columns on the 9 child data flows; check that a Data sync still cascades and an Insights run doesn't | UAT |
+| 10 | Full load per platform (**Update All Time**, Data and Insights) | UAT |
+| 11 | Scheduler flow on | UAT |
+| 12 | Arabic translations | UAT |
+| — | Production: a separate request after you confirm UAT (decision 31) | Production |
+
+---
+
+## 4. Volume and duration
+
+The 13 tables hold 3,669 items today: Meta 218, Snap 1,387, Google Ads 313, TikTok 1,751.
+- **Daily:** a row only for an item that delivered on that day, so at most 3,669 rows a day and in practice far fewer.
+- **Monthly:** a row for each item and month from the item's start, including empty months.
+- Today's runs in UAT (successful runs since 15 October, median): Get Snap Insights ≈ 9 min, Get TikTok Insights ≈ 8
+  min, Get Meta / Google Ads Insights ≈ 1 min; Get Snap Campaigns ≈ 4 min; each child data flow a few seconds to
+  minutes. A 05:00 run should finish well before 08:00. The live check and step 7 give the real figures for the new
+  flows.
+
+---
+
+## 5. Scheduling (agreed; revised 2026-11-03)
+
+All times are Riyadh time. "Today" and every date in a request are in the ad account's time zone (all four
+platforms' accounts are Asia/Riyadh). The 4 platforms run in parallel; the steps of one platform run one after the
+other.
+
+Revision of 3 November 2026: the 08:00, 12:00 and 16:00 runs are cancelled; the Friday run reloads the current month
+and the 3 before it; months are closed by their own flow on the 1st of the month (§5.4), no longer by the syncs.
+
+### 5.1 When
+
+| When | Flow | Steps per platform |
+|---|---|---|
+| **Every day 05:00** | Social Media - Scheduled Sync | 1. **Data** (campaigns → cascade), then wait for the cascade (§5.2). 2. **Lifetime** insights on the main tables. 3. **Daily**: today (partial), yesterday, the day before yesterday; the day before yesterday gets Period Closed. 4. **Monthly**: every month those 3 days touch (normally the current month; on the 1st and 2nd also the previous month). |
+| **+ on Fridays (05:00 run)** | Social Media - Scheduled Sync | 5. **Daily** reload of the last **28 days** (Google Ads: **90 days**). 6. **Monthly** reload of the **current month and the 3 before it**, every platform (e.g. Friday 6 November: November month to date, October, September, August), which covers Google Ads' 90-day window. |
+| **1st of the month 05:00** | Social Media - Close Monthly Insights | **Closes months** (§5.4). Dataverse only: no sync request, platform call or sync flow. |
+
+The scheduler flow runs at 05:00. For each platform with *Set Up* = Yes and *Connection Active* not No, it creates
+one *Integration Sync Request* (Scheduled Daily, Triggered By = Schedule; *Weekly Run* on Fridays). The dispatcher
+runs it like a button press. Between runs, the Sync Control page's *Day & Month to Date* button refreshes lifetime,
+today and the current month on demand.
+
+### 5.2 Order inside one run (\<Platform\> - Run Sync)
+
+1. **Data** (05:00 run; *All Time* with *Data and Insights*): runs Get \<Platform\> Campaigns. The ad set / ad squad /
+   ad group / asset group and ad flows then run on their own, so the run **waits** until none of that platform's child
+   data flows has a run in progress (checked every 2 minutes, two quiet checks in a row, at most 30 minutes). After 30
+   minutes it continues and writes a warning in Steps Log.
+2. **Lifetime**: runs Get \<Platform\> Insights (unchanged flow).
+3. **Daily**: runs Get \<Platform\> Daily Insights with the date range and the day it closes through.
+4. **Monthly**: runs Get \<Platform\> Monthly Insights with the months. New month rows are created open; a reload
+   never changes Period Closed.
+5. Writes Steps Log and the request status. A failed step is recorded and the run continues with the next step; the
+   request ends **Failed** if any step failed.
+
+### 5.3 No overlaps
+
+- One run per platform at a time. When a request arrives while the same platform has one *Running*:
+  - **Scheduled** request: waits for it (up to 60 minutes), then is marked **Skipped**. The next scheduled run covers
+    the same periods again.
+  - **Button**: not possible; the page disables the platform's buttons while a sync runs (as today).
+- Different platforms never block each other.
+
+### 5.4 Period Closed
+
+- **Day** (set by the syncs): closed when it is the day before yesterday or older. Today and yesterday are open.
+- **Month** (set only by **Social Media - Close Monthly Insights**, 1st of the month 05:00): a month is closed once the
+  platform can no longer change its numbers, that is once the month's end plus the platform's late-update window has
+  passed; it closes on the first 1st-of-month run after that.
+
+| Platform | Late-update window (official docs) | November 2026 closes on | Open months on 1 Dec 2026 |
+|---|---|---|---|
+| Snapchat | finalized after 48 hours | 1 Jan 2027 | Nov, Dec |
+| Meta | up to 28 days | 1 Jan 2027 | Nov, Dec |
+| TikTok | treated like Meta: 28 days | 1 Jan 2027 | Nov, Dec |
+| Google Ads | conversions up to 90 days | 1 Mar 2027 | Sep, Oct, Nov, Dec |
+
+- The flow sets Period Closed = Yes on every open monthly row whose month starts before the first day of the month
+  of (today + 1 − window days). A month row created later for an older month (e.g. a new item's full load) is closed
+  by the next run.
+- Today's month is never closed. The Friday reload (current month and the 3 before it) refreshes every month still
+  open, Google Ads included.
+- Applied on 3 November 2026: the Google Ads August and September 2026 rows (388) closed by the old rule were reopened.
+
+### 5.5 Empty month rows
+
+- Every item in the 13 tables gets a row for **every month from its start month** (its platform start or create date)
+  **to the current month**; for an item with an end date, up to its end month.
+- A month the platform returns nothing for gets a row with **blank** metrics and **No Data** = Yes. A later reload that
+  finds data sets No Data back to No (8 items have data again after empty months: paused and restarted campaigns).
+- Days with no activity get no daily row.
+
+### 5.6 What each sync type covers
+
+| Sync type | Data | Lifetime | Daily | Monthly | Closes days |
+|---|---|---|---|---|---|
+| Scheduled Daily (05:00) | Yes | Yes | D-2 … today | Months of D-2 … today | Day D-2 |
+| + Weekly (Friday) | | | + last 28 days (Google Ads 90) | Current month and the 3 before it | |
+| Day & Month to Date (button) | No | Yes | D-2 … today | Months of D-2 … today | Day D-2 |
+| All Time (button) | Pop-up choice | Yes | Full Load From … today | Its month … current month | Day D-2 |
+
+Months are closed by none of these: only by Social Media - Close Monthly Insights (§5.4).
+
+---
+
+## 6. Build results (UAT)
+
+### 6.1 Full load (All Time, Data and Insights, started 2026-10-30 07:40 Riyadh)
+
+| Platform | Result | Daily rows | Monthly rows with data | Empty months | Finished (Riyadh) |
+|---|---|---|---|---|---|
+| Meta | Succeeded | 1,229 (204 skipped) | 219 | 649 | 30 Oct |
+| Google Ads | Succeeded | 13,056 | 688 | 3,957 | 30 Oct 13:25 |
+| TikTok | Failed (1 row) | 16,627 | 2,097 (3 skipped) | 21,551 | 31 Oct 01:29 |
+| Snap | Succeeded | 17,154 (160 skipped) | 2,751 (67 skipped) | 23,482 | 31 Oct 02:43 |
+
+"Skipped" = a platform row whose item isn't in the synced tables. Full loads take hours, not minutes (Snap and
+TikTok ≈ 19 h), mostly because of the monthly stage: every item gets a row for each month since it started.
+
+Found during the full load and fixed in the flows (2026-10-31):
+- **TikTok: 1 monthly row failed** to save, with no error text (row-level failures were only counted). Row
+  failures now add `<insight key>: <error>` to the request's Steps Log.
+- **Snap refuses reach (`uniques`, `frequency`) for any date before 2021** (error E1008). Windows before 2021 now
+  ask for every other field. The 110 Snap monthly rows dated 2019-09 to 2020-12 were written as empty months
+  (No Data = Yes) during the full load; a Snap All Time (Insights Only) rerun (31 Oct 17:26 → 1 Nov 11:21 Riyadh,
+  Succeeded, no failures) filled the 36 that had delivery. The other 74 had no delivery and stay empty.
+
+### 6.2 Differences from the plan
+
+- **Live check (step 2):** no temporary flow. The Meta / Snap / Google connections weren't usable by the app user
+  until they were shared, so the checks were done in step 7's tests instead.
+- **Connectors:** saved in the **AlSanidi | Marketing Connectors** solution (where they already were), not in the
+  new patch.
+- **Close Previous Month:** no column. Months were first closed by the last Friday's run; since 2026-11-03 they are
+  closed by Social Media - Close Monthly Insights on the 1st (§5.4).
+- **Days without delivery:** no daily row (impressions = 0 and spend = 0 are skipped on every platform; TikTok
+  returns zero rows for every item otherwise).
+- **Snap reach before 2021:** left blank (§6.1).
+
+---
+
+## Sources (official documentation)
+
+- Meta: [Ad Account Insights reference](https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/)
+  (`time_increment` incl. `monthly`, `level`, `time_range`, `date_preset` incl. `this_month` / `last_month`, 37 months),
+  [Insights API](https://developers.facebook.com/docs/marketing-api/insights/) (deleted / archived objects),
+  [Limits and best practices](https://developers.facebook.com/docs/marketing-api/insights/best-practices/) (stable after
+  28 days, rate limits)
+- Snap: [Measurement](https://developers.snap.com/api/marketing-api/Ads-API/measurement) (DAY 31-day limit, day
+  boundaries, finalized after 48 hours, TOTAL with start / end, uniques not at HOUR, `breakdown` per endpoint, 200 per
+  page, E9001, async)
+- TikTok: [Run a synchronous report](https://business-api.tiktok.com/portal/docs/run-a-synchronous-report/v1.3)
+  (`stat_time_day`, 30-day limit, 365 days without a time dimension, `query_lifetime`),
+  [Basic reports: supported dimensions](https://business-api.tiktok.com/portal/docs?id=1751443956638721) (time
+  dimensions, `STATUS_NOT_DELETE` default),
+  [Basic reports: supported metrics](https://business-api.tiktok.com/portal/docs?id=1751443967255553) (reach, frequency)
+- Google Ads: [Segmentation](https://developers.google.com/google-ads/api/docs/reporting/segmentation),
+  [Date ranges](https://developers.google.com/google-ads/api/docs/query/date-ranges) (THIS_MONTH / LAST_MONTH,
+  `segments.month`, 37 months daily, 11 years monthly),
+  [Data retention policy, 1 June 2026](https://ads-developers.googleblog.com/2026/05/new-data-retention-policy-for-google.html),
+  [asset_group fields](https://developers.google.com/google-ads/api/fields/v26/asset_group) (`date` segment selectable),
+  [Conversion window](https://support.google.com/google-ads/answer/3123169) (up to 90 days)

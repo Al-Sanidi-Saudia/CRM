@@ -1,6 +1,7 @@
 import re
 def DEF(x):
     # add the Arabic definite article to a single-word noun (idafa: حالة الإعلان)
+    if x is None: return None
     if ' ' not in x and not x.startswith('ال') and re.match(r'^[\u0600-\u06FF]', x): return 'ال' + x
     return x
 # Each: (regex, function(match, T) -> arabic) ; T translates a sub-name

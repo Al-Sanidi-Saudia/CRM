@@ -33,11 +33,19 @@ import {
 const SYNC_ROLES = ["System Administrator"];
 
 const SYNC_TYPE_DATA = 100000000;
-const SYNC_TYPE_INSIGHTS = 100000001;
+// 100000001 "Insights" (all-time insights only) is no longer started from the page; its requests stay as history.
+const SYNC_TYPE_DAYMONTH = 100000002;
+const SYNC_TYPE_ALLTIME = 100000003;
+// Created by the "Social Media - Scheduled Sync" flow at 05:00 (data and all insights) and 08:00 / 12:00 / 16:00.
+const SYNC_TYPE_SCHEDULED_DAILY = 100000004;
+const SYNC_TYPE_SCHEDULED_INTRADAY = 100000005;
 const REQ_REQUESTED = 100000000;
 const REQ_RUNNING = 100000001;
 const REQ_SUCCEEDED = 100000002;
 const REQ_FAILED = 100000003;
+// A scheduled request that found another sync of the same platform still running after an hour.
+const REQ_SKIPPED = 100000004;
+const TRIGGERED_BY_BUTTON = 100000000;
 
 // The dispatcher flow picks a request up within seconds. One still waiting after this long was never
 // picked up (for example the flow was off), so it must not keep the button disabled.
@@ -55,8 +63,9 @@ const RUN_MATCH_SLACK_MS = 60 * 1000;
 const CACHE_KEY = "__ppSyncControl_dataCache";
 const INFLIGHT_KEY = "__ppSyncControl_dataInflight";
 
-type Kind = "succeeded" | "failed" | "running" | "cancelled" | "none";
-type SyncKind = "data" | "insights";
+type Kind = "succeeded" | "failed" | "running" | "cancelled" | "skipped" | "none";
+// daymonth: lifetime + the last 3 days + the current month (button and schedule); alltime: everything from Full Load From.
+type SyncKind = "data" | "insights" | "daymonth" | "alltime";
 
 interface FlowRef { name: string; id: string; }
 
@@ -70,6 +79,8 @@ interface Platform {
     dataFlows: FlowRef[];
     insightsFlowName: string;
     insightsFlowId: string;
+    // First day "Update All Time" loads (YYYY-MM-DD); empty = the platform's maximum history.
+    fullLoadFrom: string;
 }
 
 interface RunInfo { kind: Kind; start: Date | null; error: string | null; }
@@ -82,6 +93,9 @@ interface RequestInfo {
     startedOn: Date | null;
     completedOn: Date | null;
     error: string | null;
+    scheduled: boolean;
+    // One line per step written by the platform's Run Sync flow: "Daily insights: Succeeded (...) [05:12]".
+    log: string | null;
 }
 
 interface Snapshot {
@@ -117,6 +131,17 @@ interface SectionView {
 }
 
 interface PendingSync { platform: Platform; type: SyncKind; }
+
+function syncKindOf(type: number): SyncKind {
+    switch (type) {
+        case SYNC_TYPE_DATA: return "data";
+        case SYNC_TYPE_ALLTIME: return "alltime";
+        case SYNC_TYPE_DAYMONTH:
+        case SYNC_TYPE_SCHEDULED_DAILY:
+        case SYNC_TYPE_SCHEDULED_INTRADAY: return "daymonth";
+        default: return "insights";
+    }
+}
 
 const useStyles = makeStyles({
     root: {
@@ -397,7 +422,8 @@ function canCurrentUserSync(): boolean {
 async function loadSnapshot(dataApi: GeneratedComponentProps["dataApi"]): Promise<Snapshot> {
     const platformResult = await dataApi.queryTable("sanidi_integrationplatform", {
         select: ["sanidi_name", "sanidi_platformkey", "sanidi_sortorder", "sanidi_isconfigured",
-            "sanidi_connectionactive", "sanidi_dataflows", "sanidi_insightsflowname", "sanidi_insightsflowid"],
+            "sanidi_connectionactive", "sanidi_dataflows", "sanidi_insightsflowname", "sanidi_insightsflowid",
+            "sanidi_fullloadfrom"],
         filter: "statecode eq 0",
         orderBy: "sanidi_sortorder asc",
         pageSize: 50,
@@ -412,6 +438,7 @@ async function loadSnapshot(dataApi: GeneratedComponentProps["dataApi"]): Promis
         dataFlows: parseFlows(r.sanidi_dataflows),
         insightsFlowName: String(r.sanidi_insightsflowname || ""),
         insightsFlowId: String(r.sanidi_insightsflowid || "").toLowerCase(),
+        fullLoadFrom: r.sanidi_fullloadfrom ? String(r.sanidi_fullloadfrom).slice(0, 10) : "",
     }));
 
     const flowIds = new Set<string>();
@@ -477,7 +504,8 @@ async function loadSnapshot(dataApi: GeneratedComponentProps["dataApi"]): Promis
     successEntries.forEach(([id, d, u]) => { lastSuccess[id] = d; usualMinutes[id] = u; });
 
     const requestResult = await dataApi.queryTable("sanidi_integrationsyncrequest", {
-        select: ["sanidi_status", "sanidi_synctype", "_sanidi_platform_value", "sanidi_startedon", "sanidi_completedon", "sanidi_errormessage"],
+        select: ["sanidi_status", "sanidi_synctype", "_sanidi_platform_value", "sanidi_startedon", "sanidi_completedon",
+            "sanidi_errormessage", "sanidi_stepslog", "sanidi_triggeredby"],
         filter: "statecode eq 0",
         orderBy: "sanidi_startedon desc",
         pageSize: 100,
@@ -485,11 +513,14 @@ async function loadSnapshot(dataApi: GeneratedComponentProps["dataApi"]): Promis
     const requests: RequestInfo[] = requestResult.rows.map((r: any) => ({
         id: readGuid(r.sanidi_integrationsyncrequestid),
         platformId: readGuid(r._sanidi_platform_value),
-        type: Number(r.sanidi_synctype) === SYNC_TYPE_INSIGHTS ? "insights" : "data",
+        type: syncKindOf(Number(r.sanidi_synctype)),
         status: Number(r.sanidi_status),
         startedOn: toDate(r.sanidi_startedon),
         completedOn: toDate(r.sanidi_completedon),
         error: typeof r.sanidi_errormessage === "string" ? r.sanidi_errormessage : null,
+        scheduled: r.sanidi_triggeredby !== undefined && r.sanidi_triggeredby !== null
+            && Number(r.sanidi_triggeredby) !== TRIGGERED_BY_BUTTON,
+        log: typeof r.sanidi_stepslog === "string" ? r.sanidi_stepslog : null,
     }));
 
     return { platforms, runs, lastSuccess, usualMinutes, requests, loadedAt: new Date() };
@@ -520,7 +551,7 @@ function requestOutcome(req: RequestInfo | undefined, runStart: Date | null): { 
 
 // Time since the last successful run, measured when the page loaded (it doesn't tick).
 function lastSuccessAge(p: Platform, snap: Snapshot, type: SyncKind): AgeView {
-    const flowId = type === "data" ? p.dataFlows[0]?.id : p.insightsFlowId;
+    const flowId = type === "data" ? p.dataFlows[0]?.id : type === "insights" ? p.insightsFlowId : undefined;
     let last = flowId ? snap.lastSuccess[flowId] ?? null : null;
     snap.requests
         .filter((r) => r.platformId === p.id.toLowerCase() && r.type === type && r.status === REQ_SUCCEEDED)
@@ -541,6 +572,18 @@ function usualText(minutes: number | null | undefined, sentence: boolean): strin
 }
 
 function usualMinutesFor(p: Platform, snap: Snapshot, type: SyncKind): number | null {
+    if (type === "daymonth" || type === "alltime") {
+        // Median duration of the platform's last 5 successful requests of this kind (button or schedule).
+        const durations = snap.requests
+            .filter((r) => r.platformId === p.id.toLowerCase() && r.type === type && r.status === REQ_SUCCEEDED
+                && !!r.startedOn && !!r.completedOn)
+            .slice(0, 5)
+            .map((r) => (r.completedOn as Date).getTime() - (r.startedOn as Date).getTime())
+            .filter((ms) => ms > 0)
+            .sort((a, b) => a - b);
+        if (!durations.length) return null;
+        return Math.max(1, Math.round(durations[Math.floor((durations.length - 1) / 2)] / 60000));
+    }
     const flowId = type === "data" ? p.dataFlows[0]?.id : p.insightsFlowId;
     return flowId ? snap.usualMinutes?.[flowId] ?? null : null;
 }
@@ -565,7 +608,7 @@ function activeRequestIds(snap: Snapshot | null): string[] {
     if (!snap) return [];
     const ids = new Set<string>();
     snap.platforms.filter((p) => p.configured).forEach((p) => {
-        (["data", "insights"] as SyncKind[]).forEach((t) => {
+        (["data", "daymonth", "alltime"] as SyncKind[]).forEach((t) => {
             const req = latestRequest(snap.requests, p.id, t);
             if (req && req.id && isActive(req)) ids.add(req.id);
         });
@@ -670,16 +713,33 @@ function buildDataSection(p: Platform, snap: Snapshot): SectionView {
     return { ...base, kind: steps.some((s) => s.run) ? "succeeded" : "none", failedName: null, error: null, active: false };
 }
 
-function buildInsightsSection(p: Platform, snap: Snapshot): SectionView {
-    const run = snap.runs[p.insightsFlowId] ?? null;
-    const req = latestRequest(snap.requests, p.id, "insights");
-    const lastRun = formatDateTime(newer(run?.start ?? null, req?.startedOn ?? null));
-    const base = { lastRun, steps: [] as StepView[], failedName: null };
+// Steps written by the Run Sync flow, one per line: "<step>: <status> (<details>) [HH:mm]".
+function parseStepsLog(log: string | null): StepView[] {
+    if (!log) return [];
+    return log.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((line) => {
+        const m = line.match(/^(.*?):\s*(Succeeded|Failed|Skipped|TimedOut|Cancelled|finished|still running.*?)(.*?)\s*(?:\[(\d{2}:\d{2})\])?$/i);
+        if (!m) return { name: line, kind: "none" as StepKind, time: "" };
+        const status = m[2].toLowerCase();
+        const kind: StepKind = status === "succeeded" || status === "finished" ? "succeeded"
+            : status === "failed" || status === "timedout" ? "failed"
+            : status === "skipped" ? "skipped"
+            : status.startsWith("still running") ? "running" : "cancelled";
+        const detail = m[3].trim();
+        return { name: detail ? `${m[1]} ${detail}` : m[1], kind, time: m[4] ?? "" };
+    });
+}
 
-    if (isActive(req)) return { ...base, kind: "running", error: null, active: true, startedAt: formatTime(req?.startedOn ?? null) };
-    const outcome = requestOutcome(req, run?.start ?? null);
-    if (outcome) return { ...base, kind: outcome.kind, error: outcome.error, active: false };
-    if (run) return { ...base, kind: run.kind, error: run.kind === "failed" ? run.error : null, active: false };
+// Day & Month to Date (button and schedule) and All Time: the latest request of that kind is the status.
+function buildRequestSection(p: Platform, snap: Snapshot, type: SyncKind): SectionView {
+    const req = latestRequest(snap.requests, p.id, type);
+    const lastRun = formatDateTime(req?.startedOn ?? null);
+    const base = { lastRun, steps: parseStepsLog(req?.log ?? null), failedName: null };
+    if (!req) return { ...base, kind: "none", error: null, active: false };
+    if (isActive(req)) return { ...base, kind: "running", error: null, active: true, startedAt: formatTime(req.startedOn) };
+    if (isNotStarted(req)) return { ...base, kind: "failed", error: NOT_STARTED_MESSAGE, active: false };
+    if (req.status === REQ_FAILED) return { ...base, kind: "failed", error: req.error, active: false };
+    if (req.status === REQ_SKIPPED) return { ...base, kind: "skipped", error: null, active: false };
+    if (req.status === REQ_SUCCEEDED) return { ...base, kind: "succeeded", error: null, active: false };
     return { ...base, kind: "none", error: null, active: false };
 }
 
@@ -689,6 +749,7 @@ function StatusBadge(props: { kind: Kind }) {
         failed: { label: "Failed", color: "danger" },
         running: { label: "Running", color: "brand" },
         cancelled: { label: "Cancelled", color: "warning" },
+        skipped: { label: "Skipped", color: "warning" },
         none: { label: "No runs yet", color: "informative" },
     };
     const m = map[props.kind];
@@ -700,13 +761,13 @@ function StepIcon(props: { kind: StepKind }) {
     if (props.kind === "succeeded") return <CheckmarkCircleFilled aria-hidden="true" style={{ color: tokens.colorStatusSuccessForeground1 }} />;
     if (props.kind === "failed") return <DismissCircleFilled aria-hidden="true" style={{ color: tokens.colorStatusDangerForeground1 }} />;
     if (props.kind === "running") return <ArrowSyncRegular aria-hidden="true" style={{ color: tokens.colorBrandForeground1 }} />;
-    if (props.kind === "cancelled") return <DismissCircleFilled aria-hidden="true" style={{ color: tokens.colorStatusWarningForeground1 }} />;
+    if (props.kind === "cancelled" || props.kind === "skipped") return <DismissCircleFilled aria-hidden="true" style={{ color: tokens.colorStatusWarningForeground1 }} />;
     return <CircleRegular aria-hidden="true" style={{ color: tokens.colorNeutralForeground3 }} />;
 }
 
 function StepLabel(props: { kind: StepKind }) {
     const labels: Record<StepKind, string> = {
-        succeeded: "Succeeded", failed: "Failed", running: "Running", cancelled: "Cancelled", none: "", updating: "Updating…",
+        succeeded: "Succeeded", failed: "Failed", running: "Running", cancelled: "Cancelled", skipped: "Skipped", none: "", updating: "Updating…",
     };
     return <span>{labels[props.kind]}</span>;
 }
@@ -753,7 +814,7 @@ function SyncSection(props: {
             {view.steps.length > 0 && (
                 <ul className={styles.steps} aria-label={`${props.title} flows`}>
                     {view.steps.map((s) => (
-                        <li key={s.name} className={styles.step}>
+                        <li key={`${s.name}-${s.time}`} className={styles.step}>
                             <StepIcon kind={s.kind} />
                             <span className={styles.stepName} title={s.name}>{s.name}</span>
                             <StepLabel kind={s.kind} />
@@ -804,7 +865,14 @@ function PlatformCard(props: {
     const mark = MARKS[platform.key] ?? { letter: platform.name.charAt(0).toUpperCase(), bg: tokens.colorNeutralBackground5, fg: tokens.colorNeutralForeground1 };
     const headingId = `platform-${platform.id}`;
     const dataView = platform.configured ? buildDataSection(platform, snap) : null;
-    const insightsView = platform.configured ? buildInsightsSection(platform, snap) : null;
+    const dayMonthView = platform.configured ? buildRequestSection(platform, snap, "daymonth") : null;
+    const allTimeView = platform.configured ? buildRequestSection(platform, snap, "alltime") : null;
+    const dayMonthReq = latestRequest(snap.requests, platform.id, "daymonth");
+    // One sync per platform at a time: a running sync disables the platform's other buttons.
+    const running = (except: SyncKind): string | null =>
+        except !== "data" && dataView?.active ? `${platform.name} data`
+            : except !== "daymonth" && dayMonthView?.active ? `${platform.name} day & month to date`
+            : except !== "alltime" && allTimeView?.active ? `${platform.name} all time` : null;
     const disabledReason = platform.connectionActive ? null : `The ${platform.name} connection is not active yet`;
     return (
         <article className={styles.card} aria-labelledby={headingId}>
@@ -830,25 +898,39 @@ function PlatformCard(props: {
                         usual={usualText(usualMinutesFor(platform, snap, "data"), false)}
                         canSync={props.canSync}
                         busy={props.busy}
-                        blockedBy={insightsView?.active ? `${platform.name} insights` : null}
+                        blockedBy={running("data")}
                         disabledReason={disabledReason}
                         buttonLabel="Sync Data"
                         divider={true}
                         onSync={() => props.onSync(platform, "data")}
                     />
                     <SyncSection
-                        title="Insights"
-                        subtitle={platform.insightsFlowName}
-                        view={insightsView as SectionView}
-                        age={lastSuccessAge(platform, snap, "insights")}
-                        usual={usualText(usualMinutesFor(platform, snap, "insights"), false)}
+                        title="Insights: Day & Month to Date"
+                        subtitle={dayMonthReq ? (dayMonthReq.scheduled ? "Scheduled" : "Button") : ""}
+                        view={dayMonthView as SectionView}
+                        age={lastSuccessAge(platform, snap, "daymonth")}
+                        usual={usualText(usualMinutesFor(platform, snap, "daymonth"), false)}
                         canSync={props.canSync}
                         busy={props.busy}
-                        blockedBy={dataView?.active ? `${platform.name} data` : null}
+                        blockedBy={running("daymonth")}
                         disabledReason={disabledReason}
-                        buttonLabel="Sync Insights"
+                        buttonLabel="Update Day & Month to Date"
+                        divider={true}
+                        onSync={() => props.onSync(platform, "daymonth")}
+                    />
+                    <SyncSection
+                        title="Insights: All Time"
+                        subtitle={`From ${platform.fullLoadFrom || "the earliest data available"}`}
+                        view={allTimeView as SectionView}
+                        age={lastSuccessAge(platform, snap, "alltime")}
+                        usual={usualText(usualMinutesFor(platform, snap, "alltime"), false)}
+                        canSync={props.canSync}
+                        busy={props.busy}
+                        blockedBy={running("alltime")}
+                        disabledReason={disabledReason}
+                        buttonLabel="Update All Time"
                         divider={false}
-                        onSync={() => props.onSync(platform, "insights")}
+                        onSync={() => props.onSync(platform, "alltime")}
                     />
                 </>
             ) : (
@@ -991,45 +1073,54 @@ const GeneratedComponent = (props: GeneratedComponentProps) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataReady, catchUpKey]);
 
-    const startSync = async () => {
+    const startSync = async (includeData: boolean) => {
         if (!pending || !snap) return;
         const { platform, type } = pending;
+        const label = type === "data" ? "Data" : type === "alltime" ? "All Time" : "Day & Month to Date";
+        const syncType = type === "data" ? SYNC_TYPE_DATA : type === "alltime" ? SYNC_TYPE_ALLTIME : SYNC_TYPE_DAYMONTH;
         const now = new Date();
         setPending(null);
         setAction({ busy: true, actionError: null });
         try {
             const newId = await dataApi.createRow("sanidi_integrationsyncrequest", {
-                sanidi_name: `${platform.name} - ${type === "data" ? "Data" : "Insights"} - ${formatDateTime(now)}`,
+                sanidi_name: `${platform.name} - ${label}${type === "alltime" ? (includeData ? " (data and insights)" : " (insights only)") : ""} - ${formatDateTime(now)}`,
                 _sanidi_platform_value: `/sanidi_integrationplatform(${platform.id})`,
-                sanidi_synctype: (type === "data" ? SYNC_TYPE_DATA : SYNC_TYPE_INSIGHTS) as any,
+                sanidi_synctype: syncType as any,
                 sanidi_status: REQ_REQUESTED as any,
                 sanidi_startedon: now,
+                sanidi_triggeredby: TRIGGERED_BY_BUTTON as any,
+                sanidi_includedata: (type === "data" || includeData) as any,
             } as any);
             const request: RequestInfo = {
                 id: readGuid(typeof newId === "string" ? newId : JSON.stringify(newId)), platformId: platform.id.toLowerCase(), type, status: REQ_REQUESTED, startedOn: now, completedOn: null, error: null,
+                scheduled: false, log: null,
             };
             const next: Snapshot = { ...snap, requests: [request, ...snap.requests] };
             winAny[CACHE_KEY] = next;
             setData({ snap: next, loading: false, error: null });
             setAction({ busy: false, actionError: null });
         } catch {
-            setAction({ busy: false, actionError: `Couldn't start the ${platform.name} ${type} sync. Check that you have permission, then try again.` });
+            setAction({ busy: false, actionError: `Couldn't start the ${platform.name} ${label.toLowerCase()} sync. Check that you have permission, then try again.` });
         }
     };
 
-    const pendingTitle = pending ? `Start ${pending.platform.name} ${pending.type === "data" ? "data" : "insights"} sync?` : "";
-    const pendingBody = pending
-        ? (pending.type === "data"
+    const pendingTitle = !pending ? ""
+        : pending.type === "data" ? `Start ${pending.platform.name} data sync?`
+        : pending.type === "alltime" ? `Update all ${pending.platform.name} insights?`
+        : `Update ${pending.platform.name} day & month to date?`;
+    const pendingBody = !pending ? ""
+        : pending.type === "data"
             ? `This runs ${pending.platform.dataFlows[0]?.name ?? "the data flow"}. The next levels down to the ads then update automatically. It can take several minutes.`
-            : `This runs ${pending.platform.insightsFlowName || "the insights flow"} and updates the metrics on campaigns, ad groups and ads. It can take several minutes.`)
-        : "";
+        : pending.type === "alltime"
+            ? `This reloads every daily and monthly insight from ${pending.platform.fullLoadFrom || "the earliest data the platform keeps"} to today (today and this month so far included), and the all-time insights on campaigns, ad groups and ads. The first run can take hours. Choose whether to sync the data (campaigns down to the ads) first.`
+            : "This updates the all-time insights on campaigns, ad groups and ads, the daily insights of the day before yesterday, yesterday and today (so far), and the monthly insights of the current month. It can take several minutes.";
 
     return (
         <div ref={setContainer} className={styles.root}>
             <header className={styles.header}>
                 <div className={styles.titleBlock}>
                     <Text as="h1" size={600} weight="semibold">Sync Control</Text>
-                    <Text className={styles.subtitle}>Latest run of each platform's data and insights sync.</Text>
+                    <Text className={styles.subtitle}>Latest run of each platform's data and insights sync. Insights also update automatically every day at 05:00, 08:00, 12:00 and 16:00.</Text>
                 </div>
                 <div className={styles.headerActions}>
                     {snap && <Text className={styles.updated}>Updated {formatDateTime(snap.loadedAt)}</Text>}
@@ -1091,7 +1182,14 @@ const GeneratedComponent = (props: GeneratedComponentProps) => {
                         </DialogContent>
                         <DialogActions>
                             <Button appearance="secondary" onClick={() => setPending(null)}>Cancel</Button>
-                            <Button appearance="primary" onClick={startSync}>Start sync</Button>
+                            {pending?.type === "alltime" ? (
+                                <>
+                                    <Button appearance="secondary" onClick={() => startSync(false)}>Insights Only</Button>
+                                    <Button appearance="primary" onClick={() => startSync(true)}>Data and Insights</Button>
+                                </>
+                            ) : (
+                                <Button appearance="primary" onClick={() => startSync(false)}>Start sync</Button>
+                            )}
                         </DialogActions>
                     </DialogBody>
                 </DialogSurface>

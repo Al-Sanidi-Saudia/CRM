@@ -16,6 +16,16 @@ Arabic on other components. Imported into UAT and published; `changes_ar-SA_tikt
 (`TRANSLATION_SOLUTION=AlSanidiMarketing_Patch_5b266c1a python3 tool/uat.py export ...`). 24 labels, none changed;
 `changes_ar-SA_tiktok_patch.csv`, `files/CrmTranslations_ar-SA_TikTokPatch.zip`.
 
+**2026-10-30, Daily & Monthly Insights:** the patch *AlSanidi | Marketing | Daily & Monthly Insights*
+(`AlSanidiMarketing_Patch_14289281`, see `daily-insights/PLAN.md`). The 26 tables, their columns, the Month / Weekday
+choices, Sync Control's new columns and choice values and the site map area were created in Arabic by the deploy
+scripts; this round added the names Dataverse generates (views, system columns, …), the copied form sections without
+"(all time)", the 13 new flows and their descriptions. `dict_insights.py`; exported with
+`TRANSLATION_SOLUTION=AlSanidiMarketing_Patch_14289281 python3 tool/uat.py export ...`; no Arabic changed on other
+components except the new *Triggered By* value "Schedule" (aligned with the glossary). Imported into UAT and published;
+`changes_ar-SA_dailyinsights.csv`, `files/CrmTranslations_ar-SA_DailyMonthlyInsights.zip`
+(`files/CrmTranslations_before_dailyinsights_export.zip` is the export before the round).
+
 **2026-10-22, Season Calendar:** the new `sanidi_seasoncalendar` table (see `seasons/README.md`). Its table,
 column, form and site map labels were created in Arabic by `seasons/deploy.py`. This round added the names
 Dataverse generates (views, forms, Advanced Find, …) and aligned its system column labels with the glossary.

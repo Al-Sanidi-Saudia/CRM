@@ -43,6 +43,13 @@ PAGING = [
     query("cursor", "Cursor", "Paging cursor taken from paging.next_link of the previous response."),
 ]
 
+# Stats with a breakdown are paged by entity: at most 200 per page (Snap Measurement docs).
+STATS_PAGING = [
+    query("limit", "Page size", "Entities per page for breakdown stats (at most 200).", type_="integer",
+          minimum=1, maximum=200),
+    query("cursor", "Cursor", "Paging cursor taken from paging.next_link of the previous response."),
+]
+
 DEFAULT_FIELDS = ",".join([
     "impressions", "swipes", "spend", "video_views", "screen_time_millis",
     "quartile_1", "quartile_2", "quartile_3", "view_completion",
@@ -151,12 +158,14 @@ paths = {
     # --- insights ----------------------------------------------------------
     "/v1/adaccounts/{ad_account_id}/stats": op(
         "GetAdAccountStats", "Get ad account stats",
-        "Performance metrics for an ad account; use breakdown=campaign for per-campaign rows.",
-        [AD_ACCOUNT_ID] + stats_params(["campaign"]), "StatsResponse"),
+        "Performance metrics for an ad account; use breakdown=campaign or ad for per-campaign / per-ad rows "
+        "(page with limit and cursor: at most 200 entities per page).",
+        [AD_ACCOUNT_ID] + stats_params(["campaign", "ad"]) + STATS_PAGING, "StatsResponse"),
     "/v1/campaigns/{campaign_id}/stats": op(
         "GetCampaignStats", "Get campaign stats",
-        "Performance metrics for a campaign; use breakdown=adsquad or ad for child rows.",
-        [CAMPAIGN_ID] + stats_params(["adsquad", "ad"]), "StatsResponse"),
+        "Performance metrics for a campaign; use breakdown=adsquad or ad for child rows "
+        "(page with limit and cursor: at most 200 entities per page).",
+        [CAMPAIGN_ID] + stats_params(["adsquad", "ad"]) + STATS_PAGING, "StatsResponse"),
     "/v1/adsquads/{ad_squad_id}/stats": op(
         "GetAdSquadStats", "Get ad squad stats",
         "Performance metrics for an ad squad; use breakdown=ad for per-ad rows.",

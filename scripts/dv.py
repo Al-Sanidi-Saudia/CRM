@@ -22,6 +22,9 @@ def _env(name, default=None):
 class Dataverse:
     def __init__(self):
         self.url = _env("DATAVERSE_URL", "https://operations-alsenidiuat.crm4.dynamics.com").rstrip("/")
+        self._sign_in()
+
+    def _sign_in(self):
         form = urllib.parse.urlencode({
             "grant_type": "client_credentials",
             "client_id": _env("DATAVERSE_CLIENT_ID"),
@@ -30,9 +33,14 @@ class Dataverse:
         }).encode()
         tenant = _env("DATAVERSE_TENANT_ID")
         with urllib.request.urlopen(f"https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token", form) as r:
-            self.token = json.load(r)["access_token"]
+            body = json.load(r)
+        self.token = body["access_token"]
+        # Long runs (table creation takes hours) outlive the token: sign in again 5 minutes before it expires.
+        self.token_expires = time.time() + int(body.get("expires_in", 3600)) - 300
 
     def request(self, method, path, body=None, solution=None, headers=None, idempotent=None):
+        if time.time() > self.token_expires:
+            self._sign_in()
         url = path if path.startswith("https://") else (
             self.url + "/api/data/v9.2/" + urllib.parse.quote(path, safe="/?$=&(),'@:"))
         h = {"Authorization": "Bearer " + self.token, "Accept": "application/json",

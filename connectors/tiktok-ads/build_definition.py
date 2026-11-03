@@ -176,6 +176,22 @@ paths = {
          query("level", "Level", "Level to report on.", enum=["campaign", "adgroup", "ad"], default="campaign",
                required=True, visibility="important")],
         "InsightsResponse"),
+    "/insights/period": op(
+        "get", "GetPeriodInsights", "Get daily or monthly insights",
+        "Daily or monthly metrics (same metrics as the lifetime insights) for every campaign, ad group or ad of an "
+        "advertiser, deleted items included, for one window: up to 30 days (day) or one month (month; TikTok totals "
+        "the month itself). One row per item and day / month, keyed like the Dataverse columns, plus date and "
+        "rawpayload.",
+        [ACCESS_TOKEN, ADVERTISER_ID,
+         query("level", "Level", "Level to report on.", enum=["campaign", "adgroup", "ad"], default="campaign",
+               required=True, visibility="important"),
+         query("period", "Period", "day: one row per day; month: one total per month.", enum=["day", "month"],
+               default="day", required=True, visibility="important"),
+         query("start_date", "Start date", "YYYY-MM-DD, ad account time zone. For month: the 1st of the month.",
+               required=True, visibility="important"),
+         query("end_date", "End date", "YYYY-MM-DD, inclusive. At most 30 days after start (day), or in the same "
+               "month (month).", required=True, visibility="important")],
+        "PeriodInsightsResponse"),
     "/report/integrated/get/": op(
         "post", "RunReport", "Run report",
         "Runs any synchronous TikTok report (/report/integrated/get/) and returns all pages as flat rows.",
@@ -243,6 +259,17 @@ definitions = {
         "metrics_error": {"type": "string", "x-ms-summary": "Metrics error",
                           "description": "Set when TikTok refused some metrics; the other metrics are still returned."},
         "rows": {"type": "array", "x-ms-summary": "Rows", "items": {"$ref": "#/definitions/InsightsRow"}},
+    }},
+    "PeriodInsightsResponse": {"type": "object", "properties": {
+        "advertiser_id": {"type": "string", "x-ms-summary": "Advertiser ID"},
+        "level": {"type": "string", "x-ms-summary": "Level"},
+        "period": {"type": "string", "x-ms-summary": "Period"},
+        "start_date": {"type": "string", "x-ms-summary": "Start date"},
+        "end_date": {"type": "string", "x-ms-summary": "End date"},
+        "row_count": {"type": "integer", "x-ms-summary": "Row count"},
+        "metrics_error": {"type": "string", "x-ms-summary": "Metrics error",
+                          "description": "Set when TikTok refused some metrics; the other metrics are still returned."},
+        "rows": {"type": "array", "x-ms-summary": "Rows", "items": {"type": "object", "additionalProperties": True}},
     }},
     "ReportResponse": {"type": "object", "properties": {
         "advertiser_id": {"type": "string", "x-ms-summary": "Advertiser ID"},

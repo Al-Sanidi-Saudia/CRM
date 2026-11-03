@@ -447,6 +447,94 @@
         }
       }
     },
+    "/insights/period": {
+      "get": {
+        "operationId": "GetPeriodInsights",
+        "summary": "Get daily or monthly insights",
+        "description": "Daily or monthly metrics (same metrics as the lifetime insights) for every campaign, ad group or ad of an advertiser, deleted items included, for one window: up to 30 days (day) or one month (month; TikTok totals the month itself). One row per item and day / month, keyed like the Dataverse columns, plus date and rawpayload.",
+        "parameters": [
+          {
+            "name": "Access-Token",
+            "in": "header",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Access token",
+            "description": "TikTok long-term access token (environment variable TikTok Ads Access Token).",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "advertiser_id",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Advertiser ID",
+            "description": "TikTok advertiser (ad account) ID.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Level",
+            "description": "Level to report on.",
+            "enum": [
+              "campaign",
+              "adgroup",
+              "ad"
+            ],
+            "default": "campaign",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Period",
+            "description": "day: one row per day; month: one total per month.",
+            "enum": [
+              "day",
+              "month"
+            ],
+            "default": "day",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "Start date",
+            "description": "YYYY-MM-DD, ad account time zone. For month: the 1st of the month.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "x-ms-summary": "End date",
+            "description": "YYYY-MM-DD, inclusive. At most 30 days after start (day), or in the same month (month).",
+            "x-ms-visibility": "important"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PeriodInsightsResponse"
+            }
+          },
+          "default": {
+            "description": "Error",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/report/integrated/get/": {
       "post": {
         "operationId": "RunReport",
@@ -3379,6 +3467,48 @@
           "x-ms-summary": "Rows",
           "items": {
             "$ref": "#/definitions/InsightsRow"
+          }
+        }
+      }
+    },
+    "PeriodInsightsResponse": {
+      "type": "object",
+      "properties": {
+        "advertiser_id": {
+          "type": "string",
+          "x-ms-summary": "Advertiser ID"
+        },
+        "level": {
+          "type": "string",
+          "x-ms-summary": "Level"
+        },
+        "period": {
+          "type": "string",
+          "x-ms-summary": "Period"
+        },
+        "start_date": {
+          "type": "string",
+          "x-ms-summary": "Start date"
+        },
+        "end_date": {
+          "type": "string",
+          "x-ms-summary": "End date"
+        },
+        "row_count": {
+          "type": "integer",
+          "x-ms-summary": "Row count"
+        },
+        "metrics_error": {
+          "type": "string",
+          "x-ms-summary": "Metrics error",
+          "description": "Set when TikTok refused some metrics; the other metrics are still returned."
+        },
+        "rows": {
+          "type": "array",
+          "x-ms-summary": "Rows",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
           }
         }
       }
