@@ -100,7 +100,10 @@ def details(dv, table):
         fmt = x.get("FormatName", {}).get("Value") if isinstance(x.get("FormatName"), dict) else x.get("Format")
         dt_behavior = (x.get("DateTimeBehavior") or {}).get("Value") if typ == "DateTime" else None
         default = x.get("DefaultFormValue") if "DefaultFormValue" in x else x.get("DefaultValue")
-        gos = x.get("GlobalOptionSet") or {}
+        os_ = x.get("OptionSet") or {}
+        gos = os_ if os_.get("IsGlobal") else {}
+        if isinstance(default, bool):
+            default = "Yes" if default else "No"
         rows.append([
             None, x["LogicalName"], x.get("SchemaName"), label(x.get("DisplayName"), EN), label(x.get("DisplayName"), AR),
             label(x.get("Description"), EN), label(x.get("Description"), AR), typ, val(fmt),
