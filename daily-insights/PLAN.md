@@ -1,8 +1,8 @@
 # Social Media Daily and Monthly Insights: feasibility study and plan (AlSanidi-UAT)
 
-Status: **built in UAT (2026-10-29 → 2026-10-31): steps 1–12 done, full load finished, Social Media - Scheduled Sync
-turned on 2026-10-31; scheduling revised 2026-11-03 (§5).** Production is a separate request (decision 31). See §6 for the
-results and for what differs from the plan below.
+Status: **built in UAT (2026-10-29 → 2026-10-31); scheduling revised 2026-11-03 (§5); deployed to Production
+2026-11-12 (managed), full loads finished 2026-11-13 and Social Media - Scheduled Sync turned on there (§6.3).**
+See §6 for the results and for what differs from the plan below.
 The plan below was written before the build. It is based on read-only checks of UAT (tables, connectors, flows)
 and on each platform's official API documentation only.
 
@@ -444,7 +444,7 @@ Months are closed by none of these: only by Social Media - Close Monthly Insight
 
 ---
 
-## 6. Build results (UAT)
+## 6. Build results (UAT and Production)
 
 ### 6.1 Full load (All Time, Data and Insights, started 2026-10-30 07:40 Riyadh)
 
@@ -477,6 +477,32 @@ Found during the full load and fixed in the flows (2026-10-31):
 - **Days without delivery:** no daily row (impressions = 0 and spend = 0 are skipped on every platform; TikTok
   returns zero rows for every item otherwise).
 - **Snap reach before 2021:** left blank (§6.1).
+
+### 6.3 Production deployment (`https://operations-alsanidi.crm4.dynamics.com`, 2026-11-12 → 13)
+
+| Step | What was done |
+|---|---|
+| 1 | **AlSanidi \| Marketing \| Connectors** set to 1.0.1 in UAT, exported managed and imported as an upgrade (Meta `GetPeriodInsights`, Snap account breakdown + paging, TikTok `GetPeriodInsights`). |
+| 2 | **TikTok connector added to the patch**: the TikTok Integration patch (1.0.2.0) also holds it and its layer sat above Connectors, so Production kept the old TikTok definition until this patch (imported later) put the new one on top. |
+| 3 | **Patch AlSanidi \| Marketing \| Daily & Monthly Insights 1.0.3.0** exported managed and imported (no failures). Script: `deploy_prod.py`. |
+| 4 | Meta, Snap and Google Ads connections **shared with the # CRM-Claude app user**; then the 6 insight flows, the 3 Run Sync flows and the dispatcher turned on (the import had turned the dispatcher off). |
+| 5 | **Snap client secret re-entered** in the Snap custom connector (Security tab) and the connection re-signed: the Connectors upgrade does not carry an OAuth client secret, so every Snap call answered *unauthorized* until then. |
+| 6 | Full load (All Time, Data and Insights) per platform; Snap run again after the secret fix. |
+| 7 | **Months closed once** with the §5.4 rule as of 1 Nov 2026 (`close_months_once.py`): the full loads write months open and the closing flow first runs on 1 Dec. |
+| 8 | Social Media - Scheduled Sync turned on (05:00); Social Media - Close Monthly Insights on (1st of the month 05:00). |
+
+Full load results (Production):
+
+| Platform | Finished (UTC) | Daily rows | Monthly rows with data | Empty months | Notes |
+|---|---|---|---|---|---|
+| Meta | 12 Nov 14:44 | 1,314 (246 skipped) | 229 (26 skipped) | 1,071 | Meta refuses the first, partial month of its 37-month window (Oct 2023, error 3018); that month is empty. |
+| Google Ads | 12 Nov 20:00 | 13,147 | 705 | 4,539 | — |
+| TikTok | 13 Nov 05:19 | 17,158 | 2,177 | 24,921 | Ended *Failed* on 1 duplicate-key empty month (`1782450292304913_202503`, created twice in parallel); the row exists. |
+| Snapchat | 13 Nov 18:37 (rerun) | 17,721 (160 skipped) | 2,915 (64 skipped) | (from the first run) | First run 12 Nov ended *Failed* (unauthorized, before the secret fix); the rerun refilled everything. |
+
+Not in any solution, so they carry over by hand to any other environment: Full Load From on the platform rows (left
+empty: each platform from its first campaign), connection sharing, and the Snap client secret. Keeping the secret in a
+Secret environment variable (Azure Key Vault) would avoid re-entering it after the next Connectors upgrade.
 
 ---
 
