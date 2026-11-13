@@ -10,6 +10,7 @@ month of (run day + 1 - late-update days).
 import json
 import sys
 import time
+import urllib.error
 import urllib.request
 import uuid
 from datetime import date, timedelta
@@ -43,8 +44,15 @@ def batch_close(dv, table_set, pk_ids):
     req = urllib.request.Request(f"{dv.url}/api/data/v9.2/$batch", data=body.encode(), method="POST", headers={
         "Authorization": "Bearer " + dv.token, "OData-Version": "4.0", "OData-MaxVersion": "4.0",
         "Content-Type": f"multipart/mixed; boundary={boundary}"})
-    with urllib.request.urlopen(req, timeout=300) as r:
-        text = r.read().decode()
+    for attempt in range(5):  # connection resets happen on long runs; a batch is idempotent
+        try:
+            with urllib.request.urlopen(req, timeout=300) as r:
+                text = r.read().decode()
+            break
+        except (urllib.error.URLError, ConnectionError, TimeoutError):
+            if attempt == 4:
+                raise
+            time.sleep(10 * (attempt + 1))
     if "HTTP/1.1 4" in text or "HTTP/1.1 5" in text:  # a failed change rolls the changeset back
         raise SystemExit(f"{table_set}: batch failed: {text[:1000]}")
 
